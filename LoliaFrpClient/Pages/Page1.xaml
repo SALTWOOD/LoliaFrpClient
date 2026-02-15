@@ -8,7 +8,147 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid>
-        <!-- Page content left empty -->
+    <Grid Padding="20">
+        <ScrollViewer>
+            <StackPanel Spacing="16">
+                <!-- 用户信息卡片 -->
+                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                        CornerRadius="8"
+                        Padding="20"
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="1">
+                    <StackPanel Spacing="12">
+                        <TextBlock Text="用户信息" 
+                                   Style="{StaticResource SubtitleTextBlockStyle}"
+                                   FontWeight="SemiBold"/>
+                        
+                        <Grid ColumnSpacing="12" RowSpacing="8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="用户名:" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Row="0" Grid.Column="1" Text="{x:Bind ViewModel.Username, Mode=OneWay}" 
+                                       VerticalAlignment="Center" FontWeight="SemiBold"/>
+
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="邮箱:" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Row="1" Grid.Column="1" Text="{x:Bind ViewModel.Email, Mode=OneWay}" 
+                                       VerticalAlignment="Center"/>
+
+                            <TextBlock Grid.Row="2" Grid.Column="0" Text="角色:" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Row="2" Grid.Column="1" Text="{x:Bind ViewModel.Role, Mode=OneWay}" 
+                                       VerticalAlignment="Center"/>
+
+                            <TextBlock Grid.Row="3" Grid.Column="0" Text="创建时间:" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Row="3" Grid.Column="1" Text="{x:Bind ViewModel.CreatedAt, Mode=OneWay}" 
+                                       VerticalAlignment="Center"/>
+
+                            <TextBlock Grid.Row="4" Grid.Column="0" Text="最大隧道数:" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Row="4" Grid.Column="1" Text="{x:Bind ViewModel.MaxTunnelCount, Mode=OneWay}" 
+                                       VerticalAlignment="Center"/>
+
+                            <TextBlock Grid.Row="5" Grid.Column="0" Text="带宽限制:" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Row="5" Grid.Column="1" Text="{x:Bind ViewModel.BandwidthLimit, Mode=OneWay}" 
+                                       VerticalAlignment="Center"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- 流量统计卡片 -->
+                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                        CornerRadius="8"
+                        Padding="20"
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="1">
+                    <StackPanel Spacing="12">
+                        <TextBlock Text="流量统计" 
+                                   Style="{StaticResource SubtitleTextBlockStyle}"
+                                   FontWeight="SemiBold"/>
+                        
+                        <ProgressBar Value="{x:Bind ViewModel.TrafficUsagePercentage, Mode=OneWay}" 
+                                     Maximum="100" Height="8"/>
+                        
+                        <Grid ColumnSpacing="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0" Spacing="4">
+                                <TextBlock Text="流量限制" Style="{StaticResource CaptionTextBlockStyle}" 
+                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                <TextBlock Text="{x:Bind ViewModel.TrafficLimit, Mode=OneWay}" 
+                                           Style="{StaticResource BodyStrongTextBlockStyle}"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="1" Spacing="4">
+                                <TextBlock Text="已用流量" Style="{StaticResource CaptionTextBlockStyle}" 
+                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                <TextBlock Text="{x:Bind ViewModel.TrafficUsed, Mode=OneWay}" 
+                                           Style="{StaticResource BodyStrongTextBlockStyle}"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="2" Spacing="4">
+                                <TextBlock Text="剩余流量" Style="{StaticResource CaptionTextBlockStyle}" 
+                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                <TextBlock Text="{x:Bind ViewModel.TrafficRemaining, Mode=OneWay}" 
+                                           Style="{StaticResource BodyStrongTextBlockStyle}"/>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- KYC 状态卡片 -->
+                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                        CornerRadius="8"
+                        Padding="20"
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="1">
+                    <StackPanel Spacing="12">
+                        <TextBlock Text="账户状态" 
+                                   Style="{StaticResource SubtitleTextBlockStyle}"
+                                   FontWeight="SemiBold"/>
+                        
+                        <Grid ColumnSpacing="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0" Spacing="4">
+                                <TextBlock Text="KYC 状态" Style="{StaticResource CaptionTextBlockStyle}" 
+                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                <TextBlock Text="{x:Bind ViewModel.KycStatus, Mode=OneWay}" 
+                                           Style="{StaticResource BodyStrongTextBlockStyle}"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="1" Spacing="4">
+                                <TextBlock Text="账户状态" Style="{StaticResource CaptionTextBlockStyle}" 
+                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                <TextBlock Text="{x:Bind IsBanedText, Mode=OneWay}" 
+                                           Style="{StaticResource BodyStrongTextBlockStyle}"
+                                           Foreground="{x:Bind BanedColor, Mode=OneWay}"/>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- 刷新按钮 -->
+                <Button Content="刷新数据" 
+                        Click="OnRefreshClick"
+                        HorizontalAlignment="Stretch"
+                        Style="{StaticResource AccentButtonStyle}"/>
+            </StackPanel>
+        </ScrollViewer>
     </Grid>
 </Page>
