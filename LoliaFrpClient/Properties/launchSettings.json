@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "LoliaFrpClient (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "LoliaFrpClient (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}
