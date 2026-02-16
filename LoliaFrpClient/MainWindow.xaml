@@ -14,7 +14,38 @@
     </Window.SystemBackdrop>
 
     <Grid x:Name="RootGrid">
-        <NavigationView x:Name="MainNavigationView" PaneDisplayMode="Left" IsBackButtonVisible="Collapsed" IsSettingsVisible="False">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Custom Title Bar -->
+        <Grid x:Name="TitleBarGrid" Grid.Row="0" Height="32" VerticalAlignment="Top">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="6,6,0,0">
+                <Button x:Name="BackButton" 
+                        Width="32" Height="32" 
+                        Padding="0" 
+                        Background="Transparent" 
+                        BorderThickness="0"
+                        Click="BackButton_Click">
+                    <Image Source="ms-appx:///Assets/AppIcon_Full_Color.png" 
+                           Width="24" Height="24" 
+                           HorizontalAlignment="Center" 
+                           VerticalAlignment="Center"/>
+                </Button>
+                <TextBlock Text="Lolia FRP Client" 
+                           VerticalAlignment="Center" 
+                           Margin="8,0,0,0"
+                           FontFamily="Comfortaa"
+                           FontSize="16"
+                           FontWeight="Bold"
+                           CharacterSpacing="50"
+                           Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+            </StackPanel>
+        </Grid>
+
+        <NavigationView x:Name="MainNavigationView" Grid.Row="1" PaneDisplayMode="Left" IsBackButtonVisible="Collapsed" IsSettingsVisible="False">
+
             <NavigationView.MenuItems>
                 <NavigationViewItem x:Name="Page1NavItem" Content="Page 1" Tag="Page1" Icon="Home"/>
                 <NavigationViewItem x:Name="Page2NavItem" Content="Page 2" Tag="Page2" Icon="Globe"/>

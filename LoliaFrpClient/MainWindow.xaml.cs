@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Microsoft.UI;
+using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -13,6 +14,8 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.Graphics;
+using WinRT.Interop;
 using LoliaFrpClient.Services;
 using LoliaFrpClient.Pages;
 
@@ -31,8 +34,45 @@ namespace LoliaFrpClient
         public MainWindow()
         {
             InitializeComponent();
+            InitializeTitleBar();
             InitializeTheme();
             InitializeNavigation();
+        }
+
+        private void InitializeTitleBar()
+        {
+            var appWindow = GetAppWindowForCurrentWindow();
+            if (appWindow != null)
+            {
+                appWindow.TitleBar.ExtendsContentIntoTitleBar = true;
+                appWindow.TitleBar.ButtonBackgroundColor = Colors.Transparent;
+                appWindow.TitleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
+                appWindow.TitleBar.ButtonForegroundColor = Colors.Transparent;
+                appWindow.TitleBar.ButtonHoverBackgroundColor = Colors.Transparent;
+                appWindow.TitleBar.ButtonHoverForegroundColor = Colors.White;
+                appWindow.TitleBar.ButtonPressedBackgroundColor = Colors.Transparent;
+                appWindow.TitleBar.ButtonPressedForegroundColor = Colors.White;
+
+                // Set drag region for title bar
+                if (TitleBarGrid != null)
+                {
+                    TitleBarGrid.SizeChanged += (s, e) =>
+                    {
+                        if (TitleBarGrid != null)
+                        {
+                            RectInt32 dragRect = new RectInt32(0, 0, (int)TitleBarGrid.ActualWidth, (int)TitleBarGrid.ActualHeight);
+                            appWindow.TitleBar.SetDragRectangles(new[] { dragRect });
+                        }
+                    };
+                }
+            }
+        }
+
+        private AppWindow GetAppWindowForCurrentWindow()
+        {
+            IntPtr hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+            WindowId windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
+            return AppWindow.GetFromWindowId(windowId);
         }
 
         private void InitializeTheme()
@@ -45,6 +85,14 @@ namespace LoliaFrpClient
             MainNavigationView.ItemInvoked += OnNavigationViewItemInvoked;
             ContentFrame.Navigate(typeof(Page1));
             MainNavigationView.SelectedItem = Page1NavItem;
+        }
+
+        private void BackButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (ContentFrame.CanGoBack)
+            {
+                ContentFrame.GoBack();
+            }
         }
 
         private void OnNavigationViewItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
