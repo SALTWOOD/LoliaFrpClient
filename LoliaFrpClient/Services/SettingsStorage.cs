@@ -28,6 +28,15 @@ namespace LoliaFrpClient.Services
         }
 
         /// <summary>
+        /// Authorization token
+        /// </summary>
+        public string? Authorization
+        {
+            get => Read<string?>("Authorization", null);
+            set => Write("Authorization", value);
+        }
+
+        /// <summary>
         /// Read setting
         /// </summary>
         public T Read<T>(string key, T defaultValue = default!)

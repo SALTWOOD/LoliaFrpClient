@@ -53,7 +53,7 @@ namespace LoliaFrpClient
                 appWindow.TitleBar.ButtonPressedBackgroundColor = Colors.Transparent;
                 appWindow.TitleBar.ButtonPressedForegroundColor = Colors.White;
 
-                // Set drag region for title bar (exclude button area)
+                // Set drag region for title bar
                 if (TitleBarGrid != null)
                 {
                     TitleBarGrid.SizeChanged += (s, e) =>
@@ -148,8 +148,11 @@ namespace LoliaFrpClient
                     case "Page4":
                         ContentFrame.Navigate(typeof(Page4));
                         break;
-                    case "Settings":
+                    case "Theme":
                         ToggleTheme();
+                        break;
+                    case "Settings":
+                        ContentFrame.Navigate(typeof(Settings));
                         break;
                 }
             }

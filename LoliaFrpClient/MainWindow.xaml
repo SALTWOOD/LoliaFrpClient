@@ -47,13 +47,34 @@
         <NavigationView x:Name="MainNavigationView" Grid.Row="1" PaneDisplayMode="Left" IsBackButtonVisible="Collapsed" IsSettingsVisible="False">
 
             <NavigationView.MenuItems>
-                <NavigationViewItem x:Name="Page1NavItem" Content="Page 1" Tag="Page1" Icon="Home"/>
-                <NavigationViewItem x:Name="Page2NavItem" Content="Page 2" Tag="Page2" Icon="Globe"/>
-                <NavigationViewItem x:Name="Page3NavItem" Content="Page 3" Tag="Page3" Icon="Folder"/>
-                <NavigationViewItem x:Name="Page4NavItem" Content="Page 4" Tag="Page4" Icon="Contact"/>
+                <NavigationViewItem x:Name="Page1NavItem" Content="Page 1" Tag="Page1">
+                    <NavigationViewItem.Icon>
+                        <SymbolIcon Symbol="Home"/>
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <NavigationViewItem x:Name="Page2NavItem" Content="Page 2" Tag="Page2">
+                    <NavigationViewItem.Icon>
+                        <SymbolIcon Symbol="Globe"/>
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <NavigationViewItem x:Name="Page3NavItem" Content="Page 3" Tag="Page3">
+                    <NavigationViewItem.Icon>
+                        <SymbolIcon Symbol="Folder"/>
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <NavigationViewItem x:Name="Page4NavItem" Content="Page 4" Tag="Page4">
+                    <NavigationViewItem.Icon>
+                        <SymbolIcon Symbol="Contact"/>
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
             </NavigationView.MenuItems>
 
             <NavigationView.FooterMenuItems>
+                <NavigationViewItem x:Name="ThemeNavItem" Content="深色模式" Tag="Theme">
+                    <NavigationViewItem.Icon>
+                        <SymbolIcon Symbol="View"/>
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
                 <NavigationViewItem x:Name="SettingsNavItem" Content="Settings" Tag="Settings" Icon="Setting"/>
             </NavigationView.FooterMenuItems>
 

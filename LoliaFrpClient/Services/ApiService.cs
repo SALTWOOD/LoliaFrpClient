@@ -14,12 +14,7 @@ namespace LoliaFrpClient.Services
     /// </summary>
     public class ApiService
     {
-        private static readonly Lazy<ApiService> _instance = new Lazy<ApiService>(() =>
-        {
-            var service = new ApiService();
-            service.SetBasePath("https://api.lolia.link/api/v1");
-            return service;
-        });
+        private static readonly Lazy<ApiService> _instance = new Lazy<ApiService>(() => new ApiService());
         public static ApiService Instance => _instance.Value;
 
         private readonly HttpClient _httpClient;
@@ -32,7 +27,7 @@ namespace LoliaFrpClient.Services
             _settings = SettingsStorage.Instance;
 
             // 获取 API 基础路径
-            _basePath = _settings.Read<string>("ApiBasePath", "http://localhost:8080");
+            _basePath = _settings.Read<string>("ApiBasePath", "https://api.lolia.link/api/v1");
         }
 
         /// <summary>
