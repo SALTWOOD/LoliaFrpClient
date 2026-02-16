@@ -172,13 +172,13 @@
                           "type": "string"
                         },
                         "traffic_in": {
-                          "type": "integer"
+                          "$ref": "#/components/schemas/long"
                         },
                         "traffic_out": {
-                          "type": "integer"
+                          "$ref": "#/components/schemas/long"
                         },
                         "total_traffic": {
-                          "type": "integer"
+                          "$ref": "#/components/schemas/long"
                         },
                         "connections": {
                           "type": "integer"
@@ -247,13 +247,13 @@
                           "type": "string"
                         },
                         "traffic_limit": {
-                          "type": "integer"
+                          "$ref": "#/components/schemas/long"
                         },
                         "traffic_used": {
-                          "type": "integer"
+                          "$ref": "#/components/schemas/long"
                         },
                         "traffic_remaining": {
-                          "type": "integer"
+                          "$ref": "#/components/schemas/long"
                         }
                       },
                       "required": [

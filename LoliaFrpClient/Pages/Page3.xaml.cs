@@ -72,9 +72,9 @@ namespace LoliaFrpClient.Pages
                     {
                         UserId = trafficStats.UserId ?? string.Empty,
                         Username = trafficStats.Username ?? string.Empty,
-                        TrafficLimit = trafficStats.TrafficLimit ?? 0,
-                        TrafficUsed = trafficStats.TrafficUsed ?? 0,
-                        TrafficRemaining = trafficStats.TrafficRemaining ?? 0
+                        TrafficLimit = (int)(trafficStats.TrafficLimit ?? 0),
+                        TrafficUsed = (int)(trafficStats.TrafficUsed ?? 0),
+                        TrafficRemaining = (int)(trafficStats.TrafficRemaining ?? 0)
                     };
                 }
 

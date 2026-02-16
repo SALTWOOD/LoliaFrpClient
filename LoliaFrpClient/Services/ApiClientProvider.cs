@@ -45,7 +45,7 @@ namespace LoliaFrpClient.Services
         private void InitializeClient()
         {
             var baseUrl = "https://api.lolia.link/api/v1";
-            var token = _settings.Authorization;
+            var token = _settings.OAuthToken;
 
             // 使用自定义的认证提供者
             IAuthenticationProvider authProvider;

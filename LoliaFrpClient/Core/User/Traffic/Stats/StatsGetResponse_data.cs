@@ -15,11 +15,11 @@ namespace LoliaFrpClient.Core.User.Traffic.Stats
         /// <summary>Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.</summary>
         public IDictionary<string, object> AdditionalData { get; set; }
         /// <summary>The traffic_limit property</summary>
-        public int? TrafficLimit { get; set; }
+        public long? TrafficLimit { get; set; }
         /// <summary>The traffic_remaining property</summary>
-        public int? TrafficRemaining { get; set; }
+        public long? TrafficRemaining { get; set; }
         /// <summary>The traffic_used property</summary>
-        public int? TrafficUsed { get; set; }
+        public long? TrafficUsed { get; set; }
         /// <summary>The user_id property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
@@ -61,9 +61,9 @@ namespace LoliaFrpClient.Core.User.Traffic.Stats
         {
             return new Dictionary<string, Action<IParseNode>>
             {
-                { "traffic_limit", n => { TrafficLimit = n.GetIntValue(); } },
-                { "traffic_remaining", n => { TrafficRemaining = n.GetIntValue(); } },
-                { "traffic_used", n => { TrafficUsed = n.GetIntValue(); } },
+                { "traffic_limit", n => { TrafficLimit = n.GetLongValue(); } },
+                { "traffic_remaining", n => { TrafficRemaining = n.GetLongValue(); } },
+                { "traffic_used", n => { TrafficUsed = n.GetLongValue(); } },
                 { "user_id", n => { UserId = n.GetStringValue(); } },
                 { "username", n => { Username = n.GetStringValue(); } },
             };
@@ -75,9 +75,9 @@ namespace LoliaFrpClient.Core.User.Traffic.Stats
         public virtual void Serialize(ISerializationWriter writer)
         {
             if(ReferenceEquals(writer, null)) throw new ArgumentNullException(nameof(writer));
-            writer.WriteIntValue("traffic_limit", TrafficLimit);
-            writer.WriteIntValue("traffic_remaining", TrafficRemaining);
-            writer.WriteIntValue("traffic_used", TrafficUsed);
+            writer.WriteLongValue("traffic_limit", TrafficLimit);
+            writer.WriteLongValue("traffic_remaining", TrafficRemaining);
+            writer.WriteLongValue("traffic_used", TrafficUsed);
             writer.WriteStringValue("user_id", UserId);
             writer.WriteStringValue("username", Username);
             writer.WriteAdditionalData(AdditionalData);

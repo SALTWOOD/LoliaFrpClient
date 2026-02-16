@@ -6,7 +6,7 @@ namespace LoliaFrpClient.Models
     public class LoginResult
     {
         /// <summary>
-        /// Authorization token
+        /// OAuthToken token
         /// </summary>
         public string? Token { get; set; }
 

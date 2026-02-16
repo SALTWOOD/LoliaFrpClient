@@ -21,11 +21,18 @@
                        FontSize="20" 
                        FontWeight="SemiBold"
                        Margin="0,0,0,10"/>
-            <Button x:Name="LoginButton" 
-                    Content="登录" 
-                    Click="LoginButton_Click"
-                    HorizontalAlignment="Stretch"
-                    Margin="0,10,0,0"/>
+            <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,10,0,0">
+                <Button x:Name="LoginButton" 
+                        Content="登录" 
+                        Click="LoginButton_Click"
+                        HorizontalAlignment="Stretch"
+                        MinWidth="100"/>
+                <Button x:Name="LogoutButton" 
+                        Content="退出登录" 
+                        Click="LogoutButton_Click"
+                        HorizontalAlignment="Stretch"
+                        MinWidth="100"/>
+            </StackPanel>
         </StackPanel>
 
         <!-- Login Status -->
