@@ -61,6 +61,8 @@ namespace LoliaFrpClient.Pages
 
                     OnPropertyChanged(nameof(IsBanedText));
                     OnPropertyChanged(nameof(BanedColor));
+                    OnPropertyChanged(nameof(KycStatusColor));
+                    OnPropertyChanged(nameof(KycStatusBackgroundColor));
                 }
             }
             catch (Exception ex)
@@ -82,6 +84,38 @@ namespace LoliaFrpClient.Pages
             {
                 var brushName = ViewModel.IsBaned ? "SystemFillColorCautionBrush" : "SystemFillColorSuccessBrush";
                 return Application.Current.Resources[brushName] as Brush ?? new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Gray);
+            }
+        }
+
+        public Brush KycStatusColor
+        {
+            get
+            {
+                var brushName = ViewModel.KycStatus switch
+                {
+                    "init" => "SystemFillColorCautionBrush",
+                    "certifying" => "SystemFillColorAttentionBrush",
+                    "success" => "SystemFillColorSuccessBrush",
+                    "failed" => "SystemFillColorCriticalBrush",
+                    _ => "SystemFillColorNeutralBrush"
+                };
+                return Application.Current.Resources[brushName] as Brush ?? new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Gray);
+            }
+        }
+
+        public Brush KycStatusBackgroundColor
+        {
+            get
+            {
+                var brushName = ViewModel.KycStatus switch
+                {
+                    "init" => "SystemFillColorCautionBackgroundBrush",
+                    "certifying" => "SystemFillColorAttentionBackgroundBrush",
+                    "success" => "SystemFillColorSuccessBackgroundBrush",
+                    "failed" => "SystemFillColorCriticalBackgroundBrush",
+                    _ => "SystemFillColorNeutralBackgroundBrush"
+                };
+                return Application.Current.Resources[brushName] as Brush ?? new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Transparent);
             }
         }
 

@@ -59,13 +59,13 @@ namespace LoliaFrpClient.Models
         public string Role
         {
             get => _role;
-            set { _role = value; OnPropertyChanged(); }
+            set { _role = value; OnPropertyChanged(); OnPropertyChanged(nameof(RoleFormatted)); }
         }
 
         public string KycStatus
         {
             get => _kycStatus;
-            set { _kycStatus = value; OnPropertyChanged(); }
+            set { _kycStatus = value; OnPropertyChanged(); OnPropertyChanged(nameof(KycStatusFormatted)); OnPropertyChanged(nameof(KycStatusColor)); OnPropertyChanged(nameof(KycStatusBackgroundColor)); }
         }
 
         public string CreatedAt
@@ -152,6 +152,11 @@ namespace LoliaFrpClient.Models
         public string BandwidthLimitFormatted => FormatBandwidth(BandwidthLimit);
 
         /// <summary>
+        /// 格式化权限显示（人类可读格式）
+        /// </summary>
+        public string RoleFormatted => FormatRole(Role);
+
+        /// <summary>
         /// 将字节数转换为人类可读的格式
         /// </summary>
         private static string FormatBytes(long bytes)
@@ -192,6 +197,79 @@ namespace LoliaFrpClient.Models
         {
             if (bandwidthLimit <= 0) return "无限制";
             return $"{bandwidthLimit} Mbps";
+        }
+
+        /// <summary>
+        /// 格式化 KYC 状态显示（人类可读格式）
+        /// </summary>
+        public string KycStatusFormatted => FormatKycStatus(KycStatus);
+
+        /// <summary>
+        /// 获取 KYC 状态对应的文本颜色
+        /// </summary>
+        public string KycStatusColor => GetKycStatusColor(KycStatus);
+
+        /// <summary>
+        /// 获取 KYC 状态对应的背景色
+        /// </summary>
+        public string KycStatusBackgroundColor => GetKycStatusBackgroundColor(KycStatus);
+
+        /// <summary>
+        /// 将 KYC 状态代码转换为人类可读的文本
+        /// </summary>
+        private static string FormatKycStatus(string status)
+        {
+            return status switch
+            {
+                "init" => "待认证",
+                "certifying" => "认证中",
+                "success" => "已认证",
+                "failed" => "认证失败",
+                _ => "未知"
+            };
+        }
+
+        /// <summary>
+        /// 获取 KYC 状态对应的文本颜色资源名称
+        /// </summary>
+        private static string GetKycStatusColor(string status)
+        {
+            return status switch
+            {
+                "init" => "SystemFillColorCautionBrush",
+                "certifying" => "SystemFillColorAttentionBrush",
+                "success" => "SystemFillColorSuccessBrush",
+                "failed" => "SystemFillColorCriticalBrush",
+                _ => "SystemFillColorNeutralBrush"
+            };
+        }
+
+        /// <summary>
+        /// 获取 KYC 状态对应的背景色资源名称
+        /// </summary>
+        private static string GetKycStatusBackgroundColor(string status)
+        {
+            return status switch
+            {
+                "init" => "SystemFillColorCautionBackgroundBrush",
+                "certifying" => "SystemFillColorAttentionBackgroundBrush",
+                "success" => "SystemFillColorSuccessBackgroundBrush",
+                "failed" => "SystemFillColorCriticalBackgroundBrush",
+                _ => "SystemFillColorNeutralBackgroundBrush"
+            };
+        }
+
+        /// <summary>
+        /// 将权限代码转换为人类可读的文本
+        /// </summary>
+        private static string FormatRole(string role)
+        {
+            return role switch
+            {
+                "user" => "普通用户",
+                "admin" => "管理员",
+                _ => "未知"
+            };
         }
     }
 }

@@ -44,8 +44,8 @@
                             <TextBlock Grid.Row="1" Grid.Column="1" Text="{x:Bind ViewModel.Email, Mode=OneWay}" 
                                        VerticalAlignment="Center"/>
 
-                            <TextBlock Grid.Row="2" Grid.Column="0" Text="角色:" VerticalAlignment="Center"/>
-                            <TextBlock Grid.Row="2" Grid.Column="1" Text="{x:Bind ViewModel.Role, Mode=OneWay}" 
+                            <TextBlock Grid.Row="2" Grid.Column="0" Text="权限:" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Row="2" Grid.Column="1" Text="{x:Bind ViewModel.RoleFormatted, Mode=OneWay}" 
                                        VerticalAlignment="Center"/>
 
                             <TextBlock Grid.Row="3" Grid.Column="0" Text="创建时间:" VerticalAlignment="Center"/>
@@ -63,85 +63,106 @@
                     </StackPanel>
                 </Border>
 
-                <!-- 流量统计卡片 -->
-                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                        CornerRadius="8"
-                        Padding="20"
-                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                        BorderThickness="1">
-                    <StackPanel Spacing="12">
-                        <TextBlock Text="流量统计" 
-                                   Style="{StaticResource SubtitleTextBlockStyle}"
-                                   FontWeight="SemiBold"/>
-                        
-                        <ProgressBar Value="{x:Bind ViewModel.TrafficUsagePercentage, Mode=OneWay}" 
-                                     Maximum="100" Height="8"/>
-                        
-                        <Grid ColumnSpacing="12">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
+                <!-- 流量统计和账户状态卡片 -->
+                <Grid ColumnSpacing="16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
 
-                            <StackPanel Grid.Column="0" Spacing="4">
-                                <TextBlock Text="流量限制" Style="{StaticResource CaptionTextBlockStyle}" 
-                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-                                <TextBlock Text="{x:Bind ViewModel.TrafficLimitFormatted, Mode=OneWay}" 
-                                           Style="{StaticResource BodyStrongTextBlockStyle}"/>
-                            </StackPanel>
+                    <!-- 流量统计卡片 -->
+                    <Border Grid.Column="0" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                            CornerRadius="8"
+                            Padding="20"
+                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                            BorderThickness="1">
+                        <StackPanel Spacing="12">
+                            <TextBlock Text="流量统计" 
+                                       Style="{StaticResource SubtitleTextBlockStyle}"
+                                       FontWeight="SemiBold"
+                                       FontSize="18"/>
+                            
+                            <ProgressBar Value="{x:Bind ViewModel.TrafficUsagePercentage, Mode=OneWay}" 
+                                         Maximum="100" Height="10"/>
+                            
+                            <Grid ColumnSpacing="12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
 
-                            <StackPanel Grid.Column="1" Spacing="4">
-                                <TextBlock Text="已用流量" Style="{StaticResource CaptionTextBlockStyle}" 
-                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-                                <TextBlock Text="{x:Bind ViewModel.TrafficUsedFormatted, Mode=OneWay}" 
-                                           Style="{StaticResource BodyStrongTextBlockStyle}"/>
-                            </StackPanel>
+                                <StackPanel Grid.Column="0" Spacing="4">
+                                    <TextBlock Text="流量限制" Style="{StaticResource CaptionTextBlockStyle}" 
+                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                               FontSize="14"/>
+                                    <TextBlock Text="{x:Bind ViewModel.TrafficLimitFormatted, Mode=OneWay}" 
+                                               Style="{StaticResource BodyStrongTextBlockStyle}"
+                                               FontSize="16"/>
+                                </StackPanel>
 
-                            <StackPanel Grid.Column="2" Spacing="4">
-                                <TextBlock Text="剩余流量" Style="{StaticResource CaptionTextBlockStyle}" 
-                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-                                <TextBlock Text="{x:Bind ViewModel.TrafficRemainingFormatted, Mode=OneWay}" 
-                                           Style="{StaticResource BodyStrongTextBlockStyle}"/>
-                            </StackPanel>
-                        </Grid>
-                    </StackPanel>
-                </Border>
+                                <StackPanel Grid.Column="1" Spacing="4">
+                                    <TextBlock Text="已用流量" Style="{StaticResource CaptionTextBlockStyle}" 
+                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                               FontSize="14"/>
+                                    <TextBlock Text="{x:Bind ViewModel.TrafficUsedFormatted, Mode=OneWay}" 
+                                               Style="{StaticResource BodyStrongTextBlockStyle}"
+                                               FontSize="16"/>
+                                </StackPanel>
 
-                <!-- KYC 状态卡片 -->
-                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                        CornerRadius="8"
-                        Padding="20"
-                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                        BorderThickness="1">
-                    <StackPanel Spacing="12">
-                        <TextBlock Text="账户状态" 
-                                   Style="{StaticResource SubtitleTextBlockStyle}"
-                                   FontWeight="SemiBold"/>
-                        
-                        <Grid ColumnSpacing="12">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="2" Spacing="4">
+                                    <TextBlock Text="剩余流量" Style="{StaticResource CaptionTextBlockStyle}" 
+                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                               FontSize="14"/>
+                                    <TextBlock Text="{x:Bind ViewModel.TrafficRemainingFormatted, Mode=OneWay}" 
+                                               Style="{StaticResource BodyStrongTextBlockStyle}"
+                                               FontSize="16"/>
+                                </StackPanel>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
 
-                            <StackPanel Grid.Column="0" Spacing="4">
-                                <TextBlock Text="KYC 状态" Style="{StaticResource CaptionTextBlockStyle}" 
-                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-                                <TextBlock Text="{x:Bind ViewModel.KycStatus, Mode=OneWay}" 
-                                           Style="{StaticResource BodyStrongTextBlockStyle}"/>
-                            </StackPanel>
+                    <!-- 账户状态卡片 -->
+                    <Border Grid.Column="1" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                            CornerRadius="8"
+                            Padding="20"
+                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                            BorderThickness="1">
+                        <StackPanel Spacing="12">
+                            <TextBlock Text="账户状态" 
+                                       Style="{StaticResource SubtitleTextBlockStyle}"
+                                       FontWeight="SemiBold"
+                                       FontSize="18"/>
+                            
+                            <Grid ColumnSpacing="12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
 
-                            <StackPanel Grid.Column="1" Spacing="4">
-                                <TextBlock Text="账户状态" Style="{StaticResource CaptionTextBlockStyle}" 
-                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-                                <TextBlock Text="{x:Bind IsBanedText, Mode=OneWay}" 
-                                           Style="{StaticResource BodyStrongTextBlockStyle}"
-                                           Foreground="{x:Bind BanedColor, Mode=OneWay}"/>
-                            </StackPanel>
-                        </Grid>
-                    </StackPanel>
-                </Border>
+                                <StackPanel Grid.Column="0" Spacing="4">
+                                    <TextBlock Text="KYC 状态" Style="{StaticResource CaptionTextBlockStyle}" 
+                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                               FontSize="14"/>
+                                    <TextBlock Text="{x:Bind ViewModel.KycStatusFormatted, Mode=OneWay}" 
+                                               Style="{StaticResource BodyStrongTextBlockStyle}"
+                                               FontSize="16"
+                                               Foreground="{x:Bind KycStatusColor, Mode=OneWay}"/>
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="1" Spacing="4">
+                                    <TextBlock Text="账户状态" Style="{StaticResource CaptionTextBlockStyle}" 
+                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                               FontSize="14"/>
+                                    <TextBlock Text="{x:Bind IsBanedText, Mode=OneWay}" 
+                                               Style="{StaticResource BodyStrongTextBlockStyle}"
+                                               Foreground="{x:Bind BanedColor, Mode=OneWay}"
+                                               FontSize="16"/>
+                                </StackPanel>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+                </Grid>
 
                 <!-- 刷新按钮 -->
                 <Button Content="刷新数据" 
