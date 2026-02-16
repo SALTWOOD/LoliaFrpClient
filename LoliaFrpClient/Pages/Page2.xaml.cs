@@ -91,9 +91,10 @@ namespace LoliaFrpClient.Pages
                     Tunnels.Clear();
                     foreach (var tunnel in tunnelList)
                     {
-                        Tunnels.Add(new TunnelViewModel
+                        var tunnelId = tunnel.Id ?? 0;
+                        var viewModel = new TunnelViewModel
                         {
-                            Id = tunnel.Id ?? 0,
+                            Id = tunnelId,
                             Name = tunnel.Name ?? string.Empty,
                             Type = tunnel.Type ?? string.Empty,
                             Status = tunnel.Status ?? string.Empty,
@@ -104,7 +105,10 @@ namespace LoliaFrpClient.Pages
                             RemotePort = tunnel.RemotePort ?? 0,
                             NodeId = tunnel.NodeId ?? 0,
                             BandwidthLimit = tunnel.BandwidthLimit ?? 0
-                        });
+                        };
+                        // 根据 FrpcManager 中的实际进程状态设置 IsEnabled，避免刷新页面时错误触发 Toggled 事件
+                        viewModel.IsEnabled = _frpcManager.IsTunnelProcessRunning(tunnelId);
+                        Tunnels.Add(viewModel);
                     }
                     UpdateFilteredTunnels();
                     UpdateStatistics();
@@ -324,15 +328,39 @@ namespace LoliaFrpClient.Pages
         {
             if (sender is ToggleSwitch toggleSwitch && toggleSwitch.Tag is TunnelViewModel tunnel)
             {
-                if (toggleSwitch.IsOn)
+                // 保存原始状态，以便在操作失败时恢复
+                bool originalState = tunnel.IsEnabled;
+                bool newState = toggleSwitch.IsOn;
+                
+                if (newState)
                 {
                     // 启用隧道
-                    await EnableTunnelAsync(tunnel);
+                    bool success = await EnableTunnelAsync(tunnel);
+                    if (!success)
+                    {
+                        // 操作失败，恢复原始状态
+                        tunnel.IsEnabled = originalState;
+                    }
+                    else
+                    {
+                        // 操作成功，刷新数据以更新统计信息
+                        await LoadTunnelsAsync();
+                    }
                 }
                 else
                 {
                     // 禁用隧道
-                    await DisableTunnelAsync(tunnel);
+                    bool success = await DisableTunnelAsync(tunnel);
+                    if (!success)
+                    {
+                        // 操作失败，恢复原始状态
+                        tunnel.IsEnabled = originalState;
+                    }
+                    else
+                    {
+                        // 操作成功，刷新数据以更新统计信息
+                        await LoadTunnelsAsync();
+                    }
                 }
             }
         }
@@ -340,7 +368,7 @@ namespace LoliaFrpClient.Pages
         /// <summary>
         /// 启用隧道
         /// </summary>
-        private async System.Threading.Tasks.Task EnableTunnelAsync(TunnelViewModel tunnel)
+        private async System.Threading.Tasks.Task<bool> EnableTunnelAsync(TunnelViewModel tunnel)
         {
             try
             {
@@ -348,7 +376,7 @@ namespace LoliaFrpClient.Pages
                 if (!_frpcManager.IsFrpcReady())
                 {
                     await ShowErrorDialogAsync("frpc 未安装", "请在设置页面先安装 frpc");
-                    return;
+                    return false;
                 }
 
                 // 获取 frpc 配置 token
@@ -358,7 +386,7 @@ namespace LoliaFrpClient.Pages
                 if (string.IsNullOrEmpty(token))
                 {
                     await ShowErrorDialogAsync("获取配置失败", "无法获取 frpc token");
-                    return;
+                    return false;
                 }
 
                 // 使用 frpc 启动隧道
@@ -369,22 +397,25 @@ namespace LoliaFrpClient.Pages
                 {
                     tunnel.IsEnabled = true;
                     await ShowErrorDialogAsync("启用成功", $"隧道 {tunnel.Name} 已启用");
+                    return true;
                 }
                 else
                 {
                     await ShowErrorDialogAsync("启用失败", "无法启动 frpc 进程");
+                    return false;
                 }
             }
             catch (Exception ex)
             {
                 await ShowErrorDialogAsync("启用失败", ex.Message);
+                return false;
             }
         }
 
         /// <summary>
         /// 禁用隧道
         /// </summary>
-        private async System.Threading.Tasks.Task DisableTunnelAsync(TunnelViewModel tunnel)
+        private async System.Threading.Tasks.Task<bool> DisableTunnelAsync(TunnelViewModel tunnel)
         {
             try
             {
@@ -395,15 +426,18 @@ namespace LoliaFrpClient.Pages
                 {
                     tunnel.IsEnabled = false;
                     await ShowErrorDialogAsync("禁用成功", $"隧道 {tunnel.Name} 已禁用");
+                    return true;
                 }
                 else
                 {
                     await ShowErrorDialogAsync("禁用失败", "无法停止 frpc 进程");
+                    return false;
                 }
             }
             catch (Exception ex)
             {
                 await ShowErrorDialogAsync("禁用失败", ex.Message);
+                return false;
             }
         }
     }
