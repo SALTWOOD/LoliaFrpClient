@@ -15,36 +15,173 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- Login Section -->
-        <StackPanel Grid.Row="0" Margin="0,0,0,20">
-            <TextBlock Text="账户设置" 
-                       FontSize="20" 
-                       FontWeight="SemiBold"
-                       Margin="0,0,0,10"/>
-            <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,10,0,0">
-                <Button x:Name="LoginButton" 
-                        Content="登录" 
-                        Click="LoginButton_Click"
-                        HorizontalAlignment="Stretch"
-                        MinWidth="100"/>
-                <Button x:Name="LogoutButton" 
-                        Content="退出登录" 
-                        Click="LogoutButton_Click"
-                        HorizontalAlignment="Stretch"
-                        MinWidth="100"/>
+        <!-- Account Settings Card -->
+        <Border Grid.Row="0" 
+                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                CornerRadius="8"
+                Padding="20"
+                Margin="0,0,0,20"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                BorderThickness="1">
+            <StackPanel Spacing="12">
+                <TextBlock Text="账户设置" 
+                           FontSize="20" 
+                           FontWeight="SemiBold"/>
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                    <Button x:Name="LoginButton" 
+                            Content="登录" 
+                            Click="LoginButton_Click"
+                            HorizontalAlignment="Stretch"
+                            MinWidth="100"/>
+                    <Button x:Name="LogoutButton" 
+                            Content="退出登录" 
+                            Click="LogoutButton_Click"
+                            HorizontalAlignment="Stretch"
+                            MinWidth="100"/>
+                </StackPanel>
             </StackPanel>
-        </StackPanel>
+        </Border>
 
-        <!-- Login Status -->
-        <StackPanel Grid.Row="1" Margin="0,0,0,20" Visibility="Collapsed">
-            <TextBlock Text="登录状态" 
-                       FontSize="20" 
-                       FontWeight="SemiBold"
-                       Margin="0,0,0,10"/>
-            <TextBlock x:Name="LoginStatusText" 
-                       Text="未登录"
-                       FontSize="14"
-                       Margin="0,10,0,0"/>
-        </StackPanel>
+        <!-- Login Status Card -->
+        <Border Grid.Row="1" 
+                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                CornerRadius="8"
+                Padding="20"
+                Margin="0,0,0,20"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                Visibility="Collapsed">
+            <StackPanel Spacing="12">
+                <TextBlock Text="登录状态" 
+                           FontSize="20" 
+                           FontWeight="SemiBold"/>
+                <TextBlock x:Name="LoginStatusText" 
+                           Text="未登录"
+                           FontSize="14"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Core Version Management Card -->
+        <Border Grid.Row="2" 
+                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                CornerRadius="8"
+                Padding="20"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                BorderThickness="1">
+            <StackPanel Spacing="16">
+                <TextBlock Text="核心版本管理" 
+                           FontSize="20" 
+                           FontWeight="SemiBold"/>
+                
+                <!-- Version Info -->
+                <StackPanel Spacing="12">
+                    <Grid ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        
+                        <TextBlock Grid.Column="0" 
+                                   Text="当前版本:" 
+                                   VerticalAlignment="Center"
+                                   FontSize="14"/>
+                        <TextBlock Grid.Column="1" 
+                                   x:Name="CurrentVersionText" 
+                                   Text="未安装"
+                                   VerticalAlignment="Center"
+                                   FontSize="14"
+                                   FontWeight="SemiBold"/>
+                    </Grid>
+
+                    <Grid ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        
+                        <TextBlock Grid.Column="0" 
+                                   Text="最新版本:" 
+                                   VerticalAlignment="Center"
+                                   FontSize="14"/>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                            <TextBlock x:Name="LatestVersionText" 
+                                       Text="检查中..."
+                                       VerticalAlignment="Center"
+                                       FontSize="14"
+                                       FontWeight="SemiBold"/>
+                            <Button x:Name="RefreshVersionButton" 
+                                    Content="刷新"
+                                    Click="RefreshVersionButton_Click"
+                                    FontSize="12"
+                                    Padding="8,4"/>
+                        </StackPanel>
+                    </Grid>
+
+                    <Grid ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        
+                        <TextBlock Grid.Column="0" 
+                                   Text="安装状态:" 
+                                   VerticalAlignment="Center"
+                                   FontSize="14"/>
+                        <TextBlock Grid.Column="1" 
+                                   x:Name="InstallStatusText" 
+                                   Text="未安装"
+                                   VerticalAlignment="Center"
+                                   FontSize="14"/>
+                    </Grid>
+
+                    <Grid ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        
+                        <TextBlock Grid.Column="0" 
+                                   Text="进程状态:" 
+                                   VerticalAlignment="Center"
+                                   FontSize="14"/>
+                        <TextBlock Grid.Column="1" 
+                                   x:Name="ProcessStatusText" 
+                                   Text="未运行"
+                                   VerticalAlignment="Center"
+                                   FontSize="14"/>
+                    </Grid>
+                </StackPanel>
+
+                <!-- Action Buttons -->
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                    <Button x:Name="InstallButton" 
+                            Content="安装"
+                            Click="InstallButton_Click"
+                            MinWidth="100"/>
+                    <Button x:Name="UpdateButton" 
+                            Content="更新"
+                            Click="UpdateButton_Click"
+                            MinWidth="100"
+                            IsEnabled="False"/>
+                    <Button x:Name="UninstallButton" 
+                            Content="卸载"
+                            Click="UninstallButton_Click"
+                            MinWidth="100"
+                            IsEnabled="False"/>
+                </StackPanel>
+
+                <!-- Progress Bar -->
+                <ProgressBar x:Name="DownloadProgressBar"
+                            Visibility="Collapsed"
+                            Height="8"/>
+                
+                <!-- Progress Text -->
+                <TextBlock x:Name="ProgressText"
+                           Text=""
+                           Visibility="Collapsed"
+                           FontSize="12"
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+            </StackPanel>
+        </Border>
     </Grid>
 </Page>

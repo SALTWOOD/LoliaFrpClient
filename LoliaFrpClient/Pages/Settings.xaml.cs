@@ -15,12 +15,15 @@ namespace LoliaFrpClient.Pages
     {
         private readonly SettingsStorage _settings = SettingsStorage.Instance;
         private readonly ApiClientProvider _apiClientProvider = ApiClientProvider.Instance;
+        private readonly FrpcManager _frpcManager = new FrpcManager();
+        private GitHubRelease? _latestRelease;
 
         public Settings()
         {
             this.InitializeComponent();
             DataContext = this;
             UpdateLoginStatus();
+            InitializeFrpcManagement();
         }
 
         private async void LoginButton_Click(object sender, RoutedEventArgs e)
@@ -96,7 +99,7 @@ namespace LoliaFrpClient.Pages
             LogoutButton.Visibility = isLoggedIn ? Visibility.Visible : Visibility.Collapsed;
 
             // 更新登录状态显示
-            var statusPanel = (StackPanel)RootGrid.Children[1];
+            var statusPanel = (Border)RootGrid.Children[1];
             statusPanel.Visibility = isLoggedIn ? Visibility.Visible : Visibility.Collapsed;
             LoginStatusText.Text = isLoggedIn ? "已登录" : "未登录";
         }
@@ -130,5 +133,210 @@ namespace LoliaFrpClient.Pages
             };
             await dialog.ShowAsync();
         }
+
+        #region Frpc Management
+
+        /// <summary>
+        /// 初始化 frpc 管理
+        /// </summary>
+        private async void InitializeFrpcManagement()
+        {
+            UpdateFrpcStatus();
+            await RefreshLatestVersionAsync();
+        }
+
+        /// <summary>
+        /// 更新 frpc 状态显示
+        /// </summary>
+        private void UpdateFrpcStatus()
+        {
+            // 更新当前版本
+            CurrentVersionText.Text = _frpcManager.InstalledVersion ?? "未安装";
+
+            // 更新安装状态
+            var installStatus = _frpcManager.GetInstallStatus(_latestRelease?.TagName);
+            InstallStatusText.Text = installStatus switch
+            {
+                FrpcInstallStatus.NotInstalled => "未安装",
+                FrpcInstallStatus.Installed => "已安装",
+                FrpcInstallStatus.Outdated => "需要更新",
+                _ => "未知"
+            };
+
+            // 更新进程状态
+            ProcessStatusText.Text = _frpcManager.IsProcessRunning ? "运行中" : "未运行";
+
+            // 更新按钮状态
+            UpdateFrpcButtons(installStatus);
+        }
+
+        /// <summary>
+        /// 更新 frpc 按钮状态
+        /// </summary>
+        private void UpdateFrpcButtons(FrpcInstallStatus installStatus)
+        {
+            InstallButton.IsEnabled = installStatus == FrpcInstallStatus.NotInstalled;
+            UpdateButton.IsEnabled = installStatus == FrpcInstallStatus.Outdated;
+            UninstallButton.IsEnabled = installStatus != FrpcInstallStatus.NotInstalled;
+        }
+
+        /// <summary>
+        /// 刷新最新版本
+        /// </summary>
+        private async void RefreshVersionButton_Click(object sender, RoutedEventArgs e)
+        {
+            await RefreshLatestVersionAsync();
+        }
+
+        /// <summary>
+        /// 刷新最新版本
+        /// </summary>
+        private async Task RefreshLatestVersionAsync()
+        {
+            try
+            {
+                LatestVersionText.Text = "检查中...";
+                _latestRelease = await GitHubReleaseService.GetLatestReleaseAsync("Lolia-FRP", "lolia-frp");
+                LatestVersionText.Text = _latestRelease?.TagName ?? "获取失败";
+                UpdateFrpcStatus();
+            }
+            catch (Exception ex)
+            {
+                LatestVersionText.Text = "获取失败";
+                _ = ShowDialogAsync($"获取最新版本失败: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 安装 frpc
+        /// </summary>
+        private async void InstallButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (_latestRelease == null)
+            {
+                _ = ShowDialogAsync("请先刷新版本信息");
+                return;
+            }
+
+            var downloadUrl = GitHubReleaseService.GetDownloadUrlForPlatform(_latestRelease);
+            if (string.IsNullOrEmpty(downloadUrl))
+            {
+                _ = ShowDialogAsync("找不到适用于当前平台的下载链接");
+                return;
+            }
+
+            await DownloadAndInstallFrpcAsync(downloadUrl, _latestRelease.TagName);
+        }
+
+        /// <summary>
+        /// 更新 frpc
+        /// </summary>
+        private async void UpdateButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (_latestRelease == null)
+            {
+                _ = ShowDialogAsync("请先刷新版本信息");
+                return;
+            }
+
+            var downloadUrl = GitHubReleaseService.GetDownloadUrlForPlatform(_latestRelease);
+            if (string.IsNullOrEmpty(downloadUrl))
+            {
+                _ = ShowDialogAsync("找不到适用于当前平台的下载链接");
+                return;
+            }
+
+            await DownloadAndInstallFrpcAsync(downloadUrl, _latestRelease.TagName, isUpdate: true);
+        }
+
+        /// <summary>
+        /// 下载并安装 frpc
+        /// </summary>
+        private async Task DownloadAndInstallFrpcAsync(string downloadUrl, string version, bool isUpdate = false)
+        {
+            try
+            {
+                // 显示进度条
+                DownloadProgressBar.Visibility = Visibility.Visible;
+                ProgressText.Visibility = Visibility.Visible;
+                DownloadProgressBar.Value = 0;
+
+                // 创建进度报告
+                var progress = new Progress<double>(value =>
+                {
+                    DownloadProgressBar.Value = value * 100;
+                    ProgressText.Text = $"下载中... {value * 100:F0}%";
+                });
+
+                // 下载 frpc
+                ProgressText.Text = "下载中...";
+                var downloadPath = await _frpcManager.DownloadFrpcAsync(downloadUrl, progress);
+
+                // 安装 frpc
+                ProgressText.Text = "安装中...";
+                var success = isUpdate
+                    ? await _frpcManager.UpdateFrpcAsync(downloadPath, version, progress)
+                    : await _frpcManager.InstallFrpcAsync(downloadPath, version);
+
+                if (success)
+                {
+                    UpdateFrpcStatus();
+                    _ = ShowDialogAsync(isUpdate ? "更新成功！" : "安装成功！");
+                }
+                else
+                {
+                    _ = ShowDialogAsync(isUpdate ? "更新失败" : "安装失败");
+                }
+            }
+            catch (Exception ex)
+            {
+                _ = ShowDialogAsync($"{(isUpdate ? "更新" : "安装")}失败: {ex.Message}");
+            }
+            finally
+            {
+                // 隐藏进度条
+                DownloadProgressBar.Visibility = Visibility.Collapsed;
+                ProgressText.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        /// <summary>
+        /// 卸载 frpc
+        /// </summary>
+        private async void UninstallButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var result = await ShowConfirmDialogAsync("确定要卸载 frpc 吗？");
+                if (result == ContentDialogResult.Primary)
+                {
+                    _frpcManager.UninstallFrpc();
+                    UpdateFrpcStatus();
+                    _ = ShowDialogAsync("卸载成功！");
+                }
+            }
+            catch (Exception ex)
+            {
+                _ = ShowDialogAsync($"卸载失败: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 显示确认对话框
+        /// </summary>
+        private async Task<ContentDialogResult> ShowConfirmDialogAsync(string message)
+        {
+            var dialog = new ContentDialog
+            {
+                Title = "确认",
+                Content = message,
+                PrimaryButtonText = "确定",
+                CloseButtonText = "取消",
+                XamlRoot = this.XamlRoot
+            };
+            return await dialog.ShowAsync();
+        }
+
+        #endregion
     }
 }
