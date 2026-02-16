@@ -92,6 +92,37 @@ namespace LoliaFrpClient
             if (ContentFrame.CanGoBack)
             {
                 ContentFrame.GoBack();
+                UpdateNavigationViewSelection();
+            }
+        }
+
+        private void UpdateNavigationViewSelection()
+        {
+            if (ContentFrame.Content == null) return;
+
+            Type? currentPageType = ContentFrame.Content.GetType();
+            NavigationViewItem? selectedItem = null;
+
+            if (currentPageType == typeof(Page1))
+            {
+                selectedItem = Page1NavItem;
+            }
+            else if (currentPageType == typeof(Page2))
+            {
+                selectedItem = Page2NavItem;
+            }
+            else if (currentPageType == typeof(Page3))
+            {
+                selectedItem = Page3NavItem;
+            }
+            else if (currentPageType == typeof(Page4))
+            {
+                selectedItem = Page4NavItem;
+            }
+
+            if (selectedItem != null)
+            {
+                MainNavigationView.SelectedItem = selectedItem;
             }
         }
 
