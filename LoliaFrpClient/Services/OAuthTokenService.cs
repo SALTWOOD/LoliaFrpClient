@@ -2,7 +2,6 @@ using LoliaFrpClient.Constants;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
@@ -40,8 +39,6 @@ namespace LoliaFrpClient.Services
         /// <summary>
         /// 使用授权码交换 access token
         /// </summary>
-        /// <param name="code">授权码</param>
-        /// <returns>Token 响应数据</returns>
         public static async Task<OAuthTokenResponse> ExchangeCodeForTokenAsync(string code)
         {
             var tokenRequest = new Dictionary<string, string>
@@ -54,9 +51,8 @@ namespace LoliaFrpClient.Services
             };
 
             var content = new FormUrlEncodedContent(tokenRequest);
-            
             var response = await _httpClient.PostAsync(OAuthConstants.TokenEndpoint, content);
-            
+
             if (!response.IsSuccessStatusCode)
             {
                 var errorContent = await response.Content.ReadAsStringAsync();
@@ -64,16 +60,18 @@ namespace LoliaFrpClient.Services
             }
 
             var responseContent = await response.Content.ReadAsStringAsync();
-            var tokenResponse = JsonSerializer.Deserialize<OAuthTokenResponse>(responseContent);
-            
+
+            var tokenResponse = JsonSerializer.Deserialize(
+                responseContent,
+                AppJsonContext.Default.OAuthTokenResponse
+            );
+
             return tokenResponse ?? throw new Exception("解析 token 响应失败");
         }
 
         /// <summary>
         /// 使用 refresh token 刷新 access token
         /// </summary>
-        /// <param name="refreshToken">刷新令牌</param>
-        /// <returns>Token 响应数据</returns>
         public static async Task<OAuthTokenResponse> RefreshTokenAsync(string refreshToken)
         {
             var tokenRequest = new Dictionary<string, string>
@@ -85,9 +83,8 @@ namespace LoliaFrpClient.Services
             };
 
             var content = new FormUrlEncodedContent(tokenRequest);
-            
             var response = await _httpClient.PostAsync(OAuthConstants.TokenEndpoint, content);
-            
+
             if (!response.IsSuccessStatusCode)
             {
                 var errorContent = await response.Content.ReadAsStringAsync();
@@ -95,8 +92,12 @@ namespace LoliaFrpClient.Services
             }
 
             var responseContent = await response.Content.ReadAsStringAsync();
-            var tokenResponse = JsonSerializer.Deserialize<OAuthTokenResponse>(responseContent);
-            
+
+            var tokenResponse = JsonSerializer.Deserialize(
+                responseContent,
+                AppJsonContext.Default.OAuthTokenResponse
+            );
+
             return tokenResponse ?? throw new Exception("解析 token 响应失败");
         }
     }

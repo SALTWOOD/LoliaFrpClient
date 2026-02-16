@@ -80,7 +80,10 @@ namespace LoliaFrpClient.Services
             }
 
             var responseContent = await response.Content.ReadAsStringAsync();
-            var release = JsonSerializer.Deserialize<GitHubRelease>(responseContent);
+            var release = JsonSerializer.Deserialize(
+                responseContent,
+                AppJsonContext.Default.GitHubRelease
+            );
 
             return release ?? throw new Exception("解析 Release 响应失败");
         }
@@ -104,7 +107,10 @@ namespace LoliaFrpClient.Services
             }
 
             var responseContent = await response.Content.ReadAsStringAsync();
-            var releases = JsonSerializer.Deserialize<List<GitHubRelease>>(responseContent);
+            var releases = JsonSerializer.Deserialize(
+                responseContent,
+                AppJsonContext.Default.ListGitHubRelease
+            );
 
             return releases ?? new List<GitHubRelease>();
         }
