@@ -49,7 +49,7 @@
                                        VerticalAlignment="Center"/>
 
                             <TextBlock Grid.Row="3" Grid.Column="0" Text="创建时间:" VerticalAlignment="Center"/>
-                            <TextBlock Grid.Row="3" Grid.Column="1" Text="{x:Bind ViewModel.CreatedAt, Mode=OneWay}" 
+                            <TextBlock Grid.Row="3" Grid.Column="1" Text="{x:Bind ViewModel.CreatedAtFormatted, Mode=OneWay}" 
                                        VerticalAlignment="Center"/>
 
                             <TextBlock Grid.Row="4" Grid.Column="0" Text="最大隧道数:" VerticalAlignment="Center"/>
@@ -57,7 +57,7 @@
                                        VerticalAlignment="Center"/>
 
                             <TextBlock Grid.Row="5" Grid.Column="0" Text="带宽限制:" VerticalAlignment="Center"/>
-                            <TextBlock Grid.Row="5" Grid.Column="1" Text="{x:Bind ViewModel.BandwidthLimit, Mode=OneWay}" 
+                            <TextBlock Grid.Row="5" Grid.Column="1" Text="{x:Bind ViewModel.BandwidthLimitFormatted, Mode=OneWay}" 
                                        VerticalAlignment="Center"/>
                         </Grid>
                     </StackPanel>
@@ -87,21 +87,21 @@
                             <StackPanel Grid.Column="0" Spacing="4">
                                 <TextBlock Text="流量限制" Style="{StaticResource CaptionTextBlockStyle}" 
                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-                                <TextBlock Text="{x:Bind ViewModel.TrafficLimit, Mode=OneWay}" 
+                                <TextBlock Text="{x:Bind ViewModel.TrafficLimitFormatted, Mode=OneWay}" 
                                            Style="{StaticResource BodyStrongTextBlockStyle}"/>
                             </StackPanel>
 
                             <StackPanel Grid.Column="1" Spacing="4">
                                 <TextBlock Text="已用流量" Style="{StaticResource CaptionTextBlockStyle}" 
                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-                                <TextBlock Text="{x:Bind ViewModel.TrafficUsed, Mode=OneWay}" 
+                                <TextBlock Text="{x:Bind ViewModel.TrafficUsedFormatted, Mode=OneWay}" 
                                            Style="{StaticResource BodyStrongTextBlockStyle}"/>
                             </StackPanel>
 
                             <StackPanel Grid.Column="2" Spacing="4">
                                 <TextBlock Text="剩余流量" Style="{StaticResource CaptionTextBlockStyle}" 
                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-                                <TextBlock Text="{x:Bind ViewModel.TrafficRemaining, Mode=OneWay}" 
+                                <TextBlock Text="{x:Bind ViewModel.TrafficRemainingFormatted, Mode=OneWay}" 
                                            Style="{StaticResource BodyStrongTextBlockStyle}"/>
                             </StackPanel>
                         </Grid>

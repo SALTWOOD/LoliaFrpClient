@@ -1,5 +1,7 @@
+using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Globalization;
 
 namespace LoliaFrpClient.Models
 {
@@ -69,7 +71,7 @@ namespace LoliaFrpClient.Models
         public string CreatedAt
         {
             get => _createdAt;
-            set { _createdAt = value; OnPropertyChanged(); }
+            set { _createdAt = value; OnPropertyChanged(); OnPropertyChanged(nameof(CreatedAtFormatted)); }
         }
 
         public int MaxTunnelCount
@@ -81,19 +83,19 @@ namespace LoliaFrpClient.Models
         public long TrafficLimit
         {
             get => _trafficLimit;
-            set { _trafficLimit = value; OnPropertyChanged(); }
+            set { _trafficLimit = value; OnPropertyChanged(); OnPropertyChanged(nameof(TrafficLimitFormatted)); OnPropertyChanged(nameof(TrafficRemainingFormatted)); OnPropertyChanged(nameof(TrafficUsagePercentage)); }
         }
 
         public long TrafficUsed
         {
             get => _trafficUsed;
-            set { _trafficUsed = value; OnPropertyChanged(); }
+            set { _trafficUsed = value; OnPropertyChanged(); OnPropertyChanged(nameof(TrafficUsedFormatted)); OnPropertyChanged(nameof(TrafficRemainingFormatted)); OnPropertyChanged(nameof(TrafficUsagePercentage)); }
         }
 
         public int BandwidthLimit
         {
             get => _bandwidthLimit;
-            set { _bandwidthLimit = value; OnPropertyChanged(); }
+            set { _bandwidthLimit = value; OnPropertyChanged(); OnPropertyChanged(nameof(BandwidthLimitFormatted)); }
         }
 
         public bool HasKyc
@@ -123,5 +125,73 @@ namespace LoliaFrpClient.Models
         /// 剩余流量
         /// </summary>
         public long TrafficRemaining => TrafficLimit - TrafficUsed;
+
+        /// <summary>
+        /// 格式化流量限制显示（人类可读格式）
+        /// </summary>
+        public string TrafficLimitFormatted => FormatBytes(TrafficLimit);
+
+        /// <summary>
+        /// 格式化已用流量显示（人类可读格式）
+        /// </summary>
+        public string TrafficUsedFormatted => FormatBytes(TrafficUsed);
+
+        /// <summary>
+        /// 格式化剩余流量显示（人类可读格式）
+        /// </summary>
+        public string TrafficRemainingFormatted => FormatBytes(TrafficRemaining);
+
+        /// <summary>
+        /// 格式化创建时间显示（人类可读格式）
+        /// </summary>
+        public string CreatedAtFormatted => FormatDateTime(CreatedAt);
+
+        /// <summary>
+        /// 格式化带宽限制显示（人类可读格式）
+        /// </summary>
+        public string BandwidthLimitFormatted => FormatBandwidth(BandwidthLimit);
+
+        /// <summary>
+        /// 将字节数转换为人类可读的格式
+        /// </summary>
+        private static string FormatBytes(long bytes)
+        {
+            if (bytes <= 0) return "0 B";
+
+            string[] units = { "B", "KB", "MB", "GB", "TB", "PB", "EB" }; // 没必要往后支持了，long 最大就 8EB
+            int order = 0;
+
+            while (bytes >= 1024 && order < units.Length - 1)
+            {
+                order++;
+                bytes /= 1024;
+            }
+            return $"{bytes:0.00} {units[order]}";
+        }
+
+        /// <summary>
+        /// 将 ISO8601 时间字符串格式化为本地化的日期时间
+        /// </summary>
+        private static string FormatDateTime(string isoDateTime)
+        {
+            if (string.IsNullOrEmpty(isoDateTime))
+                return "未知";
+            
+            if (DateTime.TryParse(isoDateTime, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime dateTime))
+            {
+                return dateTime.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.CurrentCulture);
+            }
+            
+            return isoDateTime;
+        }
+
+        /// <summary>
+        /// 格式化带宽限制显示
+        /// </summary>
+        private static string FormatBandwidth(int bandwidthLimit)
+        {
+            if (bandwidthLimit <= 0) return "无限制";
+            return $"{bandwidthLimit} Mbps";
+        }
     }
 }
