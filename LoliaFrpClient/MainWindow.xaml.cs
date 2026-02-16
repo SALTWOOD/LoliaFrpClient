@@ -53,14 +53,16 @@ namespace LoliaFrpClient
                 appWindow.TitleBar.ButtonPressedBackgroundColor = Colors.Transparent;
                 appWindow.TitleBar.ButtonPressedForegroundColor = Colors.White;
 
-                // Set drag region for title bar
+                // Set drag region for title bar (exclude button area)
                 if (TitleBarGrid != null)
                 {
                     TitleBarGrid.SizeChanged += (s, e) =>
                     {
-                        if (TitleBarGrid != null)
+                        if (TitleBarGrid != null && BackButton != null)
                         {
-                            RectInt32 dragRect = new RectInt32(0, 0, (int)TitleBarGrid.ActualWidth, (int)TitleBarGrid.ActualHeight);
+                            // Exclude the button area from drag region
+                            int buttonWidth = (int)BackButton.ActualWidth + 8; // Button width + margin
+                            RectInt32 dragRect = new RectInt32(buttonWidth, 0, (int)TitleBarGrid.ActualWidth - buttonWidth, (int)TitleBarGrid.ActualHeight);
                             appWindow.TitleBar.SetDragRectangles(new[] { dragRect });
                         }
                     };
