@@ -164,7 +164,7 @@ namespace LoliaFrpClient.Pages
             };
 
             // 更新进程状态
-            ProcessStatusText.Text = _frpcManager.IsProcessRunning ? "运行中" : "未运行";
+            ProcessStatusText.Text = _frpcManager.IsAnyProcessRunning ? "运行中" : "未运行";
 
             // 更新按钮状态
             UpdateFrpcButtons(installStatus);

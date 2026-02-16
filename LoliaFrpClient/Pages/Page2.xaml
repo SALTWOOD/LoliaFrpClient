@@ -136,18 +136,18 @@
                                 </Grid.RowDefinitions>
 
                                 <TextBlock Grid.Row="0" Grid.Column="0"
-                                           Text="{Binding Name}"
-                                           Style="{StaticResource SubtitleTextBlockStyle}"
-                                           FontWeight="SemiBold"/>
+                                            Text="{Binding Name}"
+                                            Style="{StaticResource SubtitleTextBlockStyle}"
+                                            FontWeight="SemiBold"/>
 
-                                <Border Grid.Row="0" Grid.Column="1"
-                                        Background="{Binding StatusBrush}"
-                                        Padding="8,4"
-                                        CornerRadius="4">
-                                    <TextBlock Text="{Binding StatusDisplayText}"
-                                               Foreground="White"
-                                               FontSize="12"/>
-                                </Border>
+                                <ToggleSwitch Grid.Row="0" Grid.Column="1"
+                                           IsOn="{Binding IsEnabled, Mode=TwoWay}"
+                                           OnContent="已启用"
+                                           OffContent="未启用"
+                                           Toggled="OnTunnelSwitchToggled"
+                                           Tag="{Binding}"
+                                           Margin="8,0,0,0"
+                                           HorizontalAlignment="Right"/>
 
                                 <TextBlock Grid.Row="1" Grid.Column="0"
                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}">

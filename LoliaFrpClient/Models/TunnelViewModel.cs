@@ -20,6 +20,8 @@ namespace LoliaFrpClient.Models
         private int _remotePort;
         private int _nodeId;
         private int _bandwidthLimit;
+        private bool _isEnabled;
+        private string _tunnel_token;
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -93,6 +95,26 @@ namespace LoliaFrpClient.Models
             get => _bandwidthLimit;
             set { _bandwidthLimit = value; OnPropertyChanged(); }
         }
+
+        public string TunnelToken
+        {
+            get => _tunnel_token;
+            set { _tunnel_token = value; OnPropertyChanged(); }
+        }
+
+        /// <summary>
+        /// 是否已启用（通过 frpc 启动）
+        /// </summary>
+        public bool IsEnabled
+        {
+            get => _isEnabled;
+            set { _isEnabled = value; OnPropertyChanged(); OnPropertyChanged(nameof(IsEnabledText)); }
+        }
+
+        /// <summary>
+        /// 启用状态显示文本
+        /// </summary>
+        public string IsEnabledText => IsEnabled ? "已启用" : "未启用";
 
         /// <summary>
         /// 状态显示文本

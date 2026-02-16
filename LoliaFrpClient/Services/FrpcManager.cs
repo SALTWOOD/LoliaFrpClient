@@ -1,9 +1,13 @@
 using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
+using System.Formats.Tar;
 using System.Linq;
 using System.Net.Http;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -15,7 +19,7 @@ namespace LoliaFrpClient.Services
     public class FrpcProcessInfo
     {
         public Process Process { get; set; } = null!;
-        public string ConfigPath { get; set; } = string.Empty;
+        public int TunnelId { get; set; }
         public DateTime StartTime { get; set; }
         public bool IsRunning => !Process.HasExited;
     }
@@ -31,60 +35,75 @@ namespace LoliaFrpClient.Services
     }
 
     /// <summary>
-    /// Frpc 管理器，用于管理 frpc 的下载、安装、卸载、更新、检查就绪、启动进程和监测生命周期
+    /// Frpc 管理器
     /// </summary>
     public class FrpcManager
     {
         private static readonly HttpClient _httpClient = new HttpClient();
         private readonly string _frpcDirectory;
         private readonly string _frpcExecutablePath;
-        private FrpcProcessInfo? _currentProcess;
-        private readonly object _processLock = new object();
 
-        /// <summary>
-        /// 当前安装的版本
-        /// </summary>
+        private readonly ConcurrentDictionary<int, FrpcProcessInfo> _tunnelProcesses = new();
+
+        private readonly SemaphoreSlim _installSemaphore = new SemaphoreSlim(1, 1);
+
         public string? InstalledVersion { get; private set; }
 
-        /// <summary>
-        /// 当前进程是否正在运行
-        /// </summary>
-        public bool IsProcessRunning
-        {
-            get
-            {
-                lock (_processLock)
-                {
-                    return _currentProcess?.IsRunning ?? false;
-                }
-            }
-        }
+        public bool IsAnyProcessRunning => _tunnelProcesses.Values.Any(p => p.IsRunning);
 
-        /// <summary>
-        /// 构造函数
-        /// </summary>
-        /// <param name="frpcDirectory">frpc 安装目录，如果为 null 则使用默认目录</param>
         public FrpcManager(string? frpcDirectory = null)
         {
-            // 默认使用 ApplicationData 下的 LoliaFrpClient 目录
-            var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            _frpcDirectory = frpcDirectory ?? Path.Combine(appDataPath, "LoliaFrpClient", "frpc");
-            
-            // 确保目录存在
-            Directory.CreateDirectory(_frpcDirectory);
-            
-            // 设置可执行文件路径
-            var isWindows = System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows);
-            var executableName = isWindows ? "frpc.exe" : "frpc";
-            _frpcExecutablePath = Path.Combine(_frpcDirectory, executableName);
-            
-            // 加载已安装的版本信息
+            if (!string.IsNullOrEmpty(frpcDirectory))
+            {
+                _frpcDirectory = frpcDirectory;
+            }
+            else
+            {
+                string baseDataPath = GetAppDataRoot();
+                _frpcDirectory = Path.Combine(baseDataPath, "LoliaFrpClient", "frpc");
+            }
+
+            // 沟槽的路径映射
+            Log($"[INIT] Frpc Directory: {_frpcDirectory}");
+
+            if (!Directory.Exists(_frpcDirectory))
+            {
+                Directory.CreateDirectory(_frpcDirectory);
+            }
+
+            var isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+            _frpcExecutablePath = Path.Combine(_frpcDirectory, isWindows ? "frpc.exe" : "frpc");
+
             LoadInstalledVersion();
         }
 
-        /// <summary>
-        /// 加载已安装的版本信息
-        /// </summary>
+        #region Path Adapter (Handle MSIX Virtualization)
+
+        private string GetAppDataRoot()
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                try
+                {
+                    return Windows.Storage.ApplicationData.Current.LocalFolder.Path;
+                }
+                catch (InvalidOperationException)
+                {
+                    // 说明是普通 Win32 运行，没有程序包标识符
+                    Log("[PATH] Running as unpackaged Win32 app.");
+                }
+                catch (Exception ex)
+                {
+                    Log($"[PATH] Error detecting package path: {ex.Message}");
+                }
+            }
+            return Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        }
+
+        #endregion
+
+        #region Version Management
+
         private void LoadInstalledVersion()
         {
             var versionFile = Path.Combine(_frpcDirectory, "version.txt");
@@ -94,9 +113,6 @@ namespace LoliaFrpClient.Services
             }
         }
 
-        /// <summary>
-        /// 保存已安装的版本信息
-        /// </summary>
         private void SaveInstalledVersion(string version)
         {
             var versionFile = Path.Combine(_frpcDirectory, "version.txt");
@@ -104,45 +120,20 @@ namespace LoliaFrpClient.Services
             InstalledVersion = version;
         }
 
-        /// <summary>
-        /// 检查 frpc 是否已就绪
-        /// </summary>
-        /// <returns>是否就绪</returns>
-        public bool IsFrpcReady()
-        {
-            return File.Exists(_frpcExecutablePath);
-        }
+        public bool IsFrpcReady() => File.Exists(_frpcExecutablePath);
 
-        /// <summary>
-        /// 获取安装状态
-        /// </summary>
-        /// <param name="latestVersion">最新版本号</param>
-        /// <returns>安装状态</returns>
         public FrpcInstallStatus GetInstallStatus(string? latestVersion = null)
         {
-            if (!IsFrpcReady())
-            {
-                return FrpcInstallStatus.NotInstalled;
-            }
-
-            if (!string.IsNullOrEmpty(latestVersion) && !string.IsNullOrEmpty(InstalledVersion))
-            {
-                if (latestVersion != InstalledVersion)
-                {
-                    return FrpcInstallStatus.Outdated;
-                }
-            }
-
+            if (!IsFrpcReady()) return FrpcInstallStatus.NotInstalled;
+            if (!string.IsNullOrEmpty(latestVersion) && latestVersion != InstalledVersion)
+                return FrpcInstallStatus.Outdated;
             return FrpcInstallStatus.Installed;
         }
 
-        /// <summary>
-        /// 下载 frpc
-        /// </summary>
-        /// <param name="downloadUrl">下载 URL</param>
-        /// <param name="progress">进度回调</param>
-        /// <param name="cancellationToken">取消令牌</param>
-        /// <returns>下载的文件路径</returns>
+        #endregion
+
+        #region Download and Install
+
         public async Task<string> DownloadFrpcAsync(string downloadUrl, IProgress<double>? progress = null, CancellationToken cancellationToken = default)
         {
             var tempDirectory = Path.Combine(_frpcDirectory, "temp");
@@ -151,46 +142,41 @@ namespace LoliaFrpClient.Services
             var fileName = Path.GetFileName(new Uri(downloadUrl).LocalPath);
             var downloadPath = Path.Combine(tempDirectory, fileName);
 
-            var response = await _httpClient.GetAsync(downloadUrl, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+            using var response = await _httpClient.GetAsync(downloadUrl, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
             response.EnsureSuccessStatusCode();
 
             var totalBytes = response.Content.Headers.ContentLength ?? 0;
             var totalBytesRead = 0L;
 
-            using (var contentStream = await response.Content.ReadAsStreamAsync(cancellationToken))
-            using (var fileStream = new FileStream(downloadPath, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true))
+            await using var contentStream = await response.Content.ReadAsStreamAsync(cancellationToken);
+            await using var fileStream = new FileStream(downloadPath, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true);
+
+            var buffer = new byte[8192];
+            int bytesRead;
+
+            while ((bytesRead = await contentStream.ReadAsync(buffer, cancellationToken)) > 0)
             {
-                var buffer = new byte[8192];
-                var bytesRead = 0;
+                await fileStream.WriteAsync(buffer.AsMemory(0, bytesRead), cancellationToken);
+                totalBytesRead += bytesRead;
 
-                while ((bytesRead = await contentStream.ReadAsync(buffer, 0, buffer.Length, cancellationToken)) > 0)
-                {
-                    await fileStream.WriteAsync(buffer, 0, bytesRead, cancellationToken);
-                    totalBytesRead += bytesRead;
-
-                    if (totalBytes > 0 && progress != null)
-                    {
-                        progress.Report((double)totalBytesRead / totalBytes);
-                    }
-                }
+                if (totalBytes > 0)
+                    progress?.Report((double)totalBytesRead / totalBytes);
             }
 
             return downloadPath;
         }
 
-        /// <summary>
-        /// 安装 frpc
-        /// </summary>
-        /// <param name="downloadPath">下载的文件路径</param>
-        /// <param name="version">版本号</param>
-        /// <returns>是否成功</returns>
         public async Task<bool> InstallFrpcAsync(string downloadPath, string version)
         {
+            // 使用信号量加锁，防止多线程同时安装导致文件占用
+            await _installSemaphore.WaitAsync();
             try
             {
-                // 解压文件
-                var extractPath = Path.Combine(_frpcDirectory, "temp", "extract");
+                var tempDir = Path.Combine(_frpcDirectory, "temp");
+                var extractPath = Path.Combine(tempDir, $"extract_{Guid.NewGuid():N}");
                 Directory.CreateDirectory(extractPath);
+
+                Log($"[INSTALL] Extracting to: {extractPath}");
 
                 if (downloadPath.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
                 {
@@ -198,275 +184,165 @@ namespace LoliaFrpClient.Services
                 }
                 else if (downloadPath.EndsWith(".tar.gz", StringComparison.OrdinalIgnoreCase))
                 {
-                    // 处理 tar.gz 文件
-                    using (var stream = File.OpenRead(downloadPath))
-                    using (var gzip = new GZipStream(stream, CompressionMode.Decompress))
-                    using (var tar = new TarInputStream(gzip))
-                    {
-                        tar.ExtractContents(extractPath);
-                    }
+                    await using var fs = File.OpenRead(downloadPath);
+                    await using var gzip = new GZipStream(fs, CompressionMode.Decompress);
+                    // .NET 7+ 原生 TarFile 支持，不需要 TarInputStream 类了
+                    await TarFile.ExtractToDirectoryAsync(gzip, extractPath, overwriteFiles: true);
                 }
 
-                // 查找 frpc 可执行文件
                 var executableName = Path.GetFileName(_frpcExecutablePath);
                 var foundFile = Directory.GetFiles(extractPath, executableName, SearchOption.AllDirectories).FirstOrDefault();
 
-                if (foundFile == null)
-                {
-                    throw new Exception("在下载的文件中找不到 frpc 可执行文件");
-                }
+                if (foundFile == null) throw new FileNotFoundException("Could not find frpc binary in the downloaded package.");
 
-                // 复制到目标位置
+                // 替换旧文件
                 if (File.Exists(_frpcExecutablePath))
                 {
                     File.Delete(_frpcExecutablePath);
                 }
-
                 File.Copy(foundFile, _frpcExecutablePath);
 
-                // 保存版本信息
+                // Linux/macOS 权限修复
+                if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    try { Process.Start("chmod", $"+x {_frpcExecutablePath}")?.WaitForExit(); } catch { /* ignore */ }
+                }
+
                 SaveInstalledVersion(version);
 
                 // 清理临时文件
-                try
-                {
-                    Directory.Delete(Path.Combine(_frpcDirectory, "temp"), true);
-                }
-                catch
-                {
-                    // 忽略清理错误
-                }
+                try { Directory.Delete(tempDir, true); } catch { /* ignore */ }
 
+                Log("[INSTALL] Frpc installed successfully.");
                 return true;
             }
-            catch (Exception ex)
+            finally
             {
-                throw new Exception($"安装 frpc 失败: {ex.Message}", ex);
+                _installSemaphore.Release();
             }
         }
 
-        /// <summary>
-        /// 卸载 frpc
-        /// </summary>
-        /// <returns>是否成功</returns>
-        public bool UninstallFrpc()
-        {
-            try
-            {
-                // 停止正在运行的进程
-                StopFrpcProcess();
-
-                // 删除可执行文件
-                if (File.Exists(_frpcExecutablePath))
-                {
-                    File.Delete(_frpcExecutablePath);
-                }
-
-                // 删除版本文件
-                var versionFile = Path.Combine(_frpcDirectory, "version.txt");
-                if (File.Exists(versionFile))
-                {
-                    File.Delete(versionFile);
-                }
-
-                InstalledVersion = null;
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"卸载 frpc 失败: {ex.Message}", ex);
-            }
-        }
-
-        /// <summary>
-        /// 更新 frpc
-        /// </summary>
-        /// <param name="downloadUrl">下载 URL</param>
-        /// <param name="version">新版本号</param>
-        /// <param name="progress">进度回调</param>
-        /// <param name="cancellationToken">取消令牌</param>
-        /// <returns>是否成功</returns>
         public async Task<bool> UpdateFrpcAsync(string downloadUrl, string version, IProgress<double>? progress = null, CancellationToken cancellationToken = default)
         {
-            // 先停止正在运行的进程
-            StopFrpcProcess();
-
-            // 下载并安装新版本
-            var downloadPath = await DownloadFrpcAsync(downloadUrl, progress, cancellationToken);
-            return await InstallFrpcAsync(downloadPath, version);
+            StopAllTunnelProcesses();
+            var path = await DownloadFrpcAsync(downloadUrl, progress, cancellationToken);
+            return await InstallFrpcAsync(path, version);
         }
 
-        /// <summary>
-        /// 启动 frpc 进程
-        /// </summary>
-        /// <param name="configPath">配置文件路径</param>
-        /// <param name="arguments">额外的命令行参数</param>
-        /// <returns>是否成功</returns>
-        public bool StartFrpcProcess(string configPath, string? arguments = null)
+        #endregion
+
+        #region Process Control
+
+        public bool StartTunnelProcess(int tunnelId, string? arguments = null)
         {
-            lock (_processLock)
+            if (_tunnelProcesses.TryGetValue(tunnelId, out var existing) && existing.IsRunning)
+                throw new InvalidOperationException($"Tunnel {tunnelId} process is already running.");
+
+            if (!IsFrpcReady()) throw new FileNotFoundException("Frpc binary is missing.");
+
+            try
             {
-                if (_currentProcess?.IsRunning == true)
+                var startInfo = new ProcessStartInfo
                 {
-                    throw new Exception("frpc 进程已在运行中");
-                }
+                    FileName = _frpcExecutablePath,
+                    Arguments = arguments ?? string.Empty,
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    CreateNoWindow = true,
+                    WorkingDirectory = _frpcDirectory // 显式设置工作目录
+                };
 
-                if (!IsFrpcReady())
+                var process = new Process { StartInfo = startInfo, EnableRaisingEvents = true };
+                process.Exited += (s, e) => OnTunnelProcessExited(tunnelId);
+
+                if (process.Start())
                 {
-                    throw new Exception("frpc 未安装");
+                    var info = new FrpcProcessInfo { Process = process, TunnelId = tunnelId, StartTime = DateTime.Now };
+                    _tunnelProcesses[tunnelId] = info;
+                    Log($"[PROCESS] Started tunnel {tunnelId}. PID: {process.Id}");
+                    return true;
                 }
+                return false;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Failed to start frpc process: {ex.Message}", ex);
+            }
+        }
 
-                if (!File.Exists(configPath))
-                {
-                    throw new Exception($"配置文件不存在: {configPath}");
-                }
-
+        public bool StopTunnelProcess(int tunnelId)
+        {
+            if (_tunnelProcesses.TryRemove(tunnelId, out var info))
+            {
                 try
                 {
-                    var startInfo = new ProcessStartInfo
+                    if (!info.Process.HasExited)
                     {
-                        FileName = _frpcExecutablePath,
-                        Arguments = $"-c \"{configPath}\" {arguments ?? string.Empty}",
-                        UseShellExecute = false,
-                        RedirectStandardOutput = true,
-                        RedirectStandardError = true,
-                        CreateNoWindow = true
-                    };
-
-                    var process = new Process { StartInfo = startInfo };
-                    process.Start();
-
-                    _currentProcess = new FrpcProcessInfo
-                    {
-                        Process = process,
-                        ConfigPath = configPath,
-                        StartTime = DateTime.Now
-                    };
-
-                    // 监控进程退出
-                    process.EnableRaisingEvents = true;
-                    process.Exited += OnFrpcProcessExited;
-
-                    return true;
+                        info.Process.Kill(true); // 递归杀死子进程
+                        bool exited = info.Process.WaitForExit(5000);
+                        Log($"[PROCESS] Stopped tunnel {tunnelId}. Success: {exited}");
+                        return exited;
+                    }
                 }
-                catch (Exception ex)
-                {
-                    throw new Exception($"启动 frpc 进程失败: {ex.Message}", ex);
-                }
+                catch (Exception ex) { Log($"[ERROR] Stop process error: {ex.Message}"); }
+                finally { info.Process.Dispose(); }
             }
+            return true;
         }
 
-        /// <summary>
-        /// 停止 frpc 进程
-        /// </summary>
-        /// <returns>是否成功</returns>
-        public bool StopFrpcProcess()
+        public void StopAllTunnelProcesses()
         {
-            lock (_processLock)
+            var ids = _tunnelProcesses.Keys.ToList();
+            foreach (var id in ids)
             {
-                if (_currentProcess == null || _currentProcess.Process.HasExited)
-                {
-                    return true;
-                }
-
-                try
-                {
-                    _currentProcess.Process.Kill();
-                    _currentProcess.Process.WaitForExit(5000);
-                    _currentProcess = null;
-                    return true;
-                }
-                catch (Exception ex)
-                {
-                    throw new Exception($"停止 frpc 进程失败: {ex.Message}", ex);
-                }
+                StopTunnelProcess(id);
             }
         }
 
-        /// <summary>
-        /// 获取当前进程信息
-        /// </summary>
-        /// <returns>进程信息，如果没有运行则返回 null</returns>
-        public FrpcProcessInfo? GetCurrentProcessInfo()
+        #endregion
+
+        #region Events and Helpers
+
+        public event EventHandler<FrpcProcessInfo>? TunnelProcessExited;
+
+        private void OnTunnelProcessExited(int tunnelId)
         {
-            lock (_processLock)
+            if (_tunnelProcesses.TryRemove(tunnelId, out var info))
             {
-                if (_currentProcess?.IsRunning == true)
-                {
-                    return _currentProcess;
-                }
-                return null;
+                Log($"[EVENT] Tunnel {tunnelId} exited.");
+                TunnelProcessExited?.Invoke(this, info);
+                info.Process.Dispose();
             }
         }
 
-        /// <summary>
-        /// frpc 进程退出事件
-        /// </summary>
-        public event EventHandler<FrpcProcessInfo>? FrpcProcessExited;
-
-        /// <summary>
-        /// frpc 进程退出处理
-        /// </summary>
-        private void OnFrpcProcessExited(object? sender, EventArgs e)
+        public bool UninstallFrpc()
         {
-            lock (_processLock)
+            StopAllTunnelProcesses();
+            try
             {
-                if (_currentProcess != null)
-                {
-                    var processInfo = _currentProcess;
-                    _currentProcess = null;
-                    FrpcProcessExited?.Invoke(this, processInfo);
-                }
+                if (File.Exists(_frpcExecutablePath)) File.Delete(_frpcExecutablePath);
+                var versionFile = Path.Combine(_frpcDirectory, "version.txt");
+                if (File.Exists(versionFile)) File.Delete(versionFile);
+                InstalledVersion = null;
+                Log("[UNINSTALL] Frpc uninstalled.");
+                return true;
             }
-        }
-
-        /// <summary>
-        /// 获取 frpc 可执行文件路径
-        /// </summary>
-        /// <returns>可执行文件路径</returns>
-        public string GetFrpcExecutablePath()
-        {
-            return _frpcExecutablePath;
-        }
-
-        /// <summary>
-        /// 获取 frpc 安装目录
-        /// </summary>
-        /// <returns>安装目录</returns>
-        public string GetFrpcDirectory()
-        {
-            return _frpcDirectory;
-        }
-    }
-
-    /// <summary>
-    /// Tar 输入流（用于解压 tar.gz 文件）
-    /// </summary>
-    internal class TarInputStream : IDisposable
-    {
-        private readonly Stream _stream;
-        private bool _disposed;
-
-        public TarInputStream(Stream stream)
-        {
-            _stream = stream;
-        }
-
-        public void ExtractContents(string destinationPath)
-        {
-            // 简化实现，实际项目中应该使用 SharpCompress 等库
-            // 这里只是占位符
-            throw new NotImplementedException("tar.gz 解压需要使用第三方库，如 SharpCompress");
-        }
-
-        public void Dispose()
-        {
-            if (!_disposed)
+            catch (Exception ex)
             {
-                _stream.Dispose();
-                _disposed = true;
+                throw new Exception($"Uninstall failed: {ex.Message}");
             }
         }
+
+        public string GetFrpcExecutablePath() => _frpcExecutablePath;
+        public string GetFrpcDirectory() => _frpcDirectory;
+        public bool IsTunnelProcessRunning(int tunnelId) => _tunnelProcesses.TryGetValue(tunnelId, out var p) && p.IsRunning;
+
+        private void Log(string message)
+        {
+            Debug.WriteLine($"[FrpcManager] {message}");
+        }
+
+        #endregion
     }
 }

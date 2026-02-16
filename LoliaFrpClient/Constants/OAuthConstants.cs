@@ -33,7 +33,7 @@ namespace LoliaFrpClient.Constants
         /// <summary>
         /// OAuth 授权范围
         /// </summary>
-        public const string Scope = "read write";
+        public const string Scope = "all";
 
         /// <summary>
         /// OAuth 回调端口

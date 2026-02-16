@@ -4,6 +4,7 @@ using Microsoft.UI.Text;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
@@ -16,10 +17,12 @@ namespace LoliaFrpClient.Pages
     public sealed partial class Page2 : Page, INotifyPropertyChanged
     {
         private readonly ApiClientProvider _apiClientProvider;
+        private readonly FrpcManager _frpcManager = ServiceLocator.FrpcManager;
         private ObservableCollection<TunnelViewModel> _tunnels = new ObservableCollection<TunnelViewModel>();
         private ObservableCollection<TunnelViewModel> _filteredTunnels = new ObservableCollection<TunnelViewModel>();
         private string _searchText = string.Empty;
         private string _filterType = "all";
+        private readonly Dictionary<int, Services.FrpcProcessInfo> _tunnelProcesses = new Dictionary<int, Services.FrpcProcessInfo>();
 
         public ObservableCollection<TunnelViewModel> Tunnels
         {
@@ -312,6 +315,96 @@ namespace LoliaFrpClient.Pages
                 XamlRoot = this.XamlRoot
             };
             await dialog.ShowAsync();
+        }
+
+        /// <summary>
+        /// 切换隧道启用状态
+        /// </summary>
+        private async void OnTunnelSwitchToggled(object sender, RoutedEventArgs e)
+        {
+            if (sender is ToggleSwitch toggleSwitch && toggleSwitch.Tag is TunnelViewModel tunnel)
+            {
+                if (toggleSwitch.IsOn)
+                {
+                    // 启用隧道
+                    await EnableTunnelAsync(tunnel);
+                }
+                else
+                {
+                    // 禁用隧道
+                    await DisableTunnelAsync(tunnel);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 启用隧道
+        /// </summary>
+        private async System.Threading.Tasks.Task EnableTunnelAsync(TunnelViewModel tunnel)
+        {
+            try
+            {
+                // 检查 frpc 是否已安装
+                if (!_frpcManager.IsFrpcReady())
+                {
+                    await ShowErrorDialogAsync("frpc 未安装", "请在设置页面先安装 frpc");
+                    return;
+                }
+
+                // 获取 frpc 配置 token
+                var configResponse = await _apiClientProvider.Client.User.Tunnel[tunnel.Name].GetAsWithTunnel_nameGetResponseAsync();
+                var token = configResponse?.Data?.TunnelToken;
+
+                if (string.IsNullOrEmpty(token))
+                {
+                    await ShowErrorDialogAsync("获取配置失败", "无法获取 frpc token");
+                    return;
+                }
+
+                // 使用 frpc 启动隧道
+                var tunnelId = tunnel.Id.ToString();
+                var success = _frpcManager.StartTunnelProcess(tunnel.Id, $"-t {tunnelId}:{token}");
+
+                if (success)
+                {
+                    tunnel.IsEnabled = true;
+                    await ShowErrorDialogAsync("启用成功", $"隧道 {tunnel.Name} 已启用");
+                }
+                else
+                {
+                    await ShowErrorDialogAsync("启用失败", "无法启动 frpc 进程");
+                }
+            }
+            catch (Exception ex)
+            {
+                await ShowErrorDialogAsync("启用失败", ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// 禁用隧道
+        /// </summary>
+        private async System.Threading.Tasks.Task DisableTunnelAsync(TunnelViewModel tunnel)
+        {
+            try
+            {
+                // 停止指定隧道的 frpc 进程
+                var success = _frpcManager.StopTunnelProcess(tunnel.Id);
+
+                if (success)
+                {
+                    tunnel.IsEnabled = false;
+                    await ShowErrorDialogAsync("禁用成功", $"隧道 {tunnel.Name} 已禁用");
+                }
+                else
+                {
+                    await ShowErrorDialogAsync("禁用失败", "无法停止 frpc 进程");
+                }
+            }
+            catch (Exception ex)
+            {
+                await ShowErrorDialogAsync("禁用失败", ex.Message);
+            }
         }
     }
 }
