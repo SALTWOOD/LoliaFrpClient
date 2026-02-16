@@ -1,6 +1,6 @@
+using Microsoft.UI.Xaml.Media;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using Microsoft.UI.Xaml.Media;
 
 namespace LoliaFrpClient.Models
 {

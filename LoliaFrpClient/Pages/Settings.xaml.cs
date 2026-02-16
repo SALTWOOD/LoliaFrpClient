@@ -1,10 +1,8 @@
-using System;
-using System.Threading.Tasks;
+using LoliaFrpClient.Services;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Navigation;
-using LoliaFrpClient.Models;
-using LoliaFrpClient.Services;
+using System;
+using System.Threading.Tasks;
 
 namespace LoliaFrpClient.Pages
 {
@@ -28,7 +26,7 @@ namespace LoliaFrpClient.Pages
             // Do not block UI thread, use async/await
             // After login completes, store the token using:
             // ApiConfigurationService.Instance.SetAuthorization(loginResult.Token);
-            
+
             // For now, just show a placeholder message
             await ShowDialogAsync("登录功能待实现");
         }

@@ -1,10 +1,10 @@
+using LoliaFrpClient.Core;
+using Microsoft.Kiota.Abstractions.Authentication;
+using Microsoft.Kiota.Http.HttpClientLibrary;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Kiota.Abstractions.Authentication;
-using Microsoft.Kiota.Http.HttpClientLibrary;
-using LoliaFrpClient.Core;
 
 namespace LoliaFrpClient.Services
 {
@@ -46,7 +46,7 @@ namespace LoliaFrpClient.Services
         {
             var baseUrl = "https://api.lolia.link/api/v1";
             var token = _settings.Authorization;
-            
+
             // 使用自定义的认证提供者
             IAuthenticationProvider authProvider;
             if (!string.IsNullOrEmpty(token))
@@ -57,12 +57,12 @@ namespace LoliaFrpClient.Services
             {
                 authProvider = new AnonymousAuthenticationProvider();
             }
-            
+
             var adapter = new HttpClientRequestAdapter(authProvider);
-            
+
             // 设置 base URL
             adapter.BaseUrl = baseUrl;
-            
+
             _apiClient = new ApiClient(adapter);
         }
 

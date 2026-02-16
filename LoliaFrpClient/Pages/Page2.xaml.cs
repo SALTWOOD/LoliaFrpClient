@@ -1,14 +1,11 @@
-using System;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Linq;
+using LoliaFrpClient.Models;
+using LoliaFrpClient.Services;
 using Microsoft.UI.Text;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media;
-using LoliaFrpClient.Core;
-using LoliaFrpClient.Models;
-using LoliaFrpClient.Services;
+using System;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 
 namespace LoliaFrpClient.Pages
 {
