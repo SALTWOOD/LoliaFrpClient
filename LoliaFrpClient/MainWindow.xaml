@@ -53,17 +53,17 @@
         <NavigationView x:Name="MainNavigationView" Grid.Row="1" PaneDisplayMode="Left" IsBackButtonVisible="Collapsed" IsSettingsVisible="False">
 
             <NavigationView.MenuItems>
-                <NavigationViewItem x:Name="Page1NavItem" Content="Page 1" Tag="Page1">
+                <NavigationViewItem x:Name="Page1NavItem" Content="用户信息" Tag="Page1">
                     <NavigationViewItem.Icon>
                         <SymbolIcon Symbol="Home"/>
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
-                <NavigationViewItem x:Name="Page2NavItem" Content="Page 2" Tag="Page2">
+                <NavigationViewItem x:Name="Page2NavItem" Content="隧道列表" Tag="Page2">
                     <NavigationViewItem.Icon>
                         <SymbolIcon Symbol="Globe"/>
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
-                <NavigationViewItem x:Name="Page3NavItem" Content="Page 3" Tag="Page3">
+                <NavigationViewItem x:Name="Page3NavItem" Content="流量统计" Tag="Page3">
                     <NavigationViewItem.Icon>
                         <SymbolIcon Symbol="Folder"/>
                     </NavigationViewItem.Icon>

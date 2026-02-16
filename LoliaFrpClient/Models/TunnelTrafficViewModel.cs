@@ -53,16 +53,16 @@ namespace LoliaFrpClient.Models
         /// <summary>
         /// 格式化的入站流量
         /// </summary>
-        public string FormattedInbound => TrafficStatsViewModel.FormatTraffic(InboundBytes);
+        public string FormattedInbound => Utils.FormatBytes(InboundBytes);
 
         /// <summary>
         /// 格式化的出站流量
         /// </summary>
-        public string FormattedOutbound => TrafficStatsViewModel.FormatTraffic(OutboundBytes);
+        public string FormattedOutbound => Utils.FormatBytes(OutboundBytes);
 
         /// <summary>
         /// 格式化的总流量
         /// </summary>
-        public string FormattedTotal => TrafficStatsViewModel.FormatTraffic(TotalBytes);
+        public string FormattedTotal => Utils.FormatBytes(TotalBytes);
     }
 }

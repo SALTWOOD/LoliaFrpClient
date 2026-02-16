@@ -308,7 +308,127 @@
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "properties": {}
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "msg": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "daily_stats": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "date": {
+                                "type": "string"
+                              },
+                              "tunnel_stats": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "total_in": {
+                                "type": "integer"
+                              },
+                              "total_out": {
+                                "type": "integer"
+                              },
+                              "total_traffic": {
+                                "type": "integer"
+                              }
+                            },
+                            "required": [
+                              "date",
+                              "tunnel_stats",
+                              "total_in",
+                              "total_out",
+                              "total_traffic"
+                            ]
+                          }
+                        },
+                        "days": {
+                          "type": "integer"
+                        },
+                        "user_id": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "daily_stats",
+                        "days",
+                        "user_id"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "msg",
+                    "data"
+                  ]
+                },
+                "example": {
+                  "code": 200,
+                  "msg": "获取成功",
+                  "data": {
+                    "daily_stats": [
+                      {
+                        "date": "2026-02-10T00:00:00Z",
+                        "tunnel_stats": [],
+                        "total_in": 0,
+                        "total_out": 0,
+                        "total_traffic": 0
+                      },
+                      {
+                        "date": "2026-02-11T00:00:00Z",
+                        "tunnel_stats": [],
+                        "total_in": 0,
+                        "total_out": 0,
+                        "total_traffic": 0
+                      },
+                      {
+                        "date": "2026-02-12T00:00:00Z",
+                        "tunnel_stats": [],
+                        "total_in": 0,
+                        "total_out": 0,
+                        "total_traffic": 0
+                      },
+                      {
+                        "date": "2026-02-13T00:00:00Z",
+                        "tunnel_stats": [],
+                        "total_in": 0,
+                        "total_out": 0,
+                        "total_traffic": 0
+                      },
+                      {
+                        "date": "2026-02-14T00:00:00Z",
+                        "tunnel_stats": [],
+                        "total_in": 0,
+                        "total_out": 0,
+                        "total_traffic": 0
+                      },
+                      {
+                        "date": "2026-02-15T00:00:00Z",
+                        "tunnel_stats": [],
+                        "total_in": 0,
+                        "total_out": 0,
+                        "total_traffic": 0
+                      },
+                      {
+                        "date": "2026-02-16T00:00:00Z",
+                        "tunnel_stats": [],
+                        "total_in": 0,
+                        "total_out": 0,
+                        "total_traffic": 0
+                      }
+                    ],
+                    "days": 7,
+                    "user_id": "1"
+                  }
                 }
               }
             },

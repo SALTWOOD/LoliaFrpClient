@@ -11,7 +11,7 @@ namespace LoliaFrpClient.Pages
     /// <summary>
     /// 用户信息页面
     /// </summary>
-    public sealed partial class Page1 : Page, INotifyPropertyChanged
+    public sealed partial class UserInfoPage : Page, INotifyPropertyChanged
     {
         private readonly ApiClientProvider _apiClientProvider;
         public UserInfoViewModel ViewModel { get; }
@@ -23,7 +23,7 @@ namespace LoliaFrpClient.Pages
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        public Page1()
+        public UserInfoPage()
         {
             this.InitializeComponent();
             _apiClientProvider = ApiClientProvider.Instance;

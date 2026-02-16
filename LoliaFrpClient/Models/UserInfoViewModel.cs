@@ -129,17 +129,17 @@ namespace LoliaFrpClient.Models
         /// <summary>
         /// 格式化流量限制显示（人类可读格式）
         /// </summary>
-        public string TrafficLimitFormatted => FormatBytes(TrafficLimit);
+        public string TrafficLimitFormatted => Utils.FormatBytes(TrafficLimit);
 
         /// <summary>
         /// 格式化已用流量显示（人类可读格式）
         /// </summary>
-        public string TrafficUsedFormatted => FormatBytes(TrafficUsed);
+        public string TrafficUsedFormatted => Utils.FormatBytes(TrafficUsed);
 
         /// <summary>
         /// 格式化剩余流量显示（人类可读格式）
         /// </summary>
-        public string TrafficRemainingFormatted => FormatBytes(TrafficRemaining);
+        public string TrafficRemainingFormatted => Utils.FormatBytes(TrafficRemaining);
 
         /// <summary>
         /// 格式化创建时间显示（人类可读格式）
@@ -155,24 +155,6 @@ namespace LoliaFrpClient.Models
         /// 格式化权限显示（人类可读格式）
         /// </summary>
         public string RoleFormatted => FormatRole(Role);
-
-        /// <summary>
-        /// 将字节数转换为人类可读的格式
-        /// </summary>
-        private static string FormatBytes(long bytes)
-        {
-            if (bytes <= 0) return "0 B";
-
-            string[] units = { "B", "KB", "MB", "GB", "TB", "PB", "EB" }; // 没必要往后支持了，long 最大就 8EB
-            int order = 0;
-
-            while (bytes >= 1024 && order < units.Length - 1)
-            {
-                order++;
-                bytes /= 1024;
-            }
-            return $"{bytes:0.00} {units[order]}";
-        }
 
         /// <summary>
         /// 将 ISO8601 时间字符串格式化为本地化的日期时间

@@ -21,7 +21,7 @@ namespace LoliaFrpClient.Models
         private int _nodeId;
         private int _bandwidthLimit;
         private bool _isEnabled;
-        private string _tunnel_token;
+        private string _tunnel_token = string.Empty;
 
         public event PropertyChangedEventHandler? PropertyChanged;
 

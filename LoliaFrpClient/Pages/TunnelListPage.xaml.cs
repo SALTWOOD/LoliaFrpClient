@@ -14,7 +14,7 @@ namespace LoliaFrpClient.Pages
     /// <summary>
     /// 隧道列表页面
     /// </summary>
-    public sealed partial class Page2 : Page, INotifyPropertyChanged
+    public sealed partial class TunnelListPage : Page, INotifyPropertyChanged
     {
         private readonly ApiClientProvider _apiClientProvider;
         private readonly FrpcManager _frpcManager = ServiceLocator.FrpcManager;
@@ -64,7 +64,7 @@ namespace LoliaFrpClient.Pages
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        public Page2()
+        public TunnelListPage()
         {
             this.InitializeComponent();
             _apiClientProvider = ApiClientProvider.Instance;

@@ -1,21 +1,29 @@
 using LoliaFrpClient.Models;
 using LoliaFrpClient.Services;
+using Microsoft.Kiota.Abstractions.Serialization;
+using Microsoft.Kiota.Serialization;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Linq;
+using System.Text.Json;
 
 namespace LoliaFrpClient.Pages
 {
     /// <summary>
     /// 流量统计页面
     /// </summary>
-    public sealed partial class Page3 : Page, INotifyPropertyChanged
+    public sealed partial class TrafficStatsPage : Page, INotifyPropertyChanged
     {
         private readonly ApiClientProvider _apiClientProvider;
         private TrafficStatsViewModel _trafficStats = new TrafficStatsViewModel();
         private ObservableCollection<TunnelTrafficViewModel> _tunnelTraffics = new ObservableCollection<TunnelTrafficViewModel>();
+        private ObservableCollection<DailyTrafficViewModel> _dailyTraffics = new ObservableCollection<DailyTrafficViewModel>();
+
+        public List<DailyTrafficViewModel> DailyTrafficsList => _dailyTraffics.ToList();
 
         public TrafficStatsViewModel TrafficStats
         {
@@ -37,6 +45,16 @@ namespace LoliaFrpClient.Pages
             }
         }
 
+        public ObservableCollection<DailyTrafficViewModel> DailyTraffics
+        {
+            get => _dailyTraffics;
+            set
+            {
+                _dailyTraffics = value;
+                OnPropertyChanged(nameof(DailyTraffics));
+            }
+        }
+
         public event PropertyChangedEventHandler? PropertyChanged;
 
         private void OnPropertyChanged(string propertyName)
@@ -44,7 +62,7 @@ namespace LoliaFrpClient.Pages
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        public Page3()
+        public TrafficStatsPage()
         {
             this.InitializeComponent();
             _apiClientProvider = ApiClientProvider.Instance;
@@ -63,7 +81,6 @@ namespace LoliaFrpClient.Pages
 
             try
             {
-                // 加载总体流量统计
                 var statsResponse = await _apiClientProvider.Client.User.Traffic.Stats.GetAsStatsGetResponseAsync();
                 var trafficStats = statsResponse?.Data;
                 if (trafficStats != null)
@@ -72,13 +89,32 @@ namespace LoliaFrpClient.Pages
                     {
                         UserId = trafficStats.UserId ?? string.Empty,
                         Username = trafficStats.Username ?? string.Empty,
-                        TrafficLimit = (int)(trafficStats.TrafficLimit ?? 0),
-                        TrafficUsed = (int)(trafficStats.TrafficUsed ?? 0),
-                        TrafficRemaining = (int)(trafficStats.TrafficRemaining ?? 0)
+                        TrafficLimit = (trafficStats.TrafficLimit ?? 0),
+                        TrafficUsed = (trafficStats.TrafficUsed ?? 0),
+                        TrafficRemaining = (trafficStats.TrafficRemaining ?? 0)
                     };
                 }
 
-                // 加载隧道流量统计
+                var dailyResponse = await _apiClientProvider.Client.User.Traffic.Daily.GetAsDailyGetResponseAsync(
+                    config => config.QueryParameters.Days = "7");
+
+                var dailyStatsList = dailyResponse?.Data?.DailyStats;
+                
+                if (dailyStatsList != null)
+                {
+                    DailyTraffics.Clear();
+                    foreach (var item in dailyStatsList)
+                    {
+                        DailyTraffics.Add(new DailyTrafficViewModel
+                        {
+                            Date = item.Date ?? string.Empty,
+                            InboundBytes = item.TotalIn ?? 0,
+                            OutboundBytes = item.TotalOut ?? 0
+                        });
+                    }
+                    OnPropertyChanged(nameof(DailyTrafficsList));
+                }
+
                 var tunnelsResponse = await _apiClientProvider.Client.User.Traffic.Tunnels.GetAsTunnelsGetResponseAsync();
                 var tunnelTraffics = tunnelsResponse?.Data?.Tunnels;
                 if (tunnelTraffics != null)
@@ -97,6 +133,7 @@ namespace LoliaFrpClient.Pages
             }
             catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine($"[API ERROR] {ex.Message}");
                 await ShowErrorDialogAsync("加载流量统计失败", ex.Message);
             }
             finally

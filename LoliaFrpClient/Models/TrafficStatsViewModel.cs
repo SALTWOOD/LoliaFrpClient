@@ -10,9 +10,9 @@ namespace LoliaFrpClient.Models
     {
         private string _userId = string.Empty;
         private string _username = string.Empty;
-        private int _trafficLimit;
-        private int _trafficUsed;
-        private int _trafficRemaining;
+        private long _trafficLimit;
+        private long _trafficUsed;
+        private long _trafficRemaining;
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -33,19 +33,19 @@ namespace LoliaFrpClient.Models
             set { _username = value; OnPropertyChanged(); }
         }
 
-        public int TrafficLimit
+        public long TrafficLimit
         {
             get => _trafficLimit;
             set { _trafficLimit = value; OnPropertyChanged(); }
         }
 
-        public int TrafficUsed
+        public long TrafficUsed
         {
             get => _trafficUsed;
             set { _trafficUsed = value; OnPropertyChanged(); }
         }
 
-        public int TrafficRemaining
+        public long TrafficRemaining
         {
             get => _trafficRemaining;
             set { _trafficRemaining = value; OnPropertyChanged(); }
@@ -59,32 +59,16 @@ namespace LoliaFrpClient.Models
         /// <summary>
         /// 格式化的流量限制
         /// </summary>
-        public string FormattedTrafficLimit => FormatTraffic(TrafficLimit);
+        public string FormattedTrafficLimit => Utils.FormatBytes(TrafficLimit);
 
         /// <summary>
         /// 格式化的已用流量
         /// </summary>
-        public string FormattedTrafficUsed => FormatTraffic(TrafficUsed);
+        public string FormattedTrafficUsed => Utils.FormatBytes(TrafficUsed);
 
         /// <summary>
         /// 格式化的剩余流量
         /// </summary>
-        public string FormattedTrafficRemaining => FormatTraffic(TrafficRemaining);
-
-        /// <summary>
-        /// 格式化流量大小
-        /// </summary>
-        public static string FormatTraffic(long bytes)
-        {
-            string[] sizes = { "B", "KB", "MB", "GB", "TB" };
-            double len = bytes;
-            int order = 0;
-            while (len >= 1024 && order < sizes.Length - 1)
-            {
-                order++;
-                len = len / 1024;
-            }
-            return $"{len:0.##} {sizes[order]}";
-        }
+        public string FormattedTrafficRemaining => Utils.FormatBytes(TrafficRemaining);
     }
 }

@@ -73,7 +73,7 @@ namespace LoliaFrpClient
         private void InitializeNavigation()
         {
             MainNavigationView.ItemInvoked += OnNavigationViewItemInvoked;
-            ContentFrame.Navigate(typeof(Page1));
+            ContentFrame.Navigate(typeof(UserInfoPage));
             MainNavigationView.SelectedItem = Page1NavItem;
         }
 
@@ -93,15 +93,15 @@ namespace LoliaFrpClient
             Type? currentPageType = ContentFrame.Content.GetType();
             NavigationViewItem? selectedItem = null;
 
-            if (currentPageType == typeof(Page1))
+            if (currentPageType == typeof(UserInfoPage))
             {
                 selectedItem = Page1NavItem;
             }
-            else if (currentPageType == typeof(Page2))
+            else if (currentPageType == typeof(TunnelListPage))
             {
                 selectedItem = Page2NavItem;
             }
-            else if (currentPageType == typeof(Page3))
+            else if (currentPageType == typeof(TrafficStatsPage))
             {
                 selectedItem = Page3NavItem;
             }
@@ -125,13 +125,13 @@ namespace LoliaFrpClient
                 switch (tag)
                 {
                     case "Page1":
-                        ContentFrame.Navigate(typeof(Page1));
+                        ContentFrame.Navigate(typeof(UserInfoPage));
                         break;
                     case "Page2":
-                        ContentFrame.Navigate(typeof(Page2));
+                        ContentFrame.Navigate(typeof(TunnelListPage));
                         break;
                     case "Page3":
-                        ContentFrame.Navigate(typeof(Page3));
+                        ContentFrame.Navigate(typeof(TrafficStatsPage));
                         break;
                     case "Page4":
                         ContentFrame.Navigate(typeof(Page4));

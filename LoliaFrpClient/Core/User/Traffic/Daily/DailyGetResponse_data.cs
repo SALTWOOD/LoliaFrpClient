@@ -9,45 +9,45 @@ namespace LoliaFrpClient.Core.User.Traffic.Daily
 {
     [global::System.CodeDom.Compiler.GeneratedCode("Kiota", "1.0.0")]
     #pragma warning disable CS1591
-    public partial class DailyGetResponse : IAdditionalDataHolder, IParsable
+    public partial class DailyGetResponse_data : IAdditionalDataHolder, IParsable
     #pragma warning restore CS1591
     {
         /// <summary>Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.</summary>
         public IDictionary<string, object> AdditionalData { get; set; }
-        /// <summary>The code property</summary>
-        public int? Code { get; set; }
-        /// <summary>The data property</summary>
+        /// <summary>The daily_stats property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
-        public global::LoliaFrpClient.Core.User.Traffic.Daily.DailyGetResponse_data? Data { get; set; }
+        public List<global::LoliaFrpClient.Core.User.Traffic.Daily.DailyGetResponse_data_daily_stats>? DailyStats { get; set; }
 #nullable restore
 #else
-        public global::LoliaFrpClient.Core.User.Traffic.Daily.DailyGetResponse_data Data { get; set; }
+        public List<global::LoliaFrpClient.Core.User.Traffic.Daily.DailyGetResponse_data_daily_stats> DailyStats { get; set; }
 #endif
-        /// <summary>The msg property</summary>
+        /// <summary>The days property</summary>
+        public int? Days { get; set; }
+        /// <summary>The user_id property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
-        public string? Msg { get; set; }
+        public string? UserId { get; set; }
 #nullable restore
 #else
-        public string Msg { get; set; }
+        public string UserId { get; set; }
 #endif
         /// <summary>
-        /// Instantiates a new <see cref="global::LoliaFrpClient.Core.User.Traffic.Daily.DailyGetResponse"/> and sets the default values.
+        /// Instantiates a new <see cref="global::LoliaFrpClient.Core.User.Traffic.Daily.DailyGetResponse_data"/> and sets the default values.
         /// </summary>
-        public DailyGetResponse()
+        public DailyGetResponse_data()
         {
             AdditionalData = new Dictionary<string, object>();
         }
         /// <summary>
         /// Creates a new instance of the appropriate class based on discriminator value
         /// </summary>
-        /// <returns>A <see cref="global::LoliaFrpClient.Core.User.Traffic.Daily.DailyGetResponse"/></returns>
+        /// <returns>A <see cref="global::LoliaFrpClient.Core.User.Traffic.Daily.DailyGetResponse_data"/></returns>
         /// <param name="parseNode">The parse node to use to read the discriminator value and create the object</param>
-        public static global::LoliaFrpClient.Core.User.Traffic.Daily.DailyGetResponse CreateFromDiscriminatorValue(IParseNode parseNode)
+        public static global::LoliaFrpClient.Core.User.Traffic.Daily.DailyGetResponse_data CreateFromDiscriminatorValue(IParseNode parseNode)
         {
             if(ReferenceEquals(parseNode, null)) throw new ArgumentNullException(nameof(parseNode));
-            return new global::LoliaFrpClient.Core.User.Traffic.Daily.DailyGetResponse();
+            return new global::LoliaFrpClient.Core.User.Traffic.Daily.DailyGetResponse_data();
         }
         /// <summary>
         /// The deserialization information for the current model
@@ -57,9 +57,9 @@ namespace LoliaFrpClient.Core.User.Traffic.Daily
         {
             return new Dictionary<string, Action<IParseNode>>
             {
-                { "code", n => { Code = n.GetIntValue(); } },
-                { "data", n => { Data = n.GetObjectValue<global::LoliaFrpClient.Core.User.Traffic.Daily.DailyGetResponse_data>(global::LoliaFrpClient.Core.User.Traffic.Daily.DailyGetResponse_data.CreateFromDiscriminatorValue); } },
-                { "msg", n => { Msg = n.GetStringValue(); } },
+                { "daily_stats", n => { DailyStats = n.GetCollectionOfObjectValues<global::LoliaFrpClient.Core.User.Traffic.Daily.DailyGetResponse_data_daily_stats>(global::LoliaFrpClient.Core.User.Traffic.Daily.DailyGetResponse_data_daily_stats.CreateFromDiscriminatorValue)?.AsList(); } },
+                { "days", n => { Days = n.GetIntValue(); } },
+                { "user_id", n => { UserId = n.GetStringValue(); } },
             };
         }
         /// <summary>
@@ -69,9 +69,9 @@ namespace LoliaFrpClient.Core.User.Traffic.Daily
         public virtual void Serialize(ISerializationWriter writer)
         {
             if(ReferenceEquals(writer, null)) throw new ArgumentNullException(nameof(writer));
-            writer.WriteIntValue("code", Code);
-            writer.WriteObjectValue<global::LoliaFrpClient.Core.User.Traffic.Daily.DailyGetResponse_data>("data", Data);
-            writer.WriteStringValue("msg", Msg);
+            writer.WriteCollectionOfObjectValues<global::LoliaFrpClient.Core.User.Traffic.Daily.DailyGetResponse_data_daily_stats>("daily_stats", DailyStats);
+            writer.WriteIntValue("days", Days);
+            writer.WriteStringValue("user_id", UserId);
             writer.WriteAdditionalData(AdditionalData);
         }
     }
