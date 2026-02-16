@@ -37,6 +37,15 @@ namespace LoliaFrpClient.Services
         }
 
         /// <summary>
+        /// API Base URL
+        /// </summary>
+        public string? ApiBaseUrl
+        {
+            get => Read<string?>("ApiBaseUrl", null);
+            set => Write("ApiBaseUrl", value);
+        }
+
+        /// <summary>
         /// Read setting
         /// </summary>
         public T Read<T>(string key, T defaultValue = default!)

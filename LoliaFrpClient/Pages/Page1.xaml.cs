@@ -3,6 +3,7 @@ using System.ComponentModel;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
+using LoliaFrpClient.Core;
 using LoliaFrpClient.Models;
 using LoliaFrpClient.Services;
 
@@ -13,7 +14,7 @@ namespace LoliaFrpClient.Pages
     /// </summary>
     public sealed partial class Page1 : Page, INotifyPropertyChanged
     {
-        private readonly ApiService _apiService;
+        private readonly ApiClientProvider _apiClientProvider;
         public UserInfoViewModel ViewModel { get; }
 
         public event PropertyChangedEventHandler? PropertyChanged;
@@ -26,7 +27,7 @@ namespace LoliaFrpClient.Pages
         public Page1()
         {
             this.InitializeComponent();
-            _apiService = ApiService.Instance;
+            _apiClientProvider = ApiClientProvider.Instance;
             ViewModel = new UserInfoViewModel();
             Loaded += OnPageLoaded;
         }
@@ -40,23 +41,24 @@ namespace LoliaFrpClient.Pages
         {
             try
             {
-                var userInfo = await _apiService.GetUserInfoAsync();
-                if (userInfo != null)
+                var response = await _apiClientProvider.Client.User.Info.GetAsInfoGetResponseAsync();
+                var data = response?.Data;
+                if (data != null)
                 {
-                    ViewModel.Id = userInfo.Id;
-                    ViewModel.Username = userInfo.Username;
-                    ViewModel.Email = userInfo.Email;
-                    ViewModel.Avatar = userInfo.Avatar;
-                    ViewModel.Role = userInfo.Role;
-                    ViewModel.KycStatus = userInfo.KycStatus;
-                    ViewModel.CreatedAt = userInfo.CreatedAt;
-                    ViewModel.MaxTunnelCount = userInfo.MaxTunnelCount;
-                    ViewModel.TrafficLimit = userInfo.TrafficLimit;
-                    ViewModel.TrafficUsed = userInfo.TrafficUsed;
-                    ViewModel.BandwidthLimit = userInfo.BandwidthLimit;
-                    ViewModel.HasKyc = userInfo.HasKyc;
-                    ViewModel.IsBaned = userInfo.IsBaned;
-                    ViewModel.TodayChecked = userInfo.TodayChecked;
+                    ViewModel.Id = data.Id ?? 0;
+                    ViewModel.Username = data.Username ?? string.Empty;
+                    ViewModel.Email = data.Email ?? string.Empty;
+                    ViewModel.Avatar = data.Avatar ?? string.Empty;
+                    ViewModel.Role = data.Role ?? string.Empty;
+                    ViewModel.KycStatus = data.KycStatus ?? string.Empty;
+                    ViewModel.CreatedAt = data.CreatedAt ?? string.Empty;
+                    ViewModel.MaxTunnelCount = data.MaxTunnelCount ?? 0;
+                    ViewModel.TrafficLimit = data.TrafficLimit ?? 0;
+                    ViewModel.TrafficUsed = data.TrafficUsed ?? 0;
+                    ViewModel.BandwidthLimit = data.BandwidthLimit ?? 0;
+                    ViewModel.HasKyc = data.HasKyc ?? false;
+                    ViewModel.IsBaned = data.IsBaned ?? false;
+                    ViewModel.TodayChecked = data.TodayChecked ?? false;
 
                     OnPropertyChanged(nameof(IsBanedText));
                     OnPropertyChanged(nameof(BanedColor));

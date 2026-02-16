@@ -6,6 +6,7 @@ using Microsoft.UI.Text;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
+using LoliaFrpClient.Core;
 using LoliaFrpClient.Models;
 using LoliaFrpClient.Services;
 
@@ -16,7 +17,7 @@ namespace LoliaFrpClient.Pages
     /// </summary>
     public sealed partial class Page2 : Page, INotifyPropertyChanged
     {
-        private readonly ApiService _apiService;
+        private readonly ApiClientProvider _apiClientProvider;
         private ObservableCollection<TunnelViewModel> _tunnels = new ObservableCollection<TunnelViewModel>();
 
         public ObservableCollection<TunnelViewModel> Tunnels
@@ -39,7 +40,7 @@ namespace LoliaFrpClient.Pages
         public Page2()
         {
             this.InitializeComponent();
-            _apiService = ApiService.Instance;
+            _apiClientProvider = ApiClientProvider.Instance;
             Loaded += OnPageLoaded;
         }
 
@@ -55,11 +56,28 @@ namespace LoliaFrpClient.Pages
 
             try
             {
-                var tunnelList = await _apiService.GetTunnelListAsync();
-                Tunnels.Clear();
-                foreach (var tunnel in tunnelList)
+                var response = await _apiClientProvider.Client.User.Tunnel.GetAsTunnelGetResponseAsync();
+                var tunnelList = response?.Data?.List;
+                if (tunnelList != null)
                 {
-                    Tunnels.Add(tunnel);
+                    Tunnels.Clear();
+                    foreach (var tunnel in tunnelList)
+                    {
+                        Tunnels.Add(new TunnelViewModel
+                        {
+                            Id = tunnel.Id ?? 0,
+                            Name = tunnel.Name ?? string.Empty,
+                            Type = tunnel.Type ?? string.Empty,
+                            Status = tunnel.Status ?? string.Empty,
+                            Remark = tunnel.Remark ?? string.Empty,
+                            CustomDomain = tunnel.CustomDomain ?? string.Empty,
+                            LocalIp = tunnel.LocalIp ?? string.Empty,
+                            LocalPort = tunnel.LocalPort ?? 0,
+                            RemotePort = tunnel.RemotePort ?? 0,
+                            NodeId = tunnel.NodeId ?? 0,
+                            BandwidthLimit = tunnel.BandwidthLimit ?? 0
+                        });
+                    }
                 }
             }
             catch (Exception ex)

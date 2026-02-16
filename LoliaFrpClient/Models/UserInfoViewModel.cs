@@ -16,8 +16,8 @@ namespace LoliaFrpClient.Models
         private string _kycStatus = string.Empty;
         private string _createdAt = string.Empty;
         private int _maxTunnelCount;
-        private int _trafficLimit;
-        private int _trafficUsed;
+        private long _trafficLimit;
+        private long _trafficUsed;
         private int _bandwidthLimit;
         private bool _hasKyc;
         private bool _isBaned;
@@ -78,13 +78,13 @@ namespace LoliaFrpClient.Models
             set { _maxTunnelCount = value; OnPropertyChanged(); }
         }
 
-        public int TrafficLimit
+        public long TrafficLimit
         {
             get => _trafficLimit;
             set { _trafficLimit = value; OnPropertyChanged(); }
         }
 
-        public int TrafficUsed
+        public long TrafficUsed
         {
             get => _trafficUsed;
             set { _trafficUsed = value; OnPropertyChanged(); }
@@ -122,6 +122,6 @@ namespace LoliaFrpClient.Models
         /// <summary>
         /// 剩余流量
         /// </summary>
-        public int TrafficRemaining => TrafficLimit - TrafficUsed;
+        public long TrafficRemaining => TrafficLimit - TrafficUsed;
     }
 }

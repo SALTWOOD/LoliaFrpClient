@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using LoliaFrpClient.Core;
 using LoliaFrpClient.Models;
 using LoliaFrpClient.Services;
 
@@ -13,7 +14,7 @@ namespace LoliaFrpClient.Pages
     /// </summary>
     public sealed partial class Page3 : Page, INotifyPropertyChanged
     {
-        private readonly ApiService _apiService;
+        private readonly ApiClientProvider _apiClientProvider;
         private TrafficStatsViewModel _trafficStats = new TrafficStatsViewModel();
         private ObservableCollection<TunnelTrafficViewModel> _tunnelTraffics = new ObservableCollection<TunnelTrafficViewModel>();
 
@@ -47,7 +48,7 @@ namespace LoliaFrpClient.Pages
         public Page3()
         {
             this.InitializeComponent();
-            _apiService = ApiService.Instance;
+            _apiClientProvider = ApiClientProvider.Instance;
             Loaded += OnPageLoaded;
         }
 
@@ -64,18 +65,35 @@ namespace LoliaFrpClient.Pages
             try
             {
                 // 加载总体流量统计
-                var trafficStats = await _apiService.GetTrafficStatsAsync();
+                var statsResponse = await _apiClientProvider.Client.User.Traffic.Stats.GetAsStatsGetResponseAsync();
+                var trafficStats = statsResponse?.Data;
                 if (trafficStats != null)
                 {
-                    TrafficStats = trafficStats;
+                    TrafficStats = new TrafficStatsViewModel
+                    {
+                        UserId = trafficStats.UserId ?? string.Empty,
+                        Username = trafficStats.Username ?? string.Empty,
+                        TrafficLimit = trafficStats.TrafficLimit ?? 0,
+                        TrafficUsed = trafficStats.TrafficUsed ?? 0,
+                        TrafficRemaining = trafficStats.TrafficRemaining ?? 0
+                    };
                 }
 
                 // 加载隧道流量统计
-                var tunnelTraffics = await _apiService.GetTunnelTrafficAsync();
-                TunnelTraffics.Clear();
-                foreach (var traffic in tunnelTraffics)
+                var tunnelsResponse = await _apiClientProvider.Client.User.Traffic.Tunnels.GetAsTunnelsGetResponseAsync();
+                var tunnelTraffics = tunnelsResponse?.Data?.Tunnels;
+                if (tunnelTraffics != null)
                 {
-                    TunnelTraffics.Add(traffic);
+                    TunnelTraffics.Clear();
+                    foreach (var traffic in tunnelTraffics)
+                    {
+                        TunnelTraffics.Add(new TunnelTrafficViewModel
+                        {
+                            TunnelName = traffic.TunnelName ?? string.Empty,
+                            InboundBytes = traffic.TotalIn ?? 0,
+                            OutboundBytes = traffic.TotalOut ?? 0
+                        });
+                    }
                 }
             }
             catch (Exception ex)
