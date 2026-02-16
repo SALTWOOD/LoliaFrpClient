@@ -28,12 +28,21 @@ namespace LoliaFrpClient.Services
         }
 
         /// <summary>
-        /// OAuthToken token
+        /// OAuth token
         /// </summary>
         public string? OAuthToken
         {
             get => Read<string?>("Authorization", null);
             set => Write("Authorization", value);
+        }
+
+        /// <summary>
+        /// Refresh token
+        /// </summary>
+        public string? RefreshToken
+        {
+            get => Read<string?>("RefreshToken", null);
+            set => Write("RefreshToken", value);
         }
 
         /// <summary>

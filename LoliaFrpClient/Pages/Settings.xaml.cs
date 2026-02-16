@@ -60,10 +60,13 @@ namespace LoliaFrpClient.Pages
                 try
                 {
                     // 使用 code 交换 access token
-                    var token = await OAuthTokenService.ExchangeCodeForTokenAsync(result.Code);
+                    var tokenResponse = await OAuthTokenService.ExchangeCodeForTokenAsync(result.Code);
 
-                    // 存储 OAuthToken 为 "Bearer <token>"
-                    _settings.OAuthToken = token;
+                    // 存储 OAuthToken
+                    _settings.OAuthToken = tokenResponse.AccessToken;
+
+                    // 存储 refresh token
+                    _settings.RefreshToken = tokenResponse.RefreshToken;
 
                     // 重新初始化 API 客户端
                     _apiClientProvider.ReinitializeClient();
