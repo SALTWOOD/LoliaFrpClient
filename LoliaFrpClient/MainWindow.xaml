@@ -22,16 +22,22 @@
         <!-- Custom Title Bar -->
         <Grid x:Name="TitleBarGrid" Grid.Row="0" Height="32" VerticalAlignment="Top">
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="6,6,0,0">
-                <Button x:Name="BackButton" 
-                        Width="32" Height="32" 
-                        Padding="0" 
-                        Background="Transparent" 
+                <Button x:Name="BackButton"
+                        Width="32" Height="32"
+                        Padding="0"
+                        Background="Transparent"
                         BorderThickness="0"
                         Click="BackButton_Click">
-                    <Image Source="ms-appx:///Assets/AppIcon_Full_Color.png" 
-                           Width="24" Height="24" 
-                           HorizontalAlignment="Center" 
-                           VerticalAlignment="Center"/>
+                    <Border Width="24" Height="24"
+                            CornerRadius="4"
+                            Background="#ff81ac"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center">
+                        <Image Source="ms-appx:///Assets/AppIcon_Black.svg"
+                               Width="16" Height="16"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"/>
+                    </Border>
                 </Button>
                 <TextBlock Text="Lolia FRP Client" 
                            VerticalAlignment="Center" 
