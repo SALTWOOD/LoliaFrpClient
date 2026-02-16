@@ -145,5 +145,28 @@ namespace LoliaFrpClient.Models
                 };
             }
         }
+
+        /// <summary>
+        /// 是否有备注
+        /// </summary>
+        public bool HasRemark => !string.IsNullOrWhiteSpace(Remark);
+
+        /// <summary>
+        /// ID 显示文本
+        /// </summary>
+        public string IdDisplayText
+        {
+            get
+            {
+                if (HasRemark)
+                {
+                    return $"{Remark} (ID: {Id})";
+                }
+                else
+                {
+                    return $"ID: {Id}";
+                }
+            }
+        }
     }
 }

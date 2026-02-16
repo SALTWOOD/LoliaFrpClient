@@ -27,14 +27,95 @@
                         Click="OnRefreshClick"/>
             </Grid>
 
+            <!-- 隧道统计卡片 -->
+            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    CornerRadius="8"
+                    Padding="20"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1">
+                <StackPanel Spacing="12">
+                    <TextBlock Text="隧道统计" 
+                               Style="{StaticResource SubtitleTextBlockStyle}"
+                               FontWeight="SemiBold"/>
+                    
+                    <Grid ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0" Spacing="4">
+                            <TextBlock Text="总数" Style="{StaticResource CaptionTextBlockStyle}" 
+                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                            <TextBlock Text="{x:Bind TotalTunnels, Mode=OneWay}" 
+                                       Style="{StaticResource BodyStrongTextBlockStyle}"
+                                       FontSize="20"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="1" Spacing="4">
+                            <TextBlock Text="运行中" Style="{StaticResource CaptionTextBlockStyle}" 
+                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                            <TextBlock Text="{x:Bind ActiveTunnels, Mode=OneWay}" 
+                                       Style="{StaticResource BodyStrongTextBlockStyle}"
+                                       FontSize="20"
+                                       Foreground="{ThemeResource SystemFillColorSuccessBrush}"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="2" Spacing="4">
+                            <TextBlock Text="未激活" Style="{StaticResource CaptionTextBlockStyle}" 
+                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                            <TextBlock Text="{x:Bind InactiveTunnels, Mode=OneWay}" 
+                                       Style="{StaticResource BodyStrongTextBlockStyle}"
+                                       FontSize="20"
+                                       Foreground="{ThemeResource SystemFillColorNeutralBrush}"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="3" Spacing="4">
+                            <TextBlock Text="已禁用" Style="{StaticResource CaptionTextBlockStyle}" 
+                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                            <TextBlock Text="{x:Bind DisabledTunnels, Mode=OneWay}" 
+                                       Style="{StaticResource BodyStrongTextBlockStyle}"
+                                       FontSize="20"
+                                       Foreground="{ThemeResource SystemFillColorCriticalBrush}"/>
+                        </StackPanel>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- 搜索和筛选 -->
+            <Grid ColumnSpacing="12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <AutoSuggestBox Grid.Column="0"
+                                PlaceholderText="搜索隧道..."
+                                TextChanged="OnSearchTextChanged"
+                                QuerySubmitted="OnSearchQuerySubmitted"/>
+                
+                <ComboBox Grid.Column="1"
+                          PlaceholderText="筛选类型"
+                          SelectionChanged="OnFilterTypeChanged"
+                          Width="150">
+                    <ComboBoxItem Content="全部" Tag="all"/>
+                    <ComboBoxItem Content="TCP" Tag="tcp"/>
+                    <ComboBoxItem Content="UDP" Tag="udp"/>
+                    <ComboBoxItem Content="HTTP" Tag="http"/>
+                    <ComboBoxItem Content="HTTPS" Tag="https"/>
+                </ComboBox>
+            </Grid>
+
             <!-- 隧道列表 -->
             <ListView x:Name="TunnelListView"
-                      ItemsSource="{x:Bind Tunnels, Mode=OneWay}"
+                      ItemsSource="{x:Bind FilteredTunnels, Mode=OneWay}"
                       SelectionMode="Single"
                       IsItemClickEnabled="True"
                       ItemClick="OnTunnelItemClick">
                 <ListView.ItemTemplate>
-                    <DataTemplate x:DataType="models:TunnelViewModel">
+                    <DataTemplate>
                         <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                                 CornerRadius="8"
                                 Padding="16"
@@ -51,38 +132,65 @@
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
                                 </Grid.RowDefinitions>
 
                                 <TextBlock Grid.Row="0" Grid.Column="0"
-                                           Text="{x:Bind Name, Mode=OneWay}"
+                                           Text="{Binding Name}"
                                            Style="{StaticResource SubtitleTextBlockStyle}"
                                            FontWeight="SemiBold"/>
 
                                 <Border Grid.Row="0" Grid.Column="1"
-                                        Background="{x:Bind StatusBrush, Mode=OneWay}"
+                                        Background="{Binding StatusBrush}"
                                         Padding="8,4"
                                         CornerRadius="4">
-                                    <TextBlock Text="{x:Bind StatusDisplayText, Mode=OneWay}"
+                                    <TextBlock Text="{Binding StatusDisplayText}"
                                                Foreground="White"
                                                FontSize="12"/>
                                 </Border>
 
                                 <TextBlock Grid.Row="1" Grid.Column="0"
-                                           Text="类型: {x:Bind TypeDisplayText, Mode=OneWay}"
-                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}">
+                                    <Run Text="类型: "/>
+                                    <Run Text="{Binding TypeDisplayText}"/>
+                                </TextBlock>
 
                                 <TextBlock Grid.Row="2" Grid.Column="0"
-                                           Text="本地地址: {x:Bind LocalIp, Mode=OneWay}:{x:Bind LocalPort, Mode=OneWay}"
-                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}">
+                                    <Run Text="本地地址: "/>
+                                    <Run Text="{Binding LocalIp}"/>
+                                    <Run Text=":"/>
+                                    <Run Text="{Binding LocalPort}"/>
+                                </TextBlock>
 
                                 <TextBlock Grid.Row="3" Grid.Column="0"
-                                           Text="远程端口: {x:Bind RemotePort, Mode=OneWay}"
-                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}">
+                                    <Run Text="远程端口: "/>
+                                    <Run Text="{Binding RemotePort}"/>
+                                </TextBlock>
+
+                                <TextBlock Grid.Row="4" Grid.Column="0"
+                                           Text="{Binding IdDisplayText}"
+                                           Style="{StaticResource CaptionTextBlockStyle}"
+                                           Foreground="{ThemeResource TextFillColorTertiaryBrush}"/>
                             </Grid>
                         </Border>
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
+
+            <!-- 空状态提示 -->
+            <StackPanel x:Name="EmptyStatePanel"
+                        Visibility="Collapsed"
+                        HorizontalAlignment="Center"
+                        Spacing="12">
+                <TextBlock Text="暂无隧道"
+                           Style="{StaticResource SubtitleTextBlockStyle}"
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                <TextBlock Text="点击刷新按钮获取最新数据"
+                           Style="{StaticResource BodyTextBlockStyle}"
+                           Foreground="{ThemeResource TextFillColorTertiaryBrush}"/>
+            </StackPanel>
 
             <!-- 加载指示器 -->
             <ProgressRing x:Name="LoadingRing"

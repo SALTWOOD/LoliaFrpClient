@@ -6,6 +6,7 @@ using Microsoft.UI.Xaml.Controls;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Linq;
 
 namespace LoliaFrpClient.Pages
 {
@@ -16,6 +17,9 @@ namespace LoliaFrpClient.Pages
     {
         private readonly ApiClientProvider _apiClientProvider;
         private ObservableCollection<TunnelViewModel> _tunnels = new ObservableCollection<TunnelViewModel>();
+        private ObservableCollection<TunnelViewModel> _filteredTunnels = new ObservableCollection<TunnelViewModel>();
+        private string _searchText = string.Empty;
+        private string _filterType = "all";
 
         public ObservableCollection<TunnelViewModel> Tunnels
         {
@@ -24,8 +28,31 @@ namespace LoliaFrpClient.Pages
             {
                 _tunnels = value;
                 OnPropertyChanged(nameof(Tunnels));
+                UpdateFilteredTunnels();
             }
         }
+
+        public ObservableCollection<TunnelViewModel> FilteredTunnels => _filteredTunnels;
+
+        /// <summary>
+        /// 隧道总数
+        /// </summary>
+        public int TotalTunnels => Tunnels.Count;
+
+        /// <summary>
+        /// 运行中的隧道数量
+        /// </summary>
+        public int ActiveTunnels => Tunnels.Count(t => t.Status == "active");
+
+        /// <summary>
+        /// 未激活的隧道数量
+        /// </summary>
+        public int InactiveTunnels => Tunnels.Count(t => t.Status == "inactive");
+
+        /// <summary>
+        /// 已禁用的隧道数量
+        /// </summary>
+        public int DisabledTunnels => Tunnels.Count(t => t.Status == "disabled");
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -50,6 +77,7 @@ namespace LoliaFrpClient.Pages
         {
             LoadingRing.IsActive = true;
             TunnelListView.Visibility = Visibility.Collapsed;
+            EmptyStatePanel.Visibility = Visibility.Collapsed;
 
             try
             {
@@ -75,6 +103,8 @@ namespace LoliaFrpClient.Pages
                             BandwidthLimit = tunnel.BandwidthLimit ?? 0
                         });
                     }
+                    UpdateFilteredTunnels();
+                    UpdateStatistics();
                 }
             }
             catch (Exception ex)
@@ -84,13 +114,119 @@ namespace LoliaFrpClient.Pages
             finally
             {
                 LoadingRing.IsActive = false;
-                TunnelListView.Visibility = Visibility.Visible;
+                
+                // 显示空状态或列表
+                if (FilteredTunnels.Count == 0)
+                {
+                    EmptyStatePanel.Visibility = Visibility.Visible;
+                    TunnelListView.Visibility = Visibility.Collapsed;
+                }
+                else
+                {
+                    EmptyStatePanel.Visibility = Visibility.Collapsed;
+                    TunnelListView.Visibility = Visibility.Visible;
+                }
             }
+        }
+
+        /// <summary>
+        /// 更新筛选后的隧道列表
+        /// </summary>
+        private void UpdateFilteredTunnels()
+        {
+            FilteredTunnels.Clear();
+
+            var query = Tunnels.AsEnumerable();
+
+            // 按类型筛选
+            if (_filterType != "all")
+            {
+                query = query.Where(t => t.Type == _filterType);
+            }
+
+            // 按搜索文本筛选
+            if (!string.IsNullOrWhiteSpace(_searchText))
+            {
+                query = query.Where(t => 
+                    t.Name.Contains(_searchText, StringComparison.OrdinalIgnoreCase) ||
+                    t.Remark.Contains(_searchText, StringComparison.OrdinalIgnoreCase) ||
+                    t.CustomDomain.Contains(_searchText, StringComparison.OrdinalIgnoreCase)
+                );
+            }
+
+            foreach (var tunnel in query)
+            {
+                FilteredTunnels.Add(tunnel);
+            }
+        }
+
+        /// <summary>
+        /// 更新统计数据
+        /// </summary>
+        private void UpdateStatistics()
+        {
+            OnPropertyChanged(nameof(TotalTunnels));
+            OnPropertyChanged(nameof(ActiveTunnels));
+            OnPropertyChanged(nameof(InactiveTunnels));
+            OnPropertyChanged(nameof(DisabledTunnels));
         }
 
         private async void OnRefreshClick(object sender, RoutedEventArgs e)
         {
             await LoadTunnelsAsync();
+        }
+
+        /// <summary>
+        /// 搜索文本变化
+        /// </summary>
+        private void OnSearchTextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
+        {
+            if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
+            {
+                _searchText = sender.Text;
+                UpdateFilteredTunnels();
+                UpdateEmptyState();
+            }
+        }
+
+        /// <summary>
+        /// 搜索查询提交
+        /// </summary>
+        private void OnSearchQuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
+        {
+            _searchText = args.QueryText;
+            UpdateFilteredTunnels();
+            UpdateEmptyState();
+        }
+
+        /// <summary>
+        /// 筛选类型变化
+        /// </summary>
+        private void OnFilterTypeChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (sender is ComboBox comboBox && comboBox.SelectedItem is ComboBoxItem selectedItem)
+            {
+                _filterType = selectedItem.Tag?.ToString() ?? "all";
+                UpdateFilteredTunnels();
+                UpdateEmptyState();
+            }
+        }
+
+        /// <summary>
+        /// 更新空状态显示
+        /// </summary>
+        private void UpdateEmptyState()
+        {
+            if (FilteredTunnels.Count == 0)
+            {
+                EmptyStatePanel.Visibility = Visibility.Visible;
+                TunnelListView.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                EmptyStatePanel.Visibility = Visibility.Collapsed;
+                TunnelListView.Visibility = Visibility.Visible;
+            }
         }
 
         private async void OnTunnelItemClick(object sender, ItemClickEventArgs e)
