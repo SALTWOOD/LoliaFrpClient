@@ -7,6 +7,385 @@
   },
   "tags": [],
   "paths": {
+    "/user/login": {
+      "post": {
+        "summary": "用户登录",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {}
+              },
+              "example": {
+                "username": "test",
+                "password": "1145514",
+                "captcha_token": ""
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "msg": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "email": {
+                          "type": "string"
+                        },
+                        "exp": {
+                          "type": "integer"
+                        },
+                        "id": {
+                          "type": "integer"
+                        },
+                        "token": {
+                          "type": "string"
+                        },
+                        "username": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "email",
+                        "exp",
+                        "id",
+                        "token",
+                        "username"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "msg",
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/user/register": {
+      "post": {
+        "summary": "用户注册",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {}
+              },
+              "example": {
+                "username": "test",
+                "password": "1145514",
+                "email": "1145141@qq.com",
+                "code": "114514"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/user/kyc/init": {
+      "post": {
+        "summary": "初始化用户KYC",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {}
+              },
+              "example": {
+                "cert_name": "张三",
+                "cert_no": "260104197909275964",
+                "cert_type": "IDENTITY_CARD"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "msg": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "certify_id": {
+                          "type": "string"
+                        },
+                        "certify_url": {
+                          "type": "string"
+                        },
+                        "order_no": {
+                          "type": "string"
+                        },
+                        "status": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "certify_id",
+                        "certify_url",
+                        "order_no",
+                        "status"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "msg",
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/user/kyc/query": {
+      "post": {
+        "summary": "查询用户KYC结果",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {}
+              },
+              "example": {
+                "order_no": "LOLIAX202511301353188DQTPSKU97T8"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "msg": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "certified_at": {
+                          "type": "string"
+                        },
+                        "status": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "certified_at",
+                        "status"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "msg",
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      },
+      "get": {
+        "summary": "用户KYC查询",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "msg": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "cert_type": {
+                          "type": "string"
+                        },
+                        "certified_at": {
+                          "type": "string"
+                        },
+                        "certify_id": {
+                          "type": "string"
+                        },
+                        "certify_url": {
+                          "type": "string"
+                        },
+                        "created_at": {
+                          "type": "string"
+                        },
+                        "order_no": {
+                          "type": "string"
+                        },
+                        "status": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "cert_type",
+                        "certified_at",
+                        "certify_id",
+                        "certify_url",
+                        "created_at",
+                        "order_no",
+                        "status"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "msg",
+                    "data"
+                  ]
+                },
+                "example": "404 page not found"
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/user/reset-password": {
+      "post": {
+        "summary": "重置密码",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {}
+              },
+              "example": {
+                "email": "114514@qq.com",
+                "code": "shsjak",
+                "password": "11451419191"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "msg": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "msg"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
     "/user/info": {
       "get": {
         "summary": "获取用户信息",
@@ -123,11 +502,103 @@
             "headers": {}
           }
         },
-        "security": [
-          {
-            "登录": []
+        "security": []
+      }
+    },
+    "/user/checkin": {
+      "post": {
+        "summary": "用户签到",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [],
+        "responses": {
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "msg": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "traffic_bytes": {
+                          "type": "integer"
+                        },
+                        "traffic_gb": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "traffic_bytes",
+                        "traffic_gb"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "msg",
+                    "data"
+                  ]
+                }
+              }
+            }
           }
-        ]
+        },
+        "security": []
+      }
+    },
+    "/user/logout": {
+      "post": {
+        "summary": "用户登出",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "msg": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "msg",
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": []
       }
     },
     "/user/traffic/tunnel/{tunnel_id}": {
@@ -209,11 +680,7 @@
             "headers": {}
           }
         },
-        "security": [
-          {
-            "登录": []
-          }
-        ]
+        "security": []
       }
     },
     "/user/traffic/stats": {
@@ -276,11 +743,7 @@
             "headers": {}
           }
         },
-        "security": [
-          {
-            "登录": []
-          }
-        ]
+        "security": []
       }
     },
     "/user/traffic/daily": {
@@ -435,11 +898,7 @@
             "headers": {}
           }
         },
-        "security": [
-          {
-            "登录": []
-          }
-        ]
+        "security": []
       }
     },
     "/user/traffic/tunnels": {
@@ -551,11 +1010,7 @@
             }
           }
         },
-        "security": [
-          {
-            "登录": []
-          }
-        ]
+        "security": []
       }
     },
     "/user/tunnel": {
@@ -641,11 +1096,7 @@
             "headers": {}
           }
         },
-        "security": [
-          {
-            "登录": []
-          }
-        ]
+        "security": []
       },
       "get": {
         "summary": "获取用户隧道列表",
@@ -777,11 +1228,7 @@
             }
           }
         },
-        "security": [
-          {
-            "登录": []
-          }
-        ]
+        "security": []
       }
     },
     "/user/tunnel/{tunnel_name}": {
@@ -898,11 +1345,133 @@
             "headers": {}
           }
         },
-        "security": [
+        "security": []
+      },
+      "delete": {
+        "summary": "删除隧道",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
           {
-            "登录": []
+            "name": "tunnel_name",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           }
-        ]
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "msg": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "msg",
+                    "data"
+                  ]
+                },
+                "example": {
+                  "code": 200,
+                  "msg": "删除成功",
+                  "data": {
+                    "message": "隧道已删除"
+                  }
+                }
+              }
+            },
+            "headers": {}
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "msg": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "null"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "msg",
+                    "data"
+                  ]
+                },
+                "example": {
+                  "code": 400,
+                  "msg": "隧道名称不能为空",
+                  "data": null
+                }
+              }
+            },
+            "headers": {}
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "msg": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "null"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "msg",
+                    "data"
+                  ]
+                },
+                "example": {
+                  "code": 404,
+                  "msg": "隧道不存在",
+                  "data": null
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
       }
     },
     "/user/frpc/config": {
@@ -960,11 +1529,7 @@
             "headers": {}
           }
         },
-        "security": [
-          {
-            "登录": []
-          }
-        ]
+        "security": []
       }
     },
     "/tunnel/frpc/config/{token}": {
@@ -1029,11 +1594,7 @@
             }
           }
         },
-        "security": [
-          {
-            "登录": []
-          }
-        ]
+        "security": []
       }
     },
     "/user/domain": {
@@ -1092,11 +1653,7 @@
             }
           }
         },
-        "security": [
-          {
-            "登录": []
-          }
-        ]
+        "security": []
       },
       "post": {
         "summary": "添加域名",
@@ -1179,11 +1736,7 @@
             }
           }
         },
-        "security": [
-          {
-            "登录": []
-          }
-        ]
+        "security": []
       }
     },
     "/user/domain/verify": {
@@ -1256,11 +1809,7 @@
             "headers": {}
           }
         },
-        "security": [
-          {
-            "登录": []
-          }
-        ]
+        "security": []
       }
     },
     "/user/domain/{domain_id}": {
@@ -1295,11 +1844,7 @@
             "headers": {}
           }
         },
-        "security": [
-          {
-            "登录": []
-          }
-        ]
+        "security": []
       }
     },
     "/user/nodes": {
@@ -1408,11 +1953,61 @@
             }
           }
         },
-        "security": [
-          {
-            "登录": []
+        "security": []
+      }
+    },
+    "/home": {
+      "get": {
+        "summary": "获取主页展示信息",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "msg": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "user_count": {
+                          "type": "integer"
+                        },
+                        "tunnel_count": {
+                          "type": "integer"
+                        },
+                        "total_traffic_used": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "user_count",
+                        "tunnel_count",
+                        "total_traffic_used"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "msg",
+                    "data"
+                  ]
+                }
+              }
+            }
           }
-        ]
+        },
+        "security": []
       }
     },
     "/user/oauth/apps": {
@@ -1463,11 +2058,7 @@
             }
           }
         },
-        "security": [
-          {
-            "登录": []
-          }
-        ]
+        "security": []
       }
     },
     "/user/oauth/app": {
@@ -1521,11 +2112,7 @@
             "headers": {}
           }
         },
-        "security": [
-          {
-            "登录": []
-          }
-        ]
+        "security": []
       }
     },
     "/user/oauth/app/{id}": {
@@ -1617,11 +2204,7 @@
             }
           }
         },
-        "security": [
-          {
-            "登录": []
-          }
-        ]
+        "security": []
       },
       "delete": {
         "summary": "删除应用",
@@ -1653,11 +2236,7 @@
             }
           }
         },
-        "security": [
-          {
-            "登录": []
-          }
-        ]
+        "security": []
       },
       "put": {
         "summary": "更新应用",
@@ -1689,11 +2268,7 @@
             }
           }
         },
-        "security": [
-          {
-            "登录": []
-          }
-        ]
+        "security": []
       }
     },
     "/user/oauth/app/{id}/reset-secret": {
@@ -1726,11 +2301,7 @@
             }
           }
         },
-        "security": [
-          {
-            "登录": []
-          }
-        ]
+        "security": []
       }
     },
     "/user/oauth/authorizations": {
@@ -1753,11 +2324,7 @@
             }
           }
         },
-        "security": [
-          {
-            "登录": []
-          }
-        ]
+        "security": []
       }
     },
     "/user/oauth/authorization/{client_id}": {
@@ -1802,11 +2369,7 @@
             }
           }
         },
-        "security": [
-          {
-            "登录": []
-          }
-        ]
+        "security": []
       }
     },
     "/oauth2/authorize": {
@@ -1881,11 +2444,7 @@
             "headers": {}
           }
         },
-        "security": [
-          {
-            "登录": []
-          }
-        ]
+        "security": []
       }
     },
     "/oauth2/approve": {
@@ -1973,11 +2532,7 @@
             "headers": {}
           }
         },
-        "security": [
-          {
-            "登录": []
-          }
-        ]
+        "security": []
       }
     },
     "/client/version": {
@@ -2031,11 +2586,47 @@
             "headers": {}
           }
         },
-        "security": [
-          {
-            "登录": []
+        "security": []
+      }
+    },
+    "/user/send-email": {
+      "post": {
+        "summary": "发送邮件",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {}
+              },
+              "example": {
+                "email": "",
+                "captcha_token": "",
+                "use_for": "register"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
           }
-        ]
+        },
+        "security": []
       }
     }
   },
@@ -2048,17 +2639,8 @@
       }
     },
     "responses": {},
-    "securitySchemes": {
-      "登录": {
-        "type": "http",
-        "scheme": "bearer"
-      }
-    }
+    "securitySchemes": {}
   },
   "servers": [],
-  "security": [
-    {
-      "登录": []
-    }
-  ]
+  "security": []
 }
