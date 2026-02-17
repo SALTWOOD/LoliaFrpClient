@@ -11,10 +11,11 @@
 
     <Grid Padding="20">
         <StackPanel Spacing="16">
-            <!-- 标题和刷新按钮 -->
+            <!-- 标题和操作按钮 -->
             <Grid ColumnSpacing="12">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 
@@ -23,6 +24,10 @@
                            Style="{StaticResource TitleTextBlockStyle}"/>
                 
                 <Button Grid.Column="1" 
+                        Content="创建隧道" 
+                        Click="OnCreateTunnelClick"/>
+                
+                <Button Grid.Column="2" 
                         Content="刷新" 
                         Click="OnRefreshClick"/>
             </Grid>

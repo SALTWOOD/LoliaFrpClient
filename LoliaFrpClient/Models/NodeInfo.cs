@@ -16,7 +16,6 @@ namespace LoliaFrpClient.Models
         private int _port;
         private string _status = string.Empty;
         private int _bandwidth;
-        private bool _online;
         private string _agentVersion = string.Empty;
         private string _frpsVersion = string.Empty;
         private string _sponsor = string.Empty;
@@ -140,5 +139,10 @@ namespace LoliaFrpClient.Models
                 };
             }
         }
+
+        /// <summary>
+        /// 显示名称（用于ComboBox显示）
+        /// </summary>
+        public string DisplayName { get; set; } = string.Empty;
     }
 }

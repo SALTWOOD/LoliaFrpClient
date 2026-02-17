@@ -1,3 +1,4 @@
+using LoliaFrpClient.Controls;
 using LoliaFrpClient.Models;
 using LoliaFrpClient.Services;
 using Microsoft.UI.Text;
@@ -184,6 +185,43 @@ namespace LoliaFrpClient.Pages
         }
 
         /// <summary>
+        /// 创建隧道按钮点击事件
+        /// </summary>
+        private async void OnCreateTunnelClick(object sender, RoutedEventArgs e)
+        {
+            await CreateTunnelAsync();
+        }
+
+        /// <summary>
+        /// 创建隧道
+        /// </summary>
+        private async System.Threading.Tasks.Task CreateTunnelAsync()
+        {
+            var dialog = new CreateTunnelDialog
+            {
+                XamlRoot = this.XamlRoot
+            };
+
+            var result = await dialog.ShowAsync();
+
+            if (result == ContentDialogResult.Primary)
+            {
+                try
+                {
+                    var requestBody = dialog.GetTunnelRequestBody();
+                    await _apiClientProvider.Client.User.Tunnel.PostAsync(requestBody);
+
+                    await ShowErrorDialogAsync("创建成功", "隧道已成功创建");
+                    await LoadTunnelsAsync();
+                }
+                catch (Exception ex)
+                {
+                    await ShowErrorDialogAsync("创建失败", ex.Message);
+                }
+            }
+        }
+
+        /// <summary>
         /// 搜索文本变化
         /// </summary>
         private void OnSearchTextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
@@ -251,9 +289,23 @@ namespace LoliaFrpClient.Pages
                 Title = "隧道详情",
                 Content = CreateTunnelDetailContent(tunnel),
                 CloseButtonText = "关闭",
+                PrimaryButtonText = "编辑",
+                SecondaryButtonText = "删除",
                 XamlRoot = this.XamlRoot
             };
-            await dialog.ShowAsync();
+
+            var result = await dialog.ShowAsync();
+
+            if (result == ContentDialogResult.Primary)
+            {
+                // 编辑功能（API暂不支持）
+                await ShowErrorDialogAsync("功能暂不可用", "编辑隧道功能暂未实现，请等待API支持");
+            }
+            else if (result == ContentDialogResult.Secondary)
+            {
+                // 删除功能（API暂不支持）
+                await ShowErrorDialogAsync("功能暂不可用", "删除隧道功能暂未实现，请等待API支持");
+            }
         }
 
         private UIElement CreateTunnelDetailContent(TunnelViewModel tunnel)
