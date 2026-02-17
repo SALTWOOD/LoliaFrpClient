@@ -303,8 +303,49 @@ namespace LoliaFrpClient.Pages
             }
             else if (result == ContentDialogResult.Secondary)
             {
-                // 删除功能（API暂不支持）
-                await ShowErrorDialogAsync("功能暂不可用", "删除隧道功能暂未实现，请等待API支持");
+                // 删除功能
+                await DeleteTunnelAsync(tunnel);
+            }
+        }
+
+        /// <summary>
+        /// 删除隧道
+        /// </summary>
+        private async System.Threading.Tasks.Task DeleteTunnelAsync(TunnelViewModel tunnel)
+        {
+            // 确认删除
+            var confirmDialog = new ContentDialog
+            {
+                Title = "确认删除",
+                Content = $"确定要删除隧道 \"{tunnel.Name}\" 吗？此操作不可撤销。",
+                PrimaryButtonText = "删除",
+                CloseButtonText = "取消",
+                DefaultButton = ContentDialogButton.Close,
+                XamlRoot = this.XamlRoot
+            };
+
+            var result = await confirmDialog.ShowAsync();
+
+            if (result == ContentDialogResult.Primary)
+            {
+                try
+                {
+                    // 如果隧道正在运行，先停止它
+                    if (tunnel.IsEnabled)
+                    {
+                        await DisableTunnelAsync(tunnel);
+                    }
+
+                    // 调用API删除隧道
+                    await _apiClientProvider.Client.User.Tunnel[tunnel.Name].DeleteAsWithTunnel_nameDeleteResponseAsync();
+
+                    await ShowErrorDialogAsync("删除成功", $"隧道 \"{tunnel.Name}\" 已成功删除");
+                    await LoadTunnelsAsync();
+                }
+                catch (Exception ex)
+                {
+                    await ShowErrorDialogAsync("删除失败", ex.Message);
+                }
             }
         }
 

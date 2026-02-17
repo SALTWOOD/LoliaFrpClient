@@ -148,13 +148,6 @@ namespace LoliaFrpClient.Controls
                 return false;
             }
 
-            // 验证远程端口
-            if (RemotePortNumberBox.Value <= 0)
-            {
-                errorMessage = "请输入有效的远程端口";
-                return false;
-            }
-
             // 验证自定义域名（HTTP/HTTPS）
             if (TypeComboBox.SelectedItem is ComboBoxItem selectedItem)
             {
@@ -184,7 +177,7 @@ namespace LoliaFrpClient.Controls
                     NodeId = node.Id,
                     LocalIp = LocalIpTextBox.Text,
                     LocalPort = (int)LocalPortNumberBox.Value,
-                    RemotePort = (int)RemotePortNumberBox.Value,
+                    RemotePort = RemotePortNumberBox.Value > 0 ? (int?)RemotePortNumberBox.Value : null,
                     CustomDomain = CustomDomainTextBox.Text,
                     Remark = RemarkTextBox.Text
                 };
