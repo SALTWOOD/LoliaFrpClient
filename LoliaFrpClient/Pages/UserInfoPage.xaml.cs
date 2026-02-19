@@ -4,7 +4,10 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Linq;
 
 namespace LoliaFrpClient.Pages
 {
@@ -15,6 +18,31 @@ namespace LoliaFrpClient.Pages
     {
         private readonly ApiClientProvider _apiClientProvider;
         public UserInfoViewModel ViewModel { get; }
+
+        private ObservableCollection<TunnelTrafficViewModel> _tunnelTraffics = new ObservableCollection<TunnelTrafficViewModel>();
+        private ObservableCollection<DailyTrafficViewModel> _dailyTraffics = new ObservableCollection<DailyTrafficViewModel>();
+
+        public List<DailyTrafficViewModel> DailyTrafficsList => _dailyTraffics.ToList();
+
+        public ObservableCollection<TunnelTrafficViewModel> TunnelTraffics
+        {
+            get => _tunnelTraffics;
+            set
+            {
+                _tunnelTraffics = value;
+                OnPropertyChanged(nameof(TunnelTraffics));
+            }
+        }
+
+        public ObservableCollection<DailyTrafficViewModel> DailyTraffics
+        {
+            get => _dailyTraffics;
+            set
+            {
+                _dailyTraffics = value;
+                OnPropertyChanged(nameof(DailyTraffics));
+            }
+        }
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -34,6 +62,7 @@ namespace LoliaFrpClient.Pages
         private async void OnPageLoaded(object sender, RoutedEventArgs e)
         {
             await LoadUserInfoAsync();
+            await LoadTrafficStatsAsync();
         }
 
         private async System.Threading.Tasks.Task LoadUserInfoAsync()
@@ -71,9 +100,67 @@ namespace LoliaFrpClient.Pages
             }
         }
 
+        private async System.Threading.Tasks.Task LoadTrafficStatsAsync()
+        {
+            LoadingRing.IsActive = true;
+            TunnelTrafficListView.Visibility = Visibility.Collapsed;
+
+            try
+            {
+                // 加载每日流量统计
+                var dailyResponse = await _apiClientProvider.Client.User.Traffic.Daily.GetAsDailyGetResponseAsync(
+                    config => config.QueryParameters.Days = "7");
+
+                var dailyStatsList = dailyResponse?.Data?.DailyStats;
+                
+                if (dailyStatsList != null)
+                {
+                    DailyTraffics.Clear();
+                    foreach (var item in dailyStatsList)
+                    {
+                        DailyTraffics.Add(new DailyTrafficViewModel
+                        {
+                            Date = item.Date ?? string.Empty,
+                            InboundBytes = item.TotalIn ?? 0,
+                            OutboundBytes = item.TotalOut ?? 0
+                        });
+                    }
+                    OnPropertyChanged(nameof(DailyTrafficsList));
+                }
+
+                // 加载隧道流量统计
+                var tunnelsResponse = await _apiClientProvider.Client.User.Traffic.Tunnels.GetAsTunnelsGetResponseAsync();
+                var tunnelTraffics = tunnelsResponse?.Data?.Tunnels;
+                if (tunnelTraffics != null)
+                {
+                    TunnelTraffics.Clear();
+                    foreach (var traffic in tunnelTraffics)
+                    {
+                        TunnelTraffics.Add(new TunnelTrafficViewModel
+                        {
+                            TunnelName = traffic.TunnelName ?? string.Empty,
+                            InboundBytes = traffic.TotalIn ?? 0,
+                            OutboundBytes = traffic.TotalOut ?? 0
+                        });
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[API ERROR] {ex.Message}");
+                await ShowErrorDialogAsync("加载流量统计失败", ex.Message);
+            }
+            finally
+            {
+                LoadingRing.IsActive = false;
+                TunnelTrafficListView.Visibility = Visibility.Visible;
+            }
+        }
+
         private async void OnRefreshClick(object sender, RoutedEventArgs e)
         {
             await LoadUserInfoAsync();
+            await LoadTrafficStatsAsync();
         }
 
         public string IsBanedText => ViewModel.IsBaned ? "已封禁" : "正常";

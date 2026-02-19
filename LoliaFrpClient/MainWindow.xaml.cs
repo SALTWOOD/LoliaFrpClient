@@ -101,10 +101,6 @@ namespace LoliaFrpClient
             {
                 selectedItem = Page2NavItem;
             }
-            else if (currentPageType == typeof(TrafficStatsPage))
-            {
-                selectedItem = Page3NavItem;
-            }
             else if (currentPageType == typeof(Page4))
             {
                 selectedItem = Page4NavItem;
@@ -129,9 +125,6 @@ namespace LoliaFrpClient
                         break;
                     case "Page2":
                         ContentFrame.Navigate(typeof(TunnelListPage));
-                        break;
-                    case "Page3":
-                        ContentFrame.Navigate(typeof(TrafficStatsPage));
                         break;
                     case "Page4":
                         ContentFrame.Navigate(typeof(Page4));

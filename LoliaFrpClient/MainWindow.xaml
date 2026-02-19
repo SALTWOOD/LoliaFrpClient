@@ -57,11 +57,6 @@
                         <SymbolIcon Symbol="Globe"/>
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
-                <NavigationViewItem x:Name="Page3NavItem" Content="流量统计" Tag="Page3">
-                    <NavigationViewItem.Icon>
-                        <SymbolIcon Symbol="Folder"/>
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
                 <NavigationViewItem x:Name="Page4NavItem" Content="Page 4" Tag="Page4">
                     <NavigationViewItem.Icon>
                         <SymbolIcon Symbol="Contact"/>
