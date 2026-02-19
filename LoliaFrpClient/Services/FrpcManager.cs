@@ -428,16 +428,14 @@ namespace LoliaFrpClient.Services
             if (_tunnelProcesses.TryGetValue(tunnelId, out var info))
             {
                 var tunnelName = info.TunnelName;
+                var file = info.Process.StartInfo.FileName;
                 var arguments = info.Process.StartInfo.Arguments;
                 
                 // 停止进程
                 StopTunnelProcess(tunnelId);
                 
-                // 等待一小段时间
-                Thread.Sleep(500);
-                
                 // 重新启动
-                return StartTunnelProcess(tunnelId, tunnelName, arguments);
+                return StartTunnelProcess(tunnelId, tunnelName, file, arguments);
             }
             return false;
         }
