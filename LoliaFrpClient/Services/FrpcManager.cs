@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
@@ -11,6 +12,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 
+
 namespace LoliaFrpClient.Services
 {
     /// <summary>
@@ -18,10 +20,36 @@ namespace LoliaFrpClient.Services
     /// </summary>
     public class FrpcProcessInfo
     {
+        private bool _hasExited = false;
+        
         public Process Process { get; set; } = null!;
         public int TunnelId { get; set; }
+        public string TunnelName { get; set; } = string.Empty;
         public DateTime StartTime { get; set; }
-        public bool IsRunning => !Process.HasExited;
+        
+        public bool IsRunning
+        {
+            get
+            {
+                if (_hasExited) return false;
+                try
+                {
+                    return Process != null && !Process.HasExited;
+                }
+                catch
+                {
+                    return false;
+                }
+            }
+        }
+        
+        public void MarkAsExited()
+        {
+            _hasExited = true;
+        }
+        
+        public ObservableCollection<string> LogOutput { get; } = new ObservableCollection<string>();
+        public int MaxLogLines { get; set; } = 500;
     }
 
     /// <summary>
@@ -50,6 +78,12 @@ namespace LoliaFrpClient.Services
         public string? InstalledVersion { get; private set; }
 
         public bool IsAnyProcessRunning => _tunnelProcesses.Values.Any(p => p.IsRunning);
+
+        public IEnumerable<FrpcProcessInfo> RunningProcesses => _tunnelProcesses.Values.Where(p => p.IsRunning);
+
+        public event EventHandler<FrpcProcessInfo>? TunnelProcessExited;
+        public event EventHandler<FrpcProcessInfo>? TunnelProcessStarted;
+        public event EventHandler<(int TunnelId, string LogLine)>? TunnelProcessLogAdded;
 
         public FrpcManager(string? frpcDirectory = null)
         {
@@ -233,7 +267,7 @@ namespace LoliaFrpClient.Services
 
         #region Process Control
 
-        public bool StartTunnelProcess(int tunnelId, string? arguments = null)
+        public bool StartTunnelProcess(int tunnelId, string tunnelName, string? arguments = null)
         {
             if (_tunnelProcesses.TryGetValue(tunnelId, out var existing) && existing.IsRunning)
                 throw new InvalidOperationException($"Tunnel {tunnelId} process is already running.");
@@ -250,17 +284,47 @@ namespace LoliaFrpClient.Services
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
                     CreateNoWindow = true,
-                    WorkingDirectory = _frpcDirectory // 显式设置工作目录
+                    WorkingDirectory = _frpcDirectory, // 显式设置工作目录
+                    StandardOutputEncoding = System.Text.Encoding.UTF8,
+                    StandardErrorEncoding = System.Text.Encoding.UTF8
                 };
 
                 var process = new Process { StartInfo = startInfo, EnableRaisingEvents = true };
+                
+                var info = new FrpcProcessInfo 
+                { 
+                    Process = process, 
+                    TunnelId = tunnelId, 
+                    TunnelName = tunnelName, 
+                    StartTime = DateTime.Now 
+                };
+
+                // 设置输出重定向事件
+                process.OutputDataReceived += (s, e) =>
+                {
+                    if (!string.IsNullOrEmpty(e.Data))
+                    {
+                        AddLog(info, e.Data);
+                    }
+                };
+
+                process.ErrorDataReceived += (s, e) =>
+                {
+                    if (!string.IsNullOrEmpty(e.Data))
+                    {
+                        AddLog(info, $"[ERROR] {e.Data}");
+                    }
+                };
+
                 process.Exited += (s, e) => OnTunnelProcessExited(tunnelId);
 
                 if (process.Start())
                 {
-                    var info = new FrpcProcessInfo { Process = process, TunnelId = tunnelId, StartTime = DateTime.Now };
                     _tunnelProcesses[tunnelId] = info;
-                    Log($"[PROCESS] Started tunnel {tunnelId}. PID: {process.Id}");
+                    process.BeginOutputReadLine();
+                    process.BeginErrorReadLine();
+                    Log($"[PROCESS] Started tunnel {tunnelId} ({tunnelName}). PID: {process.Id}");
+                    TunnelProcessStarted?.Invoke(this, info);
                     return true;
                 }
                 return false;
@@ -271,10 +335,29 @@ namespace LoliaFrpClient.Services
             }
         }
 
+        private void AddLog(FrpcProcessInfo info, string message)
+        {
+            var timestamp = DateTime.Now.ToString("HH:mm:ss");
+            var logLine = $"[{timestamp}] {message}";
+            
+            // 保存到进程信息的日志集合中
+            info.LogOutput.Add(logLine);
+            
+            // 限制日志行数为500行
+            while (info.LogOutput.Count > info.MaxLogLines)
+            {
+                info.LogOutput.RemoveAt(0);
+            }
+            
+            // 通过事件通知 UI 层添加日志
+            TunnelProcessLogAdded?.Invoke(this, (info.TunnelId, logLine));
+        }
+
         public bool StopTunnelProcess(int tunnelId)
         {
             if (_tunnelProcesses.TryRemove(tunnelId, out var info))
             {
+                info.MarkAsExited();
                 try
                 {
                     if (!info.Process.HasExited)
@@ -286,9 +369,28 @@ namespace LoliaFrpClient.Services
                     }
                 }
                 catch (Exception ex) { Log($"[ERROR] Stop process error: {ex.Message}"); }
-                finally { info.Process.Dispose(); }
+                finally { try { info.Process.Dispose(); } catch { } }
             }
             return true;
+        }
+
+        public bool RestartTunnelProcess(int tunnelId)
+        {
+            if (_tunnelProcesses.TryGetValue(tunnelId, out var info))
+            {
+                var tunnelName = info.TunnelName;
+                var arguments = info.Process.StartInfo.Arguments;
+                
+                // 停止进程
+                StopTunnelProcess(tunnelId);
+                
+                // 等待一小段时间
+                Thread.Sleep(500);
+                
+                // 重新启动
+                return StartTunnelProcess(tunnelId, tunnelName, arguments);
+            }
+            return false;
         }
 
         public void StopAllTunnelProcesses()
@@ -300,19 +402,34 @@ namespace LoliaFrpClient.Services
             }
         }
 
+        public FrpcProcessInfo? GetProcessInfo(int tunnelId)
+        {
+            _tunnelProcesses.TryGetValue(tunnelId, out var info);
+            return info;
+        }
+
+        public IReadOnlyList<FrpcProcessInfo> GetAllProcesses()
+        {
+            return _tunnelProcesses.Values.ToList();
+        }
+
         #endregion
 
         #region Events and Helpers
 
-        public event EventHandler<FrpcProcessInfo>? TunnelProcessExited;
-
         private void OnTunnelProcessExited(int tunnelId)
         {
-            if (_tunnelProcesses.TryRemove(tunnelId, out var info))
+            if (_tunnelProcesses.TryGetValue(tunnelId, out var info))
             {
+                info.MarkAsExited();
                 Log($"[EVENT] Tunnel {tunnelId} exited.");
                 TunnelProcessExited?.Invoke(this, info);
-                info.Process.Dispose();
+                
+                // 从字典中移除
+                _tunnelProcesses.TryRemove(tunnelId, out _);
+                
+                // 延迟释放进程对象
+                try { info.Process.Dispose(); } catch { }
             }
         }
 

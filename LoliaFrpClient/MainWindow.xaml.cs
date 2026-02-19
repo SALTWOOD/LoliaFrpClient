@@ -101,9 +101,9 @@ namespace LoliaFrpClient
             {
                 selectedItem = Page2NavItem;
             }
-            else if (currentPageType == typeof(Page4))
+            else if (currentPageType == typeof(FrpcManagerPage))
             {
-                selectedItem = Page4NavItem;
+                selectedItem = FrpcManagerNavItem;
             }
 
             if (selectedItem != null)
@@ -126,8 +126,8 @@ namespace LoliaFrpClient
                     case "Page2":
                         ContentFrame.Navigate(typeof(TunnelListPage));
                         break;
-                    case "Page4":
-                        ContentFrame.Navigate(typeof(Page4));
+                    case "FrpcManager":
+                        ContentFrame.Navigate(typeof(FrpcManagerPage));
                         break;
                     case "Theme":
                         ToggleTheme();

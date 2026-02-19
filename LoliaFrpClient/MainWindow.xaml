@@ -57,9 +57,9 @@
                         <SymbolIcon Symbol="Globe"/>
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
-                <NavigationViewItem x:Name="Page4NavItem" Content="Page 4" Tag="Page4">
+                <NavigationViewItem x:Name="FrpcManagerNavItem" Content="Frpc 管理" Tag="FrpcManager">
                     <NavigationViewItem.Icon>
-                        <SymbolIcon Symbol="Contact"/>
+                        <SymbolIcon Symbol="Manage"/>
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
             </NavigationView.MenuItems>
