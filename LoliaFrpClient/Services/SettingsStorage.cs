@@ -1,4 +1,7 @@
 using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Text.Json;
 using Windows.Storage;
 
 namespace LoliaFrpClient.Services
@@ -11,11 +14,70 @@ namespace LoliaFrpClient.Services
         private static readonly Lazy<SettingsStorage> _instance = new Lazy<SettingsStorage>(() => new SettingsStorage());
         public static SettingsStorage Instance => _instance.Value;
 
-        private readonly ApplicationDataContainer _localSettings;
+        private readonly ApplicationDataContainer? _localSettings;
+        private readonly bool _useFileStorage;
+        private readonly string _settingsFilePath;
+        private Dictionary<string, object?> _fileSettings;
 
         private SettingsStorage()
         {
-            _localSettings = ApplicationData.Current.LocalSettings;
+            if (Utils.IsPackaged())
+            {
+                _localSettings = ApplicationData.Current.LocalSettings;
+                _useFileStorage = false;
+                _settingsFilePath = string.Empty;
+                _fileSettings = new Dictionary<string, object?>();
+            }
+            else
+            {
+                _localSettings = null;
+                _useFileStorage = true;
+
+                var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+                var appFolder = Path.Combine(appDataPath, "LoliaFrpClient");
+
+                if (!Directory.Exists(appFolder))
+                {
+                    Directory.CreateDirectory(appFolder);
+                }
+
+                _settingsFilePath = Path.Combine(appFolder, "settings.json");
+                _fileSettings = LoadSettingsFromFile();
+            }
+        }
+
+        /// <summary>
+        /// Load settings from a file
+        /// </summary>
+        private Dictionary<string, object?> LoadSettingsFromFile()
+        {
+            if (!File.Exists(_settingsFilePath))
+            {
+                return new Dictionary<string, object?>();
+            }
+
+            try
+            {
+                var json = File.ReadAllText(_settingsFilePath);
+                return JsonSerializer.Deserialize<Dictionary<string, object?>>(json)
+                    ?? new Dictionary<string, object?>();
+            }
+            catch
+            {
+                return new Dictionary<string, object?>();
+            }
+        }
+
+        /// <summary>
+        /// Save settings to a file
+        /// </summary>
+        private void SaveSettingsToFile()
+        {
+            var json = JsonSerializer.Serialize(_fileSettings, new JsonSerializerOptions
+            {
+                WriteIndented = true
+            });
+            File.WriteAllText(_settingsFilePath, json);
         }
 
         /// <summary>
@@ -59,14 +121,32 @@ namespace LoliaFrpClient.Services
         /// </summary>
         public T Read<T>(string key, T defaultValue = default!)
         {
-            if (_localSettings.Values.TryGetValue(key, out var value))
+            if (_useFileStorage)
             {
-                if (value is T typedValue)
+                if (_fileSettings.TryGetValue(key, out var value))
                 {
-                    return typedValue;
+                    if (value is JsonElement jsonElement)
+                    {
+                        return JsonSerializer.Deserialize<T>(jsonElement.GetRawText()) ?? defaultValue;
+                    }
+                    if (value is T typedValue)
+                    {
+                        return typedValue;
+                    }
                 }
+                return defaultValue;
             }
-            return defaultValue;
+            else
+            {
+                if (_localSettings!.Values.TryGetValue(key, out var value))
+                {
+                    if (value is T typedValue)
+                    {
+                        return typedValue;
+                    }
+                }
+                return defaultValue;
+            }
         }
 
         /// <summary>
@@ -74,7 +154,15 @@ namespace LoliaFrpClient.Services
         /// </summary>
         public void Write<T>(string key, T value)
         {
-            _localSettings.Values[key] = value;
+            if (_useFileStorage)
+            {
+                _fileSettings[key] = value;
+                SaveSettingsToFile();
+            }
+            else
+            {
+                _localSettings!.Values[key] = value;
+            }
         }
 
         /// <summary>
@@ -82,7 +170,15 @@ namespace LoliaFrpClient.Services
         /// </summary>
         public void Delete(string key)
         {
-            _localSettings.Values.Remove(key);
+            if (_useFileStorage)
+            {
+                _fileSettings.Remove(key);
+                SaveSettingsToFile();
+            }
+            else
+            {
+                _localSettings!.Values.Remove(key);
+            }
         }
 
         /// <summary>
@@ -90,7 +186,15 @@ namespace LoliaFrpClient.Services
         /// </summary>
         public void Clear()
         {
-            _localSettings.Values.Clear();
+            if (_useFileStorage)
+            {
+                _fileSettings.Clear();
+                SaveSettingsToFile();
+            }
+            else
+            {
+                _localSettings!.Values.Clear();
+            }
         }
     }
 }
