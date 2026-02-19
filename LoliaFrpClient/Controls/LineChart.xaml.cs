@@ -2,6 +2,7 @@ using LoliaFrpClient.Models;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
+using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Shapes;
 using System;
@@ -31,10 +32,38 @@ namespace LoliaFrpClient.Controls
         public static readonly DependencyProperty DataProperty =
             DependencyProperty.Register(nameof(Data), typeof(List<DailyTrafficViewModel>), typeof(LineChart), new PropertyMetadata(null, OnDataChanged));
 
+        private Popup? _tooltipPopup;
+        private Border? _tooltipBorder;
+        private TextBlock? _tooltipText;
+
         public LineChart()
         {
             this.InitializeComponent();
             this.SizeChanged += OnSizeChanged;
+            CreateTooltip();
+        }
+
+        private void CreateTooltip()
+        {
+            _tooltipText = new TextBlock
+            {
+                FontSize = 12,
+                Foreground = new SolidColorBrush(Microsoft.UI.Colors.White),
+                TextWrapping = TextWrapping.Wrap
+            };
+
+            _tooltipBorder = new Border
+            {
+                Background = new SolidColorBrush(Microsoft.UI.Colors.Gray),
+                CornerRadius = new CornerRadius(4),
+                Padding = new Thickness(8),
+                Child = _tooltipText
+            };
+
+            _tooltipPopup = new Popup
+            {
+                Child = _tooltipBorder
+            };
         }
 
         private static void OnDataChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -95,6 +124,9 @@ namespace LoliaFrpClient.Controls
 
             // 绘制图例
             DrawLegend(canvasWidth);
+
+            // 绘制可交互的数据点区域
+            DrawInteractivePoints(maxValue, canvasWidth, canvasHeight);
         }
 
         private void DrawGridLines(double width, double height)
@@ -179,7 +211,8 @@ namespace LoliaFrpClient.Controls
                     Height = 6,
                     Fill = strokeBrush,
                     Stroke = (SolidColorBrush)Application.Current.Resources["CardBackgroundFillColorDefaultBrush"],
-                    StrokeThickness = 2
+                    StrokeThickness = 2,
+                    IsHitTestVisible = false
                 };
                 Canvas.SetLeft(ellipse, x - 3);
                 Canvas.SetTop(ellipse, y - 3);
@@ -187,6 +220,83 @@ namespace LoliaFrpClient.Controls
             }
 
             ChartCanvas.Children.Add(polyline);
+        }
+
+        private void DrawInteractivePoints(long maxValue, double width, double height)
+        {
+            int dataCount = Data.Count;
+            if (dataCount < 1) return;
+
+            for (int i = 0; i < dataCount; i++)
+            {
+                double x = width * i / (Math.Max(1, dataCount - 1));
+                var data = Data[i];
+
+                // 创建一个透明的可点击区域
+                var hitArea = new Rectangle
+                {
+                    Width = width / Math.Max(1, dataCount - 1),
+                    Height = height + 30, // 包含日期标签区域
+                    Fill = new SolidColorBrush(Microsoft.UI.Colors.Transparent),
+                    Tag = i // 存储数据索引
+                };
+
+                Canvas.SetLeft(hitArea, x - (width / Math.Max(1, dataCount - 1)) / 2);
+                Canvas.SetTop(hitArea, 0);
+
+                hitArea.PointerEntered += OnPointPointerEntered;
+                hitArea.PointerExited += OnPointPointerExited;
+
+                ChartCanvas.Children.Add(hitArea);
+            }
+        }
+
+        private void OnPointPointerEntered(object sender, PointerRoutedEventArgs e)
+        {
+            if (sender is Rectangle rect && rect.Tag is int index && index >= 0 && index < Data.Count)
+            {
+                var data = Data[index];
+                var position = e.GetCurrentPoint(ChartCanvas).Position;
+
+                _tooltipText!.Text = $"{data.Date}\n入站: {data.FormattedInbound}\n出站: {data.FormattedOutbound}";
+                
+                // 确保 Popup 有 XamlRoot
+                if (_tooltipPopup!.XamlRoot == null)
+                {
+                    _tooltipPopup.XamlRoot = this.XamlRoot;
+                }
+                
+                // 计算 Tooltip 位置
+                double popupX = position.X + 10;
+                double popupY = position.Y - 60;
+
+                // 确保 Tooltip 不超出画布边界
+                _tooltipBorder!.Measure(new Windows.Foundation.Size(double.PositiveInfinity, double.PositiveInfinity));
+                double tooltipWidth = _tooltipBorder.DesiredSize.Width;
+                double tooltipHeight = _tooltipBorder.DesiredSize.Height;
+
+                if (popupX + tooltipWidth > ChartCanvas.ActualWidth)
+                {
+                    popupX = position.X - tooltipWidth - 10;
+                }
+                if (popupY < 0)
+                {
+                    popupY = position.Y + 20;
+                }
+
+                // 转换为屏幕坐标
+                var transform = ChartCanvas.TransformToVisual(this.XamlRoot.Content);
+                var screenPoint = transform.TransformPoint(new Windows.Foundation.Point(popupX, popupY));
+
+                _tooltipPopup.HorizontalOffset = screenPoint.X;
+                _tooltipPopup.VerticalOffset = screenPoint.Y;
+                _tooltipPopup.IsOpen = true;
+            }
+        }
+
+        private void OnPointPointerExited(object sender, PointerRoutedEventArgs e)
+        {
+            _tooltipPopup!.IsOpen = false;
         }
 
         private void DrawLegend(double width)
