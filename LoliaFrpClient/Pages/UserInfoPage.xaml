@@ -201,17 +201,21 @@
                                             </Grid.RowDefinitions>
 
                                             <TextBlock Grid.Row="0" Grid.Column="0"
-                                                       Text="{x:Bind TunnelName, Mode=OneWay}"
+                                                       Text="{x:Bind TunnelRemark, Mode=OneWay}"
                                                        Style="{StaticResource BodyStrongTextBlockStyle}"
                                                        FontWeight="SemiBold"/>
 
                                             <TextBlock Grid.Row="1" Grid.Column="0"
-                                                       Text="入站: {x:Bind FormattedInbound, Mode=OneWay}"
-                                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}">
+                                                <Run Text="入站: "/>
+                                                <Run Text="{x:Bind FormattedInbound, Mode=OneWay}"/>
+                                            </TextBlock>
 
                                             <TextBlock Grid.Row="2" Grid.Column="0"
-                                                       Text="出站: {x:Bind FormattedOutbound, Mode=OneWay}"
-                                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}">
+                                                <Run Text="出站: "/>
+                                                <Run Text="{x:Bind FormattedOutbound, Mode=OneWay}"/>
+                                            </TextBlock>
 
                                             <TextBlock Grid.Row="0" Grid.Column="1"
                                                        Text="{x:Bind FormattedTotal, Mode=OneWay}"

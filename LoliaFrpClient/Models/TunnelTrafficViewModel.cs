@@ -10,6 +10,7 @@ namespace LoliaFrpClient.Models
     {
         private int _tunnelId;
         private string _tunnelName = string.Empty;
+        private string _tunnelRemark = string.Empty;
         private long _inboundBytes;
         private long _outboundBytes;
         private long _totalBytes;
@@ -31,6 +32,12 @@ namespace LoliaFrpClient.Models
         {
             get => _tunnelName;
             set { _tunnelName = value; OnPropertyChanged(); }
+        }
+
+        public string TunnelRemark
+        {
+            get => _tunnelRemark;
+            set { _tunnelRemark = value; OnPropertyChanged(); }
         }
 
         public long InboundBytes

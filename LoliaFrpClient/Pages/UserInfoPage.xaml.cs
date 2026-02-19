@@ -139,6 +139,7 @@ namespace LoliaFrpClient.Pages
                         TunnelTraffics.Add(new TunnelTrafficViewModel
                         {
                             TunnelName = traffic.TunnelName ?? string.Empty,
+                            TunnelRemark = traffic.Remark ?? "<已删除>",
                             InboundBytes = traffic.TotalIn ?? 0,
                             OutboundBytes = traffic.TotalOut ?? 0
                         });
