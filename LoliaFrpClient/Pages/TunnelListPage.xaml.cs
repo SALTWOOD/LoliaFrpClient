@@ -484,7 +484,8 @@ namespace LoliaFrpClient.Pages
 
                 // 使用 frpc 启动隧道
                 var tunnelId = tunnel.Id.ToString();
-                var success = _frpcManager.StartTunnelProcess(tunnel.Id, tunnel.Name, $"-t {tunnelId}:{token}");
+                var tunnelRemark = tunnel.Remark ?? string.Empty;
+                var success = _frpcManager.StartTunnelProcess(tunnel.Id, tunnel.Name, tunnelRemark, $"-t {tunnelId}:{token}");
 
                 if (success)
                 {

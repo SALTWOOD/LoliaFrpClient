@@ -176,19 +176,6 @@ namespace LoliaFrpClient.Models
         /// <summary>
         /// ID 显示文本
         /// </summary>
-        public string IdDisplayText
-        {
-            get
-            {
-                if (HasRemark)
-                {
-                    return $"{Remark} (ID: {Id})";
-                }
-                else
-                {
-                    return $"ID: {Id}";
-                }
-            }
-        }
+        public string NameDisplayText => $"{Name} (ID: {Id})";
     }
 }

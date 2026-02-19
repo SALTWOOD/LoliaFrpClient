@@ -175,7 +175,7 @@
                                 </TextBlock>
 
                                 <TextBlock Grid.Row="4" Grid.Column="0"
-                                           Text="{Binding IdDisplayText}"
+                                           Text="{Binding NameDisplayText}"
                                            Style="{StaticResource CaptionTextBlockStyle}"
                                            Foreground="{ThemeResource TextFillColorTertiaryBrush}"/>
                             </Grid>

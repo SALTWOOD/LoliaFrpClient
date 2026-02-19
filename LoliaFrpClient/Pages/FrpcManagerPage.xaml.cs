@@ -21,7 +21,13 @@ namespace LoliaFrpClient.Pages
 
         public int TunnelId { get; set; }
         public string TunnelName { get; set; } = string.Empty;
+        public string TunnelRemark { get; set; } = string.Empty;
         public FrpcProcessInfo? ProcessInfo { get; set; }
+
+        /// <summary>
+        /// 显示名称：优先显示 remark，如果为空则显示 name
+        /// </summary>
+        public string DisplayName => string.IsNullOrWhiteSpace(TunnelRemark) ? TunnelName : TunnelRemark;
 
         public bool IsRunning
         {
@@ -124,6 +130,7 @@ namespace LoliaFrpClient.Pages
                 {
                     TunnelId = process.TunnelId,
                     TunnelName = process.TunnelName,
+                    TunnelRemark = process.TunnelRemark,
                     ProcessInfo = process,
                     IsRunning = process.IsRunning
                 };
@@ -150,6 +157,7 @@ namespace LoliaFrpClient.Pages
                     {
                         TunnelId = info.TunnelId,
                         TunnelName = info.TunnelName,
+                        TunnelRemark = info.TunnelRemark,
                         ProcessInfo = info,
                         IsRunning = true
                     });
@@ -245,7 +253,8 @@ namespace LoliaFrpClient.Pages
             }
 
             var info = SelectedProcess.ProcessInfo;
-            DetailTitle.Text = info.TunnelName;
+            // 优先显示 remark，如果为空则显示 name
+            DetailTitle.Text = string.IsNullOrWhiteSpace(info.TunnelRemark) ? info.TunnelName : info.TunnelRemark;
             ControlButtons.Visibility = Visibility.Visible;
             ProcessInfoPanel.Visibility = Visibility.Visible;
 

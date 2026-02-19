@@ -64,6 +64,7 @@ namespace LoliaFrpClient.Services
         public Process Process { get; set; } = null!;
         public int TunnelId { get; set; }
         public string TunnelName { get; set; } = string.Empty;
+        public string TunnelRemark { get; set; } = string.Empty;
         public DateTime StartTime { get; set; }
         
         public bool IsRunning
@@ -313,7 +314,7 @@ namespace LoliaFrpClient.Services
 
         #region Process Control
 
-        public bool StartTunnelProcess(int tunnelId, string tunnelName, string? arguments = null)
+        public bool StartTunnelProcess(int tunnelId, string tunnelName, string tunnelRemark, string? arguments = null)
         {
             if (_tunnelProcesses.TryGetValue(tunnelId, out var existing) && existing.IsRunning)
                 throw new InvalidOperationException($"Tunnel {tunnelId} process is already running.");
@@ -342,6 +343,7 @@ namespace LoliaFrpClient.Services
                     Process = process, 
                     TunnelId = tunnelId, 
                     TunnelName = tunnelName, 
+                    TunnelRemark = tunnelRemark,
                     StartTime = DateTime.Now 
                 };
 

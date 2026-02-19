@@ -55,7 +55,7 @@
                                         VerticalAlignment="Center"/>
 
                                 <StackPanel Grid.Column="1" Spacing="2">
-                                    <TextBlock Text="{x:Bind TunnelName, Mode=OneWay}" 
+                                    <TextBlock Text="{x:Bind DisplayName, Mode=OneWay}" 
                                                FontWeight="SemiBold"
                                                TextTrimming="CharacterEllipsis"/>
                                     <TextBlock Text="{x:Bind StatusText, Mode=OneWay}" 
