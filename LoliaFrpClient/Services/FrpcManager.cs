@@ -12,9 +12,48 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 
-
 namespace LoliaFrpClient.Services
 {
+    /// <summary>
+    /// Windows Job Object API用于管理子进程生命周期
+    /// </summary>
+    internal static class JobObjectApi
+    {
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
+        public static extern IntPtr CreateJobObject(IntPtr lpJobAttributes, string lpName);
+
+        [DllImport("kernel32.dll")]
+        public static extern bool SetInformationJobObject(IntPtr hJob, JOBOBJECTINFOCLASS JobObjectInfoClass,ref JOBOBJECT_BASIC_LIMIT_INFORMATION lpJobObjectInfo, uint cbJobObjectInfoLength);
+
+        [DllImport("kernel32.dll")]
+        public static extern bool AssignProcessToJobObject(IntPtr hJob, IntPtr hProcess);
+
+        [DllImport("kernel32.dll")]
+        public static extern bool CloseHandle(IntPtr hObject);
+
+        [DllImport("kernel32.dll")]
+        public static extern bool TerminateJobObject(IntPtr hJob, uint uExitCode);
+    }
+
+    internal enum JOBOBJECTINFOCLASS
+    {
+        BasicLimitInformation = 2
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct JOBOBJECT_BASIC_LIMIT_INFORMATION
+    {
+        public long PerProcessUserTimeLimit;
+        public long PerJobUserTimeLimit;
+        public uint LimitFlags;
+        public UIntPtr MinimumWorkingSetSize;
+        public UIntPtr MaximumWorkingSetSize;
+        public uint ActiveProcessLimit;
+        public long Affinity;
+        public uint PriorityClass;
+        public uint SchedulingClass;
+    }
+
     /// <summary>
     /// Frpc 进程信息
     /// </summary>
@@ -65,7 +104,7 @@ namespace LoliaFrpClient.Services
     /// <summary>
     /// Frpc 管理器
     /// </summary>
-    public class FrpcManager
+    public class FrpcManager : IDisposable
     {
         private static readonly HttpClient _httpClient = new HttpClient();
         private readonly string _frpcDirectory;
@@ -74,6 +113,10 @@ namespace LoliaFrpClient.Services
         private readonly ConcurrentDictionary<int, FrpcProcessInfo> _tunnelProcesses = new();
 
         private readonly SemaphoreSlim _installSemaphore = new SemaphoreSlim(1, 1);
+
+        // Windows Job Object 用于管理子进程生命周期
+        private IntPtr _jobHandle;
+        private bool _disposed = false;
 
         public string? InstalledVersion { get; private set; }
 
@@ -99,6 +142,9 @@ namespace LoliaFrpClient.Services
 
             // 沟槽的路径映射
             Log($"[INIT] Frpc Directory: {_frpcDirectory}");
+
+            // 初始化 Windows Job Object（仅在 Windows 上）
+            InitializeJobObject();
 
             if (!Directory.Exists(_frpcDirectory))
             {
@@ -320,6 +366,9 @@ namespace LoliaFrpClient.Services
 
                 if (process.Start())
                 {
+                    // 将进程分配到 Job Object，使其随父进程退出
+                    AssignProcessToJob(process);
+                    
                     _tunnelProcesses[tunnelId] = info;
                     process.BeginOutputReadLine();
                     process.BeginErrorReadLine();
@@ -458,6 +507,97 @@ namespace LoliaFrpClient.Services
         private void Log(string message)
         {
             Debug.WriteLine($"[FrpcManager] {message}");
+        }
+
+        #endregion
+
+        #region Job Object Management
+
+        private void InitializeJobObject()
+        {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                Log("[JOB] Job Object only supported on Windows");
+                return;
+            }
+
+            try
+            {
+                // 创建 Job Object
+                _jobHandle = JobObjectApi.CreateJobObject(IntPtr.Zero, null);
+                if (_jobHandle == IntPtr.Zero)
+                {
+                    Log("[JOB] Failed to create Job Object");
+                    return;
+                }
+
+                // 设置 Job Object 限制：当父进程退出时终止所有子进程
+                var info = new JOBOBJECT_BASIC_LIMIT_INFORMATION
+                {
+                    LimitFlags = 0x2000 // JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE
+                };
+
+                if (!JobObjectApi.SetInformationJobObject(_jobHandle, JOBOBJECTINFOCLASS.BasicLimitInformation, ref info, (uint)Marshal.SizeOf(typeof(JOBOBJECT_BASIC_LIMIT_INFORMATION))))
+                {
+                    Log("[JOB] Failed to set Job Object limits");
+                }
+                else
+                {
+                    Log("[JOB] Job Object initialized successfully");
+                }
+            }
+            catch (Exception ex)
+            {
+                Log($"[JOB] Error initializing Job Object: {ex.Message}");
+            }
+        }
+
+        private void AssignProcessToJob(Process process)
+        {
+            if (_jobHandle == IntPtr.Zero) return;
+
+            try
+            {
+                if (!JobObjectApi.AssignProcessToJobObject(_jobHandle, process.Handle))
+                {
+                    Log("[JOB] Failed to assign process to Job Object");
+                }
+                else
+                {
+                    Log("[JOB] Process assigned to Job Object");
+                }
+            }
+            catch (Exception ex)
+            {
+                Log($"[JOB] Error assigning process to Job Object: {ex.Message}");
+            }
+        }
+
+        #endregion
+
+        #region IDisposable
+
+        public void Dispose()
+        {
+            if (_disposed) return;
+            _disposed = true;
+
+            // 停止所有进程
+            StopAllTunnelProcesses();
+
+            // 关闭 Job Object 句柄（这会自动终止所有关联的子进程）
+            if (_jobHandle != IntPtr.Zero)
+            {
+                try
+                {
+                    JobObjectApi.CloseHandle(_jobHandle);
+                    Log("[JOB] Job Object handle closed");
+                }
+                catch { }
+                _jobHandle = IntPtr.Zero;
+            }
+
+            _installSemaphore.Dispose();
         }
 
         #endregion

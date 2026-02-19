@@ -25,6 +25,16 @@ namespace LoliaFrpClient
             InitializeTitleBar();
             InitializeTheme();
             InitializeNavigation();
+            
+            // 窗口关闭时清理资源
+            this.Closed += OnWindowClosed;
+        }
+
+        private void OnWindowClosed(object sender, WindowEventArgs args)
+        {
+            // 释放 FrpcManager，这会关闭 Job Object 句柄
+            // 由于设置了 JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE，所有子进程会自动终止
+            ServiceLocator.FrpcManager.Dispose();
         }
 
         private void InitializeTitleBar()
