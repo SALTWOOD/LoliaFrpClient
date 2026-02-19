@@ -141,7 +141,7 @@
                                 </Grid.RowDefinitions>
 
                                 <TextBlock Grid.Row="0" Grid.Column="0"
-                                            Text="{Binding Name}"
+                                            Text="{Binding Remark}"
                                             Style="{StaticResource SubtitleTextBlockStyle}"
                                             FontWeight="SemiBold"/>
 
