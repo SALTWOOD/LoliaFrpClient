@@ -1,181 +1,236 @@
-using Microsoft.UI.Xaml.Media;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using Microsoft.UI;
+using Microsoft.UI.Xaml.Media;
 
-namespace LoliaFrpClient.Models
+namespace LoliaFrpClient.Models;
+
+/// <summary>
+///     隧道视图模型
+/// </summary>
+public class TunnelViewModel : INotifyPropertyChanged
 {
-    /// <summary>
-    /// 隧道视图模型
-    /// </summary>
-    public class TunnelViewModel : INotifyPropertyChanged
+    private int _bandwidthLimit;
+    private string _customDomain = string.Empty;
+    private int _id;
+    private bool _isEnabled;
+    private string _localIp = string.Empty;
+    private int _localPort;
+    private string _name = string.Empty;
+    private int _nodeId;
+    private string _remark = string.Empty;
+    private int _remotePort;
+    private string _status = string.Empty;
+    private string _tunnel_token = string.Empty;
+    private string _type = string.Empty;
+
+    public int Id
     {
-        private int _id;
-        private string _name = string.Empty;
-        private string _type = string.Empty;
-        private string _status = string.Empty;
-        private string _remark = string.Empty;
-        private string _customDomain = string.Empty;
-        private string _localIp = string.Empty;
-        private int _localPort;
-        private int _remotePort;
-        private int _nodeId;
-        private int _bandwidthLimit;
-        private bool _isEnabled;
-        private string _tunnel_token = string.Empty;
-
-        public event PropertyChangedEventHandler? PropertyChanged;
-
-        protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+        get => _id;
+        set
         {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            _id = value;
+            OnPropertyChanged();
         }
+    }
 
-        public int Id
+    public string Name
+    {
+        get => _name;
+        set
         {
-            get => _id;
-            set { _id = value; OnPropertyChanged(); }
+            _name = value;
+            OnPropertyChanged();
         }
+    }
 
-        public string Name
+    public string Type
+    {
+        get => _type;
+        set
         {
-            get => _name;
-            set { _name = value; OnPropertyChanged(); }
+            _type = value;
+            OnPropertyChanged();
         }
+    }
 
-        public string Type
+    public string Status
+    {
+        get => _status;
+        set
         {
-            get => _type;
-            set { _type = value; OnPropertyChanged(); }
+            _status = value;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(StatusBrush));
+            OnPropertyChanged(nameof(StatusDisplayText));
         }
+    }
 
-        public string Status
+    public string Remark
+    {
+        get => _remark;
+        set
         {
-            get => _status;
-            set { _status = value; OnPropertyChanged(); OnPropertyChanged(nameof(StatusBrush)); OnPropertyChanged(nameof(StatusDisplayText)); }
+            _remark = value;
+            OnPropertyChanged();
         }
+    }
 
-        public string Remark
+    public string CustomDomain
+    {
+        get => _customDomain;
+        set
         {
-            get => _remark;
-            set { _remark = value; OnPropertyChanged(); }
+            _customDomain = value;
+            OnPropertyChanged();
         }
+    }
 
-        public string CustomDomain
+    public string LocalIp
+    {
+        get => _localIp;
+        set
         {
-            get => _customDomain;
-            set { _customDomain = value; OnPropertyChanged(); }
+            _localIp = value;
+            OnPropertyChanged();
         }
+    }
 
-        public string LocalIp
+    public int LocalPort
+    {
+        get => _localPort;
+        set
         {
-            get => _localIp;
-            set { _localIp = value; OnPropertyChanged(); }
+            _localPort = value;
+            OnPropertyChanged();
         }
+    }
 
-        public int LocalPort
+    public int RemotePort
+    {
+        get => _remotePort;
+        set
         {
-            get => _localPort;
-            set { _localPort = value; OnPropertyChanged(); }
+            _remotePort = value;
+            OnPropertyChanged();
         }
+    }
 
-        public int RemotePort
+    public int NodeId
+    {
+        get => _nodeId;
+        set
         {
-            get => _remotePort;
-            set { _remotePort = value; OnPropertyChanged(); }
+            _nodeId = value;
+            OnPropertyChanged();
         }
+    }
 
-        public int NodeId
+    public int BandwidthLimit
+    {
+        get => _bandwidthLimit;
+        set
         {
-            get => _nodeId;
-            set { _nodeId = value; OnPropertyChanged(); }
+            _bandwidthLimit = value;
+            OnPropertyChanged();
         }
+    }
 
-        public int BandwidthLimit
+    public string TunnelToken
+    {
+        get => _tunnel_token;
+        set
         {
-            get => _bandwidthLimit;
-            set { _bandwidthLimit = value; OnPropertyChanged(); }
+            _tunnel_token = value;
+            OnPropertyChanged();
         }
+    }
 
-        public string TunnelToken
+    /// <summary>
+    ///     是否已启用（通过 frpc 启动）
+    /// </summary>
+    public bool IsEnabled
+    {
+        get => _isEnabled;
+        set
         {
-            get => _tunnel_token;
-            set { _tunnel_token = value; OnPropertyChanged(); }
+            _isEnabled = value;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(IsEnabledText));
         }
+    }
 
-        /// <summary>
-        /// 是否已启用（通过 frpc 启动）
-        /// </summary>
-        public bool IsEnabled
+    /// <summary>
+    ///     启用状态显示文本
+    /// </summary>
+    public string IsEnabledText => IsEnabled ? "已启用" : "未启用";
+
+    /// <summary>
+    ///     状态显示文本
+    /// </summary>
+    public string StatusDisplayText
+    {
+        get
         {
-            get => _isEnabled;
-            set { _isEnabled = value; OnPropertyChanged(); OnPropertyChanged(nameof(IsEnabledText)); }
-        }
-
-        /// <summary>
-        /// 启用状态显示文本
-        /// </summary>
-        public string IsEnabledText => IsEnabled ? "已启用" : "未启用";
-
-        /// <summary>
-        /// 状态显示文本
-        /// </summary>
-        public string StatusDisplayText
-        {
-            get
+            return Status switch
             {
-                return Status switch
-                {
-                    "active" => "运行中",
-                    "inactive" => "未激活",
-                    "disabled" => "已禁用",
-                    _ => Status
-                };
-            }
+                "active" => "运行中",
+                "inactive" => "未激活",
+                "disabled" => "已禁用",
+                _ => Status
+            };
         }
+    }
 
-        /// <summary>
-        /// 状态颜色画刷
-        /// </summary>
-        public Brush StatusBrush
+    /// <summary>
+    ///     状态颜色画刷
+    /// </summary>
+    public Brush StatusBrush
+    {
+        get
         {
-            get
+            return Status switch
             {
-                return Status switch
-                {
-                    "active" => new SolidColorBrush(Microsoft.UI.Colors.Green),
-                    "inactive" => new SolidColorBrush(Microsoft.UI.Colors.Gray),
-                    "disabled" => new SolidColorBrush(Microsoft.UI.Colors.Red),
-                    _ => new SolidColorBrush(Microsoft.UI.Colors.Gray)
-                };
-            }
+                "active" => new SolidColorBrush(Colors.Green),
+                "inactive" => new SolidColorBrush(Colors.Gray),
+                "disabled" => new SolidColorBrush(Colors.Red),
+                _ => new SolidColorBrush(Colors.Gray)
+            };
         }
+    }
 
-        /// <summary>
-        /// 类型显示文本
-        /// </summary>
-        public string TypeDisplayText
+    /// <summary>
+    ///     类型显示文本
+    /// </summary>
+    public string TypeDisplayText
+    {
+        get
         {
-            get
+            return Type switch
             {
-                return Type switch
-                {
-                    "tcp" => "TCP",
-                    "udp" => "UDP",
-                    "http" => "HTTP",
-                    "https" => "HTTPS",
-                    _ => Type.ToUpper()
-                };
-            }
+                "tcp" => "TCP",
+                "udp" => "UDP",
+                "http" => "HTTP",
+                "https" => "HTTPS",
+                _ => Type.ToUpper()
+            };
         }
+    }
 
-        /// <summary>
-        /// 是否有备注
-        /// </summary>
-        public bool HasRemark => !string.IsNullOrWhiteSpace(Remark);
+    /// <summary>
+    ///     是否有备注
+    /// </summary>
+    public bool HasRemark => !string.IsNullOrWhiteSpace(Remark);
 
-        /// <summary>
-        /// ID 显示文本
-        /// </summary>
-        public string NameDisplayText => $"{Name} (ID: {Id})";
+    /// <summary>
+    ///     ID 显示文本
+    /// </summary>
+    public string NameDisplayText => $"{Name} (ID: {Id})";
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }

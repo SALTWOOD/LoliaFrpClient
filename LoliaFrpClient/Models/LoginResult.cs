@@ -1,18 +1,17 @@
-namespace LoliaFrpClient.Models
+namespace LoliaFrpClient.Models;
+
+/// <summary>
+///     Login result containing token and user information
+/// </summary>
+public class LoginResult
 {
     /// <summary>
-    /// Login result containing token and user information
+    ///     OAuthToken token
     /// </summary>
-    public class LoginResult
-    {
-        /// <summary>
-        /// OAuthToken token
-        /// </summary>
-        public string? Token { get; set; }
+    public string? Token { get; set; }
 
-        /// <summary>
-        /// User information (currently not used)
-        /// </summary>
-        public object? UserInfo { get; set; }
-    }
+    /// <summary>
+    ///     User information (currently not used)
+    /// </summary>
+    public object? UserInfo { get; set; }
 }

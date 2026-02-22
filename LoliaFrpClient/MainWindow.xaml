@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <Window
     x:Class="LoliaFrpClient.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:LoliaFrpClient"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
@@ -15,8 +15,8 @@
 
     <Grid x:Name="RootGrid">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
         <!-- Custom Title Bar -->
@@ -29,37 +29,39 @@
                         BorderThickness="0"
                         Click="BackButton_Click">
                     <Viewbox Width="16" Height="16">
-                        <Path Data="F0 M35.48 30.26L47.2 18.54C48.33 19 49.56 19.26 50.86 19.26C56.18 19.26 60.49 14.95 60.49 9.63C60.49 4.31 56.17 0 50.86 0C45.55 0 41.23 4.31 41.23 9.63C41.23 10.93 41.49 12.18 41.96 13.31L30.24 25.03L12.61 7.4L23.3 7.4C25.34 7.4 27 5.74 27 3.7C27 1.66 25.34 3.57628e-07 23.3 3.57628e-07L3.7 3.57628e-07C2.42 3.57628e-07 1.3 0.65 0.630001 1.63C0.230001 2.22 8.34465e-07 2.93 8.34465e-07 3.7L8.34465e-07 23.3C8.34465e-07 25.34 1.66 27 3.7 27C5.74 27 7.4 25.34 7.4 23.3L7.4 12.65L25.01 30.26L13.99 41.28C12.77 40.75 11.43 40.46 10.01 40.46C4.48 40.46 0 44.94 0 50.47C0 56 4.48 60.48 10.01 60.48C15.54 60.48 20.02 56 20.02 50.47C20.02 49.07 19.73 47.73 19.21 46.52L30.23 35.5L53.32 58.59C54.77 60.04 57.11 60.04 58.55 58.59C60 57.14 60 54.8 58.55 53.36L35.46 30.27L35.48 30.26Z" 
-                            Fill="{ThemeResource SystemControlForegroundBaseHighBrush}"/>
+                        <Path
+                            Data="F0 M35.48 30.26L47.2 18.54C48.33 19 49.56 19.26 50.86 19.26C56.18 19.26 60.49 14.95 60.49 9.63C60.49 4.31 56.17 0 50.86 0C45.55 0 41.23 4.31 41.23 9.63C41.23 10.93 41.49 12.18 41.96 13.31L30.24 25.03L12.61 7.4L23.3 7.4C25.34 7.4 27 5.74 27 3.7C27 1.66 25.34 3.57628e-07 23.3 3.57628e-07L3.7 3.57628e-07C2.42 3.57628e-07 1.3 0.65 0.630001 1.63C0.230001 2.22 8.34465e-07 2.93 8.34465e-07 3.7L8.34465e-07 23.3C8.34465e-07 25.34 1.66 27 3.7 27C5.74 27 7.4 25.34 7.4 23.3L7.4 12.65L25.01 30.26L13.99 41.28C12.77 40.75 11.43 40.46 10.01 40.46C4.48 40.46 0 44.94 0 50.47C0 56 4.48 60.48 10.01 60.48C15.54 60.48 20.02 56 20.02 50.47C20.02 49.07 19.73 47.73 19.21 46.52L30.23 35.5L53.32 58.59C54.77 60.04 57.11 60.04 58.55 58.59C60 57.14 60 54.8 58.55 53.36L35.46 30.27L35.48 30.26Z"
+                            Fill="{ThemeResource SystemControlForegroundBaseHighBrush}" />
                     </Viewbox>
                 </Button>
-                <TextBlock Text="Lolia FRP Client" 
-                           VerticalAlignment="Center" 
+                <TextBlock Text="Lolia FRP Client"
+                           VerticalAlignment="Center"
                            Margin="4,0,0,0"
                            FontFamily="Comfortaa"
                            FontSize="18"
                            FontWeight="Bold"
                            CharacterSpacing="30"
-                           Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+                           Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
             </StackPanel>
         </Grid>
 
-        <NavigationView x:Name="MainNavigationView" Grid.Row="1" PaneDisplayMode="Left" IsBackButtonVisible="Collapsed" IsSettingsVisible="False">
+        <NavigationView x:Name="MainNavigationView" Grid.Row="1" PaneDisplayMode="Left" IsBackButtonVisible="Collapsed"
+                        IsSettingsVisible="False">
 
             <NavigationView.MenuItems>
                 <NavigationViewItem x:Name="Page1NavItem" Content="用户信息" Tag="Page1">
                     <NavigationViewItem.Icon>
-                        <SymbolIcon Symbol="Home"/>
+                        <SymbolIcon Symbol="Home" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
                 <NavigationViewItem x:Name="Page2NavItem" Content="隧道列表" Tag="Page2">
                     <NavigationViewItem.Icon>
-                        <SymbolIcon Symbol="Globe"/>
+                        <SymbolIcon Symbol="Globe" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
                 <NavigationViewItem x:Name="FrpcManagerNavItem" Content="Frpc 管理" Tag="FrpcManager">
                     <NavigationViewItem.Icon>
-                        <SymbolIcon Symbol="Manage"/>
+                        <SymbolIcon Symbol="Manage" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
             </NavigationView.MenuItems>
@@ -67,13 +69,13 @@
             <NavigationView.FooterMenuItems>
                 <NavigationViewItem x:Name="ThemeNavItem" Content="深色模式" Tag="Theme">
                     <NavigationViewItem.Icon>
-                        <SymbolIcon Symbol="View"/>
+                        <SymbolIcon Symbol="View" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
-                <NavigationViewItem x:Name="SettingsNavItem" Content="Settings" Tag="Settings" Icon="Setting"/>
+                <NavigationViewItem x:Name="SettingsNavItem" Content="Settings" Tag="Settings" Icon="Setting" />
             </NavigationView.FooterMenuItems>
 
-            <Frame x:Name="ContentFrame"/>
+            <Frame x:Name="ContentFrame" />
         </NavigationView>
     </Grid>
 </Window>

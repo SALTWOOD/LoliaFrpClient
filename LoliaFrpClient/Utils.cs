@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace LoliaFrpClient;
 
@@ -14,10 +10,10 @@ public class Utils
 
     public static bool IsPackaged()
     {
-        int length = 0;
-        StringBuilder sb = new StringBuilder(0);
+        var length = 0;
+        var sb = new StringBuilder(0);
 
-        int result = GetCurrentPackageFullName(ref length, sb);
+        var result = GetCurrentPackageFullName(ref length, sb);
 
         return result != 15700;
     }
@@ -28,7 +24,7 @@ public class Utils
         if (bytes <= 0) return "0.00 B";
 
         string[] units = { "B", "KB", "MB", "GB", "TB", "PB", "EB" };
-        int order = 0;
+        var order = 0;
 
         double size = bytes;
 

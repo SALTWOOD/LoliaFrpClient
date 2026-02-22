@@ -1,75 +1,97 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace LoliaFrpClient.Models
+namespace LoliaFrpClient.Models;
+
+/// <summary>
+///     隧道流量视图模型
+/// </summary>
+public class TunnelTrafficViewModel : INotifyPropertyChanged
 {
-    /// <summary>
-    /// 隧道流量视图模型
-    /// </summary>
-    public class TunnelTrafficViewModel : INotifyPropertyChanged
+    private long _inboundBytes;
+    private long _outboundBytes;
+    private long _totalBytes;
+    private int _tunnelId;
+    private string _tunnelName = string.Empty;
+    private string _tunnelRemark = string.Empty;
+
+    public int TunnelId
     {
-        private int _tunnelId;
-        private string _tunnelName = string.Empty;
-        private string _tunnelRemark = string.Empty;
-        private long _inboundBytes;
-        private long _outboundBytes;
-        private long _totalBytes;
-
-        public event PropertyChangedEventHandler? PropertyChanged;
-
-        protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+        get => _tunnelId;
+        set
         {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            _tunnelId = value;
+            OnPropertyChanged();
         }
+    }
 
-        public int TunnelId
+    public string TunnelName
+    {
+        get => _tunnelName;
+        set
         {
-            get => _tunnelId;
-            set { _tunnelId = value; OnPropertyChanged(); }
+            _tunnelName = value;
+            OnPropertyChanged();
         }
+    }
 
-        public string TunnelName
+    public string TunnelRemark
+    {
+        get => _tunnelRemark;
+        set
         {
-            get => _tunnelName;
-            set { _tunnelName = value; OnPropertyChanged(); }
+            _tunnelRemark = value;
+            OnPropertyChanged();
         }
+    }
 
-        public string TunnelRemark
+    public long InboundBytes
+    {
+        get => _inboundBytes;
+        set
         {
-            get => _tunnelRemark;
-            set { _tunnelRemark = value; OnPropertyChanged(); }
+            _inboundBytes = value;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(FormattedInbound));
+            OnPropertyChanged(nameof(TotalBytes));
+            OnPropertyChanged(nameof(FormattedTotal));
         }
+    }
 
-        public long InboundBytes
+    public long OutboundBytes
+    {
+        get => _outboundBytes;
+        set
         {
-            get => _inboundBytes;
-            set { _inboundBytes = value; OnPropertyChanged(); OnPropertyChanged(nameof(FormattedInbound)); OnPropertyChanged(nameof(TotalBytes)); OnPropertyChanged(nameof(FormattedTotal)); }
+            _outboundBytes = value;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(FormattedOutbound));
+            OnPropertyChanged(nameof(TotalBytes));
+            OnPropertyChanged(nameof(FormattedTotal));
         }
+    }
 
-        public long OutboundBytes
-        {
-            get => _outboundBytes;
-            set { _outboundBytes = value; OnPropertyChanged(); OnPropertyChanged(nameof(FormattedOutbound)); OnPropertyChanged(nameof(TotalBytes)); OnPropertyChanged(nameof(FormattedTotal)); }
-        }
+    public long TotalBytes => _totalBytes = InboundBytes + OutboundBytes;
 
-        public long TotalBytes
-        {
-            get => _totalBytes = InboundBytes + OutboundBytes;
-        }
+    /// <summary>
+    ///     格式化的入站流量
+    /// </summary>
+    public string FormattedInbound => Utils.FormatBytes(InboundBytes);
 
-        /// <summary>
-        /// 格式化的入站流量
-        /// </summary>
-        public string FormattedInbound => Utils.FormatBytes(InboundBytes);
+    /// <summary>
+    ///     格式化的出站流量
+    /// </summary>
+    public string FormattedOutbound => Utils.FormatBytes(OutboundBytes);
 
-        /// <summary>
-        /// 格式化的出站流量
-        /// </summary>
-        public string FormattedOutbound => Utils.FormatBytes(OutboundBytes);
+    /// <summary>
+    ///     格式化的总流量
+    /// </summary>
+    public string FormattedTotal => Utils.FormatBytes(TotalBytes);
 
-        /// <summary>
-        /// 格式化的总流量
-        /// </summary>
-        public string FormattedTotal => Utils.FormatBytes(TotalBytes);
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }

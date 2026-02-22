@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <Page
     x:Class="LoliaFrpClient.Pages.UserInfoPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:LoliaFrpClient.Pages"
     xmlns:models="using:LoliaFrpClient.Models"
     xmlns:controls="using:LoliaFrpClient.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -20,47 +20,51 @@
                         BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                         BorderThickness="1">
                     <StackPanel Spacing="12">
-                        <TextBlock Text="用户信息" 
+                        <TextBlock Text="用户信息"
                                    Style="{StaticResource SubtitleTextBlockStyle}"
-                                   FontWeight="SemiBold"/>
-                        
+                                   FontWeight="SemiBold" />
+
                         <Grid ColumnSpacing="12" RowSpacing="8">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
                             <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
 
-                            <TextBlock Grid.Row="0" Grid.Column="0" Text="用户名:" VerticalAlignment="Center"/>
-                            <TextBlock Grid.Row="0" Grid.Column="1" Text="{x:Bind ViewModel.Username, Mode=OneWay}" 
-                                       VerticalAlignment="Center" FontWeight="SemiBold"/>
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="用户名:" VerticalAlignment="Center" />
+                            <TextBlock Grid.Row="0" Grid.Column="1" Text="{x:Bind ViewModel.Username, Mode=OneWay}"
+                                       VerticalAlignment="Center" FontWeight="SemiBold" />
 
-                            <TextBlock Grid.Row="1" Grid.Column="0" Text="邮箱:" VerticalAlignment="Center"/>
-                            <TextBlock Grid.Row="1" Grid.Column="1" Text="{x:Bind ViewModel.Email, Mode=OneWay}" 
-                                       VerticalAlignment="Center"/>
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="邮箱:" VerticalAlignment="Center" />
+                            <TextBlock Grid.Row="1" Grid.Column="1" Text="{x:Bind ViewModel.Email, Mode=OneWay}"
+                                       VerticalAlignment="Center" />
 
-                            <TextBlock Grid.Row="2" Grid.Column="0" Text="权限:" VerticalAlignment="Center"/>
-                            <TextBlock Grid.Row="2" Grid.Column="1" Text="{x:Bind ViewModel.RoleFormatted, Mode=OneWay}" 
-                                       VerticalAlignment="Center"/>
+                            <TextBlock Grid.Row="2" Grid.Column="0" Text="权限:" VerticalAlignment="Center" />
+                            <TextBlock Grid.Row="2" Grid.Column="1"
+                                       Text="{x:Bind ViewModel.RoleFormatted, Mode=OneWay}"
+                                       VerticalAlignment="Center" />
 
-                            <TextBlock Grid.Row="3" Grid.Column="0" Text="创建时间:" VerticalAlignment="Center"/>
-                            <TextBlock Grid.Row="3" Grid.Column="1" Text="{x:Bind ViewModel.CreatedAtFormatted, Mode=OneWay}" 
-                                       VerticalAlignment="Center"/>
+                            <TextBlock Grid.Row="3" Grid.Column="0" Text="创建时间:" VerticalAlignment="Center" />
+                            <TextBlock Grid.Row="3" Grid.Column="1"
+                                       Text="{x:Bind ViewModel.CreatedAtFormatted, Mode=OneWay}"
+                                       VerticalAlignment="Center" />
 
-                            <TextBlock Grid.Row="4" Grid.Column="0" Text="最大隧道数:" VerticalAlignment="Center"/>
-                            <TextBlock Grid.Row="4" Grid.Column="1" Text="{x:Bind ViewModel.MaxTunnelCount, Mode=OneWay}" 
-                                       VerticalAlignment="Center"/>
+                            <TextBlock Grid.Row="4" Grid.Column="0" Text="最大隧道数:" VerticalAlignment="Center" />
+                            <TextBlock Grid.Row="4" Grid.Column="1"
+                                       Text="{x:Bind ViewModel.MaxTunnelCount, Mode=OneWay}"
+                                       VerticalAlignment="Center" />
 
-                            <TextBlock Grid.Row="5" Grid.Column="0" Text="带宽限制:" VerticalAlignment="Center"/>
-                            <TextBlock Grid.Row="5" Grid.Column="1" Text="{x:Bind ViewModel.BandwidthLimitFormatted, Mode=OneWay}" 
-                                       VerticalAlignment="Center"/>
+                            <TextBlock Grid.Row="5" Grid.Column="0" Text="带宽限制:" VerticalAlignment="Center" />
+                            <TextBlock Grid.Row="5" Grid.Column="1"
+                                       Text="{x:Bind ViewModel.BandwidthLimitFormatted, Mode=OneWay}"
+                                       VerticalAlignment="Center" />
                         </Grid>
                     </StackPanel>
                 </Border>
@@ -68,8 +72,8 @@
                 <!-- 流量统计和账户状态卡片 -->
                 <Grid ColumnSpacing="16">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
 
                     <!-- 流量统计卡片 -->
@@ -79,46 +83,46 @@
                             BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                             BorderThickness="1">
                         <StackPanel Spacing="12">
-                            <TextBlock Text="流量统计" 
+                            <TextBlock Text="流量统计"
                                        Style="{StaticResource SubtitleTextBlockStyle}"
                                        FontWeight="SemiBold"
-                                       FontSize="18"/>
-                            
-                            <ProgressBar Value="{x:Bind ViewModel.TrafficUsagePercentage, Mode=OneWay}" 
-                                         Maximum="100" Height="10"/>
-                            
+                                       FontSize="18" />
+
+                            <ProgressBar Value="{x:Bind ViewModel.TrafficUsagePercentage, Mode=OneWay}"
+                                         Maximum="100" Height="10" />
+
                             <Grid ColumnSpacing="12">
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
                                 </Grid.ColumnDefinitions>
 
                                 <StackPanel Grid.Column="0" Spacing="4">
-                                    <TextBlock Text="流量限制" Style="{StaticResource CaptionTextBlockStyle}" 
+                                    <TextBlock Text="流量限制" Style="{StaticResource CaptionTextBlockStyle}"
                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                               FontSize="14"/>
-                                    <TextBlock Text="{x:Bind ViewModel.TrafficLimitFormatted, Mode=OneWay}" 
+                                               FontSize="14" />
+                                    <TextBlock Text="{x:Bind ViewModel.TrafficLimitFormatted, Mode=OneWay}"
                                                Style="{StaticResource BodyStrongTextBlockStyle}"
-                                               FontSize="16"/>
+                                               FontSize="16" />
                                 </StackPanel>
 
                                 <StackPanel Grid.Column="1" Spacing="4">
-                                    <TextBlock Text="已用流量" Style="{StaticResource CaptionTextBlockStyle}" 
+                                    <TextBlock Text="已用流量" Style="{StaticResource CaptionTextBlockStyle}"
                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                               FontSize="14"/>
-                                    <TextBlock Text="{x:Bind ViewModel.TrafficUsedFormatted, Mode=OneWay}" 
+                                               FontSize="14" />
+                                    <TextBlock Text="{x:Bind ViewModel.TrafficUsedFormatted, Mode=OneWay}"
                                                Style="{StaticResource BodyStrongTextBlockStyle}"
-                                               FontSize="16"/>
+                                               FontSize="16" />
                                 </StackPanel>
 
                                 <StackPanel Grid.Column="2" Spacing="4">
-                                    <TextBlock Text="剩余流量" Style="{StaticResource CaptionTextBlockStyle}" 
+                                    <TextBlock Text="剩余流量" Style="{StaticResource CaptionTextBlockStyle}"
                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                               FontSize="14"/>
-                                    <TextBlock Text="{x:Bind ViewModel.TrafficRemainingFormatted, Mode=OneWay}" 
+                                               FontSize="14" />
+                                    <TextBlock Text="{x:Bind ViewModel.TrafficRemainingFormatted, Mode=OneWay}"
                                                Style="{StaticResource BodyStrongTextBlockStyle}"
-                                               FontSize="16"/>
+                                               FontSize="16" />
                                 </StackPanel>
                             </Grid>
                         </StackPanel>
@@ -131,35 +135,35 @@
                             BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                             BorderThickness="1">
                         <StackPanel Spacing="12">
-                            <TextBlock Text="账户状态" 
+                            <TextBlock Text="账户状态"
                                        Style="{StaticResource SubtitleTextBlockStyle}"
                                        FontWeight="SemiBold"
-                                       FontSize="18"/>
-                            
+                                       FontSize="18" />
+
                             <Grid ColumnSpacing="12">
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
                                 </Grid.ColumnDefinitions>
 
                                 <StackPanel Grid.Column="0" Spacing="4">
-                                    <TextBlock Text="KYC 状态" Style="{StaticResource CaptionTextBlockStyle}" 
+                                    <TextBlock Text="KYC 状态" Style="{StaticResource CaptionTextBlockStyle}"
                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                               FontSize="14"/>
-                                    <TextBlock Text="{x:Bind ViewModel.KycStatusFormatted, Mode=OneWay}" 
+                                               FontSize="14" />
+                                    <TextBlock Text="{x:Bind ViewModel.KycStatusFormatted, Mode=OneWay}"
                                                Style="{StaticResource BodyStrongTextBlockStyle}"
                                                FontSize="16"
-                                               Foreground="{x:Bind KycStatusColor, Mode=OneWay}"/>
+                                               Foreground="{x:Bind KycStatusColor, Mode=OneWay}" />
                                 </StackPanel>
 
                                 <StackPanel Grid.Column="1" Spacing="4">
-                                    <TextBlock Text="账户状态" Style="{StaticResource CaptionTextBlockStyle}" 
+                                    <TextBlock Text="账户状态" Style="{StaticResource CaptionTextBlockStyle}"
                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                               FontSize="14"/>
-                                    <TextBlock Text="{x:Bind IsBanedText, Mode=OneWay}" 
+                                               FontSize="14" />
+                                    <TextBlock Text="{x:Bind IsBanedText, Mode=OneWay}"
                                                Style="{StaticResource BodyStrongTextBlockStyle}"
                                                Foreground="{x:Bind BanedColor, Mode=OneWay}"
-                                               FontSize="16"/>
+                                               FontSize="16" />
                                 </StackPanel>
                             </Grid>
                         </StackPanel>
@@ -167,7 +171,7 @@
                 </Grid>
 
                 <!-- 每日流量折线图 -->
-                <controls:LineChart Title="每日流量趋势" Data="{x:Bind DailyTrafficsList, Mode=OneWay}"/>
+                <controls:LineChart Title="每日流量趋势" Data="{x:Bind DailyTrafficsList, Mode=OneWay}" />
 
                 <!-- 隧道流量统计 -->
                 <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
@@ -176,10 +180,10 @@
                         BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                         BorderThickness="1">
                     <StackPanel Spacing="12">
-                        <TextBlock Text="隧道流量统计" 
+                        <TextBlock Text="隧道流量统计"
                                    Style="{StaticResource SubtitleTextBlockStyle}"
-                                   FontWeight="SemiBold"/>
-                        
+                                   FontWeight="SemiBold" />
+
                         <ListView x:Name="TunnelTrafficListView"
                                   ItemsSource="{x:Bind TunnelTraffics, Mode=OneWay}"
                                   MaxHeight="400">
@@ -191,36 +195,36 @@
                                             Margin="0,0,0,8">
                                         <Grid ColumnSpacing="12" RowSpacing="4">
                                             <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
                                             </Grid.ColumnDefinitions>
                                             <Grid.RowDefinitions>
-                                                <RowDefinition Height="Auto"/>
-                                                <RowDefinition Height="Auto"/>
-                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
                                             </Grid.RowDefinitions>
 
                                             <TextBlock Grid.Row="0" Grid.Column="0"
                                                        Text="{x:Bind TunnelRemark, Mode=OneWay}"
                                                        Style="{StaticResource BodyStrongTextBlockStyle}"
-                                                       FontWeight="SemiBold"/>
+                                                       FontWeight="SemiBold" />
 
                                             <TextBlock Grid.Row="1" Grid.Column="0"
                                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}">
-                                                <Run Text="入站: "/>
-                                                <Run Text="{x:Bind FormattedInbound, Mode=OneWay}"/>
+                                                <Run Text="入站: " />
+                                                <Run Text="{x:Bind FormattedInbound, Mode=OneWay}" />
                                             </TextBlock>
 
                                             <TextBlock Grid.Row="2" Grid.Column="0"
                                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}">
-                                                <Run Text="出站: "/>
-                                                <Run Text="{x:Bind FormattedOutbound, Mode=OneWay}"/>
+                                                <Run Text="出站: " />
+                                                <Run Text="{x:Bind FormattedOutbound, Mode=OneWay}" />
                                             </TextBlock>
 
                                             <TextBlock Grid.Row="0" Grid.Column="1"
                                                        Text="{x:Bind FormattedTotal, Mode=OneWay}"
                                                        Style="{StaticResource BodyStrongTextBlockStyle}"
-                                                       FontWeight="SemiBold"/>
+                                                       FontWeight="SemiBold" />
                                         </Grid>
                                     </Border>
                                 </DataTemplate>
@@ -234,13 +238,13 @@
                               IsActive="False"
                               Width="48"
                               Height="48"
-                              HorizontalAlignment="Center"/>
+                              HorizontalAlignment="Center" />
 
                 <!-- 刷新按钮 -->
-                <Button Content="刷新数据" 
+                <Button Content="刷新数据"
                         Click="OnRefreshClick"
                         HorizontalAlignment="Stretch"
-                        Style="{StaticResource AccentButtonStyle}"/>
+                        Style="{StaticResource AccentButtonStyle}" />
             </StackPanel>
         </ScrollViewer>
     </Grid>
