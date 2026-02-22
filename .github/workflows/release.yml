@@ -1,81 +1,85 @@
-name: Build and Release
+name: .NET Core Desktop Build
 
 on:
   push:
-    branches:
-      - 'master'    # 匹配所有分支的推送
-    tags:
-      - 'v*'    # 匹配 v 开头的标签
+    branches: [ "master" ]
+    tags: [ "v*" ]
+  pull_request:
+    branches: [ "master" ]
 
 permissions:
   contents: write
 
 jobs:
-  # --- 阶段 1: 核心构建 ---
   build:
+    strategy:
+      matrix:
+        configuration: [Release]
+
     runs-on: windows-latest
+
+    env:
+      Solution_Path: LoliaFrpClient.slnx
+      Project_Path: LoliaFrpClient/LoliaFrpClient.csproj
+      Manifest_Path: LoliaFrpClient/Package.appxmanifest
+
     outputs:
       VERSION: ${{ steps.get_version.outputs.VERSION }}
-    
+
     steps:
-    - name: Checkout repository
+    - name: Checkout
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
 
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '8.0.x'
+        dotnet-version: 8.0.x
 
     - name: Get version info
       id: get_version
       shell: pwsh
       run: |
-        $ref = "${{ github.ref_name }}"
-        if ("${{ github.ref_type }}" -eq "tag") {
-            $ver = $ref
-            Write-Host "Log: Detected Tag release $ver"
-        } else {
-            # 非 Tag 推送使用 commit sha 作为标识
-            $ver = "dev-" + "${{ github.sha }}".Substring(0, 7)
-            Write-Host "Log: Detected branch push, using version $ver"
-        }
+        # 1. Determine Version
+        $ver = if ("${{ github.ref_type }}" -eq "tag") { "${{ github.ref_name }}" } else { "dev-" + "${{ github.sha }}".Substring(0, 7) }
         
-        # 格式化 AppxManifest 所需的四位版本号 (e.g. 1.2.3.0)
-        $cleanVer = ($ver -replace '^v', '') -replace '[^\d.].*$', ''
-        $parts = $cleanVer.Split('.')
-        while ($parts.Count -lt 4) { $parts += "0" }
-        $cleanVer = ($parts[0..3]) -join "."
-
+        # 2. Format for AppxManifest (Requires x.x.x.x)
+        $cleanVer = (($ver -replace '^v', '') -replace '[^\d.].*$', '').Split('.')
+        while ($cleanVer.Count -lt 4) { $cleanVer += "0" }
+        $appxVer = ($cleanVer[0..3]) -join "."
+        
+        Write-Host "Log: Building Version $ver (Manifest: $appxVer)"
         echo "VERSION=$ver" >> $env:GITHUB_OUTPUT
-        echo "APPX_VERSION=$cleanVer" >> $env:GITHUB_OUTPUT
+        echo "APPX_VERSION=$appxVer" >> $env:GITHUB_OUTPUT
 
     - name: Update AppxManifest Version
       shell: pwsh
       run: |
-        $path = "LoliaFrpClient/Package.appxmanifest"
         $newVer = "${{ steps.get_version.outputs.APPX_VERSION }}"
-        Write-Host "Log: Updating $path to version $newVer"
-        (Get-Content $path) -replace '(?<=<Identity[^>]*Version=")[^"]*', $newVer | Set-Content $path
+        (Get-Content ${{ env.Manifest_Path }}) -replace '(?<=<Identity[^>]*Version=")[^"]*', $newVer | Set-Content ${{ env.Manifest_Path }}
 
-    - name: Restore & Build
+    - name: Publish WinUI App (x64)
       run: |
-        dotnet restore LoliaFrpClient.slnx
-        dotnet build LoliaFrpClient.slnx --configuration Release --no-restore
+        dotnet publish ${{ env.Project_Path }} `
+          -c ${{ matrix.configuration }} `
+          -r win-x64 `
+          --self-contained true `
+          -p:Platform=x64 `
+          -p:PublishReadyToRun=true `
+          -p:WindowsPackageType=None `
+          -o ./publish/win-x64
 
-    - name: Publish WinUI App
-      shell: pwsh
+    - name: Publish WinUI App (arm64)
       run: |
-        # x64: 需要在发布前指定 R2R 相关的参数进行 restore
-        Write-Host "Log: Publishing win-x64..."
-        dotnet publish LoliaFrpClient/LoliaFrpClient.csproj -c Release -r win-x64 --self-contained true `
-          -p:Platform=x64 -p:PublishReadyToRun=true -p:WindowsPackageType=None `
-          --output ./publish/win-x64
-
-        # arm64: 同样操作
-        Write-Host "Log: Publishing win-arm64..."
-        dotnet publish LoliaFrpClient/LoliaFrpClient.csproj -c Release -r win-arm64 --self-contained true `
-          -p:Platform=arm64 -p:PublishReadyToRun=true -p:WindowsPackageType=None `
-          --output ./publish/win-arm64
+        dotnet publish ${{ env.Project_Path }} `
+          -c ${{ matrix.configuration }} `
+          -r win-arm64 `
+          --self-contained true `
+          -p:Platform=arm64 `
+          -p:PublishReadyToRun=true `
+          -p:WindowsPackageType=None `
+          -o ./publish/win-arm64
 
     - name: Create ZIP archives
       shell: pwsh
@@ -83,16 +87,14 @@ jobs:
         $v = "${{ steps.get_version.outputs.VERSION }}"
         Compress-Archive -Path ./publish/win-x64/* -DestinationPath "./LoliaFrpClient_${v}_win-x64.zip"
         Compress-Archive -Path ./publish/win-arm64/* -DestinationPath "./LoliaFrpClient_${v}_win-arm64.zip"
-        Write-Host "Log: ZIP archives created."
 
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: LoliaFrpClient-Binaries-${{ steps.get_version.outputs.VERSION }}
+        name: LoliaFrpClient-${{ matrix.configuration }}-${{ steps.get_version.outputs.VERSION }}
         path: ./*.zip
         retention-days: 7
 
-  # --- 阶段 2: 仅在有 Tag 时发布 Release ---
   release:
     needs: build
     if: startsWith(github.ref, 'refs/tags/v')
@@ -101,7 +103,7 @@ jobs:
     - name: Download Artifacts
       uses: actions/download-artifact@v4
       with:
-        name: LoliaFrpClient-Binaries-${{ needs.build.outputs.VERSION }}
+        name: LoliaFrpClient-Release-${{ needs.build.outputs.VERSION }}
 
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v2
