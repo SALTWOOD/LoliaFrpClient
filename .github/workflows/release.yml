@@ -65,15 +65,17 @@ jobs:
     - name: Publish WinUI App
       shell: pwsh
       run: |
-        # x64
+        # x64: 需要在发布前指定 R2R 相关的参数进行 restore
         Write-Host "Log: Publishing win-x64..."
         dotnet publish LoliaFrpClient/LoliaFrpClient.csproj -c Release -r win-x64 --self-contained true `
-          -p:Platform=x64 -p:PublishReadyToRun=true -p:WindowsPackageType=None -o ./publish/win-x64
-        
-        # arm64
+          -p:Platform=x64 -p:PublishReadyToRun=true -p:WindowsPackageType=None `
+          --output ./publish/win-x64
+
+        # arm64: 同样操作
         Write-Host "Log: Publishing win-arm64..."
         dotnet publish LoliaFrpClient/LoliaFrpClient.csproj -c Release -r win-arm64 --self-contained true `
-          -p:Platform=arm64 -p:PublishReadyToRun=true -p:WindowsPackageType=None -o ./publish/win-arm64
+          -p:Platform=arm64 -p:PublishReadyToRun=true -p:WindowsPackageType=None `
+          --output ./publish/win-arm64
 
     - name: Create ZIP archives
       shell: pwsh
