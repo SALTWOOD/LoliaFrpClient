@@ -1,0 +1,58 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: Restore dependencies
+      run: dotnet restore LoliaFrpClient.slnx
+
+    - name: Build
+      run: dotnet build LoliaFrpClient.slnx --configuration Release --no-restore
+
+    - name: Publish WinUI App (x64)
+      run: dotnet publish LoliaFrpClient/LoliaFrpClient.csproj -c Release -r win-x64 --self-contained true -p:Platform=x64 -p:PublishSingleFile=false -p:PublishReadyToRun=true -p:WindowsAppSDKSelfContained=true -p:WindowsPackageType=None -p:AppxPackage=false -p:GenerateAppxManifest=false -o ./publish/win-x64
+
+    - name: Publish WinUI App (arm64)
+      run: dotnet publish LoliaFrpClient/LoliaFrpClient.csproj -c Release -r win-arm64 --self-contained true -p:Platform=arm64 -p:PublishSingleFile=false -p:PublishReadyToRun=true -p:WindowsAppSDKSelfContained=true -p:WindowsPackageType=None -p:AppxPackage=false -p:GenerateAppxManifest=false -o ./publish/win-arm64
+
+    - name: Create ZIP archives
+      run: |
+        Compress-Archive -Path ./publish/win-x64/* -DestinationPath ./LoliaFrpClient_win-x64.zip
+        Compress-Archive -Path ./publish/win-arm64/* -DestinationPath ./LoliaFrpClient_win-arm64.zip
+
+    - name: Get version from tag
+      id: get_version
+      run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+      shell: bash
+
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: ${{ steps.get_version.outputs.VERSION }}
+        name: Release ${{ steps.get_version.outputs.VERSION }}
+        draft: false
+        prerelease: false
+        generate_release_notes: true
+        files: |
+          ./LoliaFrpClient_win-x64.zip
+          ./LoliaFrpClient_win-arm64.zip
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
