@@ -42,12 +42,29 @@ jobs:
       id: get_version
       shell: pwsh
       run: |
-        $ver = if ("${{ github.ref_type }}" -eq "tag") { "${{ github.ref_name }}" } else { "dev-" + "${{ github.sha }}".Substring(0, 7) }
-        $cleanVer = (($ver -replace '^v', '') -replace '[^\d.].*$', '').Split('.')
-        while ($cleanVer.Count -lt 4) { $cleanVer += "0" }
-        $appxVer = ($cleanVer[0..3]) -join "."
+        $rawRef = "${{ github.ref_name }}"
+        $isTag = "${{ github.ref_type }}" -eq "tag"
         
-        Write-Host "Log: Target Version -> $ver ($appxVer)"
+        if ($isTag) {
+            $ver = $rawRef
+        } else {
+            $ver = "dev-" + "${{ github.sha }}".Substring(0, 7)
+        }
+
+        $versionMatch = [regex]::Match($rawRef, '(\d+\.)?(\d+\.)?(\d+\.)?(\d+)')
+        if ($versionMatch.Success) {
+            $baseVer = $versionMatch.Value
+        } else {
+            $baseVer = "0.0.0"
+        }
+
+        $parts = $baseVer.Split('.') | Where-Object { $_ -ne "" }
+        while ($parts.Count -lt 4) { $parts += "0" }
+        $appxVer = ($parts[0..3]) -join "."
+        
+        Write-Host "Log: Display Version -> $ver"
+        Write-Host "Log: Numeric Version -> $appxVer"
+        
         echo "VERSION=$ver" >> $env:GITHUB_OUTPUT
         echo "APPX_VERSION=$appxVer" >> $env:GITHUB_OUTPUT
 
