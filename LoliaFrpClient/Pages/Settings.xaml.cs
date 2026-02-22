@@ -23,7 +23,40 @@ namespace LoliaFrpClient.Pages
             this.InitializeComponent();
             DataContext = this;
             UpdateLoginStatus();
+            InitializeMirrorSettings();
             InitializeFrpcManagement();
+        }
+
+        /// <summary>
+        /// 初始化镜像源设置
+        /// </summary>
+        private void InitializeMirrorSettings()
+        {
+            var mirrorType = _settings.GitHubMirrorType;
+            
+            // 根据保存的设置选择对应的 RadioButton
+            foreach (var item in GitHubMirrorRadioButtons.Items)
+            {
+                if (item is RadioButton radioButton && radioButton.Tag is string tag)
+                {
+                    if (int.Parse(tag) == mirrorType)
+                    {
+                        radioButton.IsChecked = true;
+                        break;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// 镜像源选择变更事件
+        /// </summary>
+        private void GitHubMirrorRadioButtons_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (GitHubMirrorRadioButtons.SelectedItem is RadioButton radioButton && radioButton.Tag is string tag)
+            {
+                _settings.GitHubMirrorType = int.Parse(tag);
+            }
         }
 
         private async void LoginButton_Click(object sender, RoutedEventArgs e)
@@ -196,8 +229,13 @@ namespace LoliaFrpClient.Pages
             try
             {
                 LatestVersionText.Text = "检查中...";
+                
+                // 首先尝试从 API 获取版本标签
+                var versionTag = await GitHubReleaseService.GetLatestVersionFromApiAsync();
+                
                 _latestRelease = await GitHubReleaseService.GetLatestReleaseAsync("Lolia-FRP", "lolia-frp");
-                LatestVersionText.Text = _latestRelease?.TagName ?? "获取失败";
+                LatestVersionText.Text = versionTag;
+                
                 UpdateFrpcStatus();
             }
             catch (Exception ex)

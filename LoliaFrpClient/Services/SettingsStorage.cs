@@ -117,6 +117,17 @@ namespace LoliaFrpClient.Services
         }
 
         /// <summary>
+        /// GitHub 镜像源类型
+        /// 0: 直接访问 (github.com)
+        /// 1: 镜像源 (cdn.akaere.online/github.com)
+        /// </summary>
+        public int GitHubMirrorType
+        {
+            get => Read<int>("GitHubMirrorType", 0);
+            set => Write("GitHubMirrorType", value);
+        }
+
+        /// <summary>
         /// Read setting
         /// </summary>
         public T Read<T>(string key, T defaultValue = default!)

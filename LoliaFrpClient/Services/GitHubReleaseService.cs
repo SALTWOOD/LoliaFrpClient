@@ -48,6 +48,33 @@ namespace LoliaFrpClient.Services
     }
 
     /// <summary>
+    /// 客户端版本响应数据
+    /// </summary>
+    public class ClientVersionData
+    {
+        [JsonPropertyName("tag")]
+        public string Tag { get; set; } = string.Empty;
+
+        [JsonPropertyName("version")]
+        public string Version { get; set; } = string.Empty;
+    }
+
+    /// <summary>
+    /// 客户端版本 API 响应
+    /// </summary>
+    public class ClientVersionResponse
+    {
+        [JsonPropertyName("code")]
+        public int Code { get; set; }
+
+        [JsonPropertyName("msg")]
+        public string Msg { get; set; } = string.Empty;
+
+        [JsonPropertyName("data")]
+        public ClientVersionData? Data { get; set; }
+    }
+
+    /// <summary>
     /// GitHub Release 服务，用于从 GitHub 获取发布版本信息
     /// </summary>
     public class GitHubReleaseService
@@ -56,10 +83,86 @@ namespace LoliaFrpClient.Services
         private const string GitHubApiBaseUrl = "https://api.github.com/repos";
         private const string UserAgent = "LoliaFrpClient/1.0";
 
+        // 镜像源配置
+        private const string MirrorDirect = "https://github.com";
+        private const string MirrorCdnAkaere = "https://cdn.akaere.online/github.com";
+
         static GitHubReleaseService()
         {
             // GitHub API 强制要求 User-Agent
             _httpClient.DefaultRequestHeaders.Add("User-Agent", UserAgent);
+        }
+
+        /// <summary>
+        /// 获取当前配置的镜像源前缀
+        /// </summary>
+        public static string GetMirrorPrefix()
+        {
+            var mirrorType = SettingsStorage.Instance.GitHubMirrorType;
+            return mirrorType switch
+            {
+                1 => MirrorCdnAkaere,
+                _ => MirrorDirect
+            };
+        }
+
+        /// <summary>
+        /// 转换 GitHub URL 为镜像 URL
+        /// </summary>
+        /// <param name="originalUrl">原始 GitHub URL</param>
+        /// <returns>转换后的镜像 URL</returns>
+        public static string ConvertToMirrorUrl(string originalUrl)
+        {
+            if (string.IsNullOrEmpty(originalUrl))
+                return originalUrl;
+
+            var mirrorType = SettingsStorage.Instance.GitHubMirrorType;
+            
+            if (mirrorType == 1)
+            {
+                // 使用 cdn.akaere.online 镜像
+                if (originalUrl.StartsWith("https://github.com/", StringComparison.OrdinalIgnoreCase))
+                {
+                    return MirrorCdnAkaere + originalUrl.Substring("https://github.com".Length);
+                }
+                else if (originalUrl.StartsWith("https://api.github.com/", StringComparison.OrdinalIgnoreCase))
+                {
+                    // API 请求也转换为镜像
+                    return "https://cdn.akaere.online/api.github.com" + originalUrl.Substring("https://api.github.com".Length);
+                }
+            }
+
+            return originalUrl;
+        }
+
+        /// <summary>
+        /// 从 API 获取最新版本信息
+        /// </summary>
+        /// <returns>版本标签，如 "v0.67.0"</returns>
+        public static async Task<string?> GetLatestVersionFromApiAsync()
+        {
+            try
+            {
+                var apiClient = ApiClientProvider.Instance.Client;
+                var versionRequestBuilder = apiClient.Client.Version;
+                
+                var response = await versionRequestBuilder.GetAsync();
+                
+                if (response != null)
+                {
+                    var code = response.Code;
+                    if (code == 200 && response.Data != null)
+                    {
+                        return response.Data.Tag;
+                    }
+                }
+
+                return null;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
         }
 
         /// <summary>
@@ -71,6 +174,10 @@ namespace LoliaFrpClient.Services
         public static async Task<GitHubRelease> GetLatestReleaseAsync(string owner, string repo)
         {
             var url = $"{GitHubApiBaseUrl}/{owner}/{repo}/releases/latest";
+            
+            // 应用镜像源
+            url = ConvertToMirrorUrl(url);
+            
             var response = await _httpClient.GetAsync(url);
 
             if (!response.IsSuccessStatusCode)
@@ -98,6 +205,10 @@ namespace LoliaFrpClient.Services
         public static async Task<List<GitHubRelease>> GetReleasesAsync(string owner, string repo, int limit = 10)
         {
             var url = $"{GitHubApiBaseUrl}/{owner}/{repo}/releases?per_page={limit}";
+            
+            // 应用镜像源
+            url = ConvertToMirrorUrl(url);
+            
             var response = await _httpClient.GetAsync(url);
 
             if (!response.IsSuccessStatusCode)
@@ -116,7 +227,7 @@ namespace LoliaFrpClient.Services
         }
 
         /// <summary>
-        /// 根据平台获取对应的下载 URL
+        /// 根据平台获取对应的下载 URL（应用镜像源）
         /// </summary>
         /// <param name="release">Release 信息</param>
         /// <returns>下载 URL，如果找不到则返回 null</returns>
@@ -127,7 +238,11 @@ namespace LoliaFrpClient.Services
             // 查找匹配当前平台的资产
             var asset = release.Assets.FirstOrDefault(a => a.Name.Equals(platform, StringComparison.OrdinalIgnoreCase));
             
-            return asset?.BrowserDownloadUrl;
+            if (asset == null)
+                return null;
+
+            // 应用镜像源转换
+            return ConvertToMirrorUrl(asset.BrowserDownloadUrl);
         }
 
         /// <summary>

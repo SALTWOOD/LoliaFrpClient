@@ -12,6 +12,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
@@ -61,8 +62,36 @@
             </StackPanel>
         </Border>
 
-        <!-- Core Version Management Card -->
+        <!-- GitHub Mirror Settings Card -->
         <Border Grid.Row="2" 
+                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                CornerRadius="8"
+                Padding="20"
+                Margin="0,0,0,20"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                BorderThickness="1">
+            <StackPanel Spacing="12">
+                <TextBlock Text="下载设置" 
+                           FontSize="20" 
+                           FontWeight="SemiBold"/>
+                
+                <TextBlock Text="GitHub 镜像源：" 
+                           FontSize="14"
+                           VerticalAlignment="Center"/>
+                
+                <RadioButtons x:Name="GitHubMirrorRadioButtons"
+                              SelectionChanged="GitHubMirrorRadioButtons_SelectionChanged">
+                    <RadioButton Content="直接访问 (github.com)" 
+                                 Tag="0"
+                                 IsChecked="True"/>
+                    <RadioButton Content="镜像源 (cdn.akaere.online/github.com)" 
+                                 Tag="1"/>
+                </RadioButtons>
+            </StackPanel>
+        </Border>
+
+        <!-- Core Version Management Card -->
+        <Border Grid.Row="3" 
                 Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                 CornerRadius="8"
                 Padding="20"

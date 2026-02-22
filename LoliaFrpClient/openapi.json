@@ -2559,11 +2559,15 @@
                     "data": {
                       "type": "object",
                       "properties": {
+                        "tag": {
+                          "type": "string"
+                        },
                         "version": {
                           "type": "string"
                         }
                       },
                       "required": [
+                        "tag",
                         "version"
                       ]
                     }
@@ -2578,7 +2582,8 @@
                   "code": 200,
                   "msg": "获取成功",
                   "data": {
-                    "version": "Lolia-CLI 0.67.0"
+                    "tag": "v0.67.0",
+                    "version": "LoliaFRP-CLI 0.67.0"
                   }
                 }
               }
