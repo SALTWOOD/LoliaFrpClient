@@ -2,6 +2,7 @@ using System;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using Windows.ApplicationModel;
 
 namespace LoliaFrpClient.Services;
 
@@ -57,17 +58,21 @@ public class ClientUpdateService
     /// <summary>
     ///     获取当前客户端版本
     /// </summary>
-    /// <returns>版本字符串，如 "1.0.0"</returns>
+    /// <returns>版本字符串，如 "1.0.0.0"（四位数版本号）</returns>
     public static string GetCurrentVersion()
     {
-        // 尝试从程序集版本获取
-        var assembly = Assembly.GetExecutingAssembly();
-        var assemblyVersion = assembly.GetName().Version;
-
-        if (assemblyVersion != null) return $"{assemblyVersion.Major}.{assemblyVersion.Minor}.{assemblyVersion.Build}";
-
-        // 回退到手动版本
-        return "1.0.0";
+        if (Utils.IsPackaged())
+        {
+            // 打包 (Package)
+            var version = Package.Current.Id.Version;
+            return $"v{version.Major}.{version.Minor}.{version.Build}.{version.Revision}";
+        }
+        else
+        {
+            // 非打包 (Unpackaged) 
+            var assemblyVersion = Assembly.GetExecutingAssembly().GetName().Version;
+            return assemblyVersion?.ToString() ?? "v1.0.0.0";
+        }
     }
 
     /// <summary>

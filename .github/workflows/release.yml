@@ -21,7 +21,8 @@ jobs:
     env:
       Solution_Path: LoliaFrpClient.slnx
       Project_Path: LoliaFrpClient/LoliaFrpClient.csproj
-      Manifest_Path: LoliaFrpClient/Package.appxmanifest
+      Appx_Manifest_Path: LoliaFrpClient/Package.appxmanifest
+      App_Manifest_Path: LoliaFrpClient/app.manifest
 
     outputs:
       VERSION: ${{ steps.get_version.outputs.VERSION }}
@@ -41,44 +42,38 @@ jobs:
       id: get_version
       shell: pwsh
       run: |
-        # 1. Determine Version
         $ver = if ("${{ github.ref_type }}" -eq "tag") { "${{ github.ref_name }}" } else { "dev-" + "${{ github.sha }}".Substring(0, 7) }
-        
-        # 2. Format for AppxManifest (Requires x.x.x.x)
         $cleanVer = (($ver -replace '^v', '') -replace '[^\d.].*$', '').Split('.')
         while ($cleanVer.Count -lt 4) { $cleanVer += "0" }
         $appxVer = ($cleanVer[0..3]) -join "."
         
-        Write-Host "Log: Building Version $ver (Manifest: $appxVer)"
+        Write-Host "Log: Target Version -> $ver ($appxVer)"
         echo "VERSION=$ver" >> $env:GITHUB_OUTPUT
         echo "APPX_VERSION=$appxVer" >> $env:GITHUB_OUTPUT
 
-    - name: Update AppxManifest Version
+    - name: Update Manifests Version
       shell: pwsh
       run: |
         $newVer = "${{ steps.get_version.outputs.APPX_VERSION }}"
-        (Get-Content ${{ env.Manifest_Path }}) -replace '(?<=<Identity[^>]*Version=")[^"]*', $newVer | Set-Content ${{ env.Manifest_Path }}
+        
+        Write-Host "Log: Updating Package.appxmanifest..."
+        (Get-Content ${{ env.Appx_Manifest_Path }}) -replace '(?<=<Identity[^>]*Version=")[^"]*', $newVer | Set-Content ${{ env.Appx_Manifest_Path }}
+        
+        Write-Host "Log: Updating app.manifest..."
+        (Get-Content ${{ env.App_Manifest_Path }}) -replace '(?<=<assemblyIdentity[^>]*version=")[^"]*', $newVer | Set-Content ${{ env.App_Manifest_Path }}
 
     - name: Publish WinUI App (x64)
       run: |
         dotnet publish ${{ env.Project_Path }} `
-          -c ${{ matrix.configuration }} `
-          -r win-x64 `
-          --self-contained true `
-          -p:Platform=x64 `
-          -p:PublishReadyToRun=true `
-          -p:WindowsPackageType=None `
+          -p:PublishProfile=win-x64 `
+          -p:Version=${{ steps.get_version.outputs.APPX_VERSION }} `
           -o ./publish/win-x64
 
     - name: Publish WinUI App (arm64)
       run: |
         dotnet publish ${{ env.Project_Path }} `
-          -c ${{ matrix.configuration }} `
-          -r win-arm64 `
-          --self-contained true `
-          -p:Platform=arm64 `
-          -p:PublishReadyToRun=true `
-          -p:WindowsPackageType=None `
+          -p:PublishProfile=win-arm64 `
+          -p:Version=${{ steps.get_version.outputs.APPX_VERSION }} `
           -o ./publish/win-arm64
 
     - name: Create ZIP archives
@@ -91,7 +86,7 @@ jobs:
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: LoliaFrpClient-${{ matrix.configuration }}-${{ steps.get_version.outputs.VERSION }}
+        name: LoliaFrpClient-Binaries-${{ steps.get_version.outputs.VERSION }}
         path: ./*.zip
         retention-days: 7
 
@@ -103,7 +98,7 @@ jobs:
     - name: Download Artifacts
       uses: actions/download-artifact@v4
       with:
-        name: LoliaFrpClient-Release-${{ needs.build.outputs.VERSION }}
+        name: LoliaFrpClient-Binaries-${{ needs.build.outputs.VERSION }}
 
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v2
