@@ -11,8 +11,9 @@
     <ScrollViewer x:Name="MainScrollViewer"
                   VerticalScrollBarVisibility="Auto"
                   HorizontalScrollBarVisibility="Disabled"
+                  HorizontalScrollMode="Disabled"
                   Padding="20,20,20,40">
-        <StackPanel x:Name="RootStackPanel" Spacing="16" MaxWidth="800">
+        <StackPanel x:Name="RootStackPanel" Spacing="16" HorizontalAlignment="Stretch">
 
             <!-- Account Settings Card -->
             <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"

@@ -8,8 +8,11 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid Padding="20">
-        <StackPanel Spacing="16">
+    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                  HorizontalScrollBarVisibility="Disabled"
+                  HorizontalScrollMode="Disabled">
+        <Grid Padding="20">
+            <StackPanel Spacing="16">
             <!-- 标题和操作按钮 -->
             <Grid ColumnSpacing="12">
                 <Grid.ColumnDefinitions>
@@ -202,6 +205,7 @@
                           Width="48"
                           Height="48"
                           HorizontalAlignment="Center" />
-        </StackPanel>
-    </Grid>
+            </StackPanel>
+        </Grid>
+    </ScrollViewer>
 </Page>
