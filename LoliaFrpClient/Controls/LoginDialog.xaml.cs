@@ -135,13 +135,6 @@ public sealed partial class LoginDialog : ContentDialog
     /// </summary>
     private async Task ShowErrorDialogAsync(string message)
     {
-        var errorDialog = new ContentDialog
-        {
-            Title = "错误",
-            Content = message,
-            CloseButtonText = "确定",
-            XamlRoot = XamlRoot
-        };
-        await errorDialog.ShowAsync();
+        await DialogManager.Instance.ShowErrorAsync("错误", message);
     }
 }

@@ -190,12 +190,9 @@ public sealed partial class TunnelListPage : Page, INotifyPropertyChanged
     /// </summary>
     private async Task CreateTunnelAsync()
     {
-        var dialog = new CreateTunnelDialog
-        {
-            XamlRoot = XamlRoot
-        };
+        var dialog = new CreateTunnelDialog();
 
-        var result = await dialog.ShowAsync();
+        var result = await DialogManager.Instance.ShowDialogAsync(dialog);
 
         if (result == ContentDialogResult.Primary)
             try
@@ -278,11 +275,10 @@ public sealed partial class TunnelListPage : Page, INotifyPropertyChanged
             Content = CreateTunnelDetailContent(tunnel),
             CloseButtonText = "关闭",
             PrimaryButtonText = "编辑",
-            SecondaryButtonText = "删除",
-            XamlRoot = XamlRoot
+            SecondaryButtonText = "删除"
         };
 
-        var result = await dialog.ShowAsync();
+        var result = await DialogManager.Instance.ShowDialogAsync(dialog);
 
         if (result == ContentDialogResult.Primary)
             // 编辑功能（API暂不支持）
@@ -298,17 +294,11 @@ public sealed partial class TunnelListPage : Page, INotifyPropertyChanged
     private async Task DeleteTunnelAsync(TunnelViewModel tunnel)
     {
         // 确认删除
-        var confirmDialog = new ContentDialog
-        {
-            Title = "确认删除",
-            Content = $"确定要删除隧道 \"{tunnel.Name}\" 吗？此操作不可撤销。",
-            PrimaryButtonText = "删除",
-            CloseButtonText = "取消",
-            DefaultButton = ContentDialogButton.Close,
-            XamlRoot = XamlRoot
-        };
-
-        var result = await confirmDialog.ShowAsync();
+        var result = await DialogManager.Instance.ShowConfirmAsync(
+            "确认删除",
+            $"确定要删除隧道 \"{tunnel.Name}\" 吗？此操作不可撤销。",
+            "删除",
+            "取消");
 
         if (result == ContentDialogResult.Primary)
             try
@@ -383,14 +373,7 @@ public sealed partial class TunnelListPage : Page, INotifyPropertyChanged
 
     private async Task ShowErrorDialogAsync(string title, string message)
     {
-        var dialog = new ContentDialog
-        {
-            Title = title,
-            Content = message,
-            CloseButtonText = "确定",
-            XamlRoot = XamlRoot
-        };
-        await dialog.ShowAsync();
+        await DialogManager.Instance.ShowErrorAsync(title, message);
     }
 
     /// <summary>

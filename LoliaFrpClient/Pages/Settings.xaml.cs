@@ -147,8 +147,7 @@ public sealed partial class Settings : Page
 
         // 创建并显示登录弹窗
         var loginDialog = new LoginDialog(uriBuilder.ToString(), OnCallbackReceived);
-        loginDialog.XamlRoot = XamlRoot;
-        await loginDialog.ShowAsync();
+        await DialogManager.Instance.ShowDialogAsync(loginDialog);
     }
 
     /// <summary>
@@ -227,14 +226,7 @@ public sealed partial class Settings : Page
 
     private async Task ShowDialogAsync(string message)
     {
-        var dialog = new ContentDialog
-        {
-            Title = "提示",
-            Content = message,
-            CloseButtonText = "确定",
-            XamlRoot = XamlRoot
-        };
-        await dialog.ShowAsync();
+        await DialogManager.Instance.ShowMessageAsync("提示", message);
     }
 
     #region Frpc Management
@@ -434,15 +426,7 @@ public sealed partial class Settings : Page
     /// </summary>
     private async Task<ContentDialogResult> ShowConfirmDialogAsync(string message)
     {
-        var dialog = new ContentDialog
-        {
-            Title = "确认",
-            Content = message,
-            PrimaryButtonText = "确定",
-            CloseButtonText = "取消",
-            XamlRoot = XamlRoot
-        };
-        return await dialog.ShowAsync();
+        return await DialogManager.Instance.ShowConfirmAsync("确认", message);
     }
 
     #endregion

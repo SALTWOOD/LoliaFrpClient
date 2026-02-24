@@ -10,7 +10,17 @@ namespace LoliaFrpClient;
 /// </summary>
 public partial class App : Application
 {
-    private Window? _window;
+    public static Window? MainWindow { get; private set; }
+
+    /// <summary>
+    ///     Invoked when the application is launched.
+    /// </summary>
+    /// <param name="args">Details about the launch request and process.</param>
+    protected override void OnLaunched(LaunchActivatedEventArgs args)
+    {
+        MainWindow = new MainWindow();
+        MainWindow.Activate();
+    }
 
     /// <summary>
     ///     Initializes the singleton application object.  This is the first line of authored code
@@ -19,15 +29,5 @@ public partial class App : Application
     public App()
     {
         InitializeComponent();
-    }
-
-    /// <summary>
-    ///     Invoked when the application is launched.
-    /// </summary>
-    /// <param name="args">Details about the launch request and process.</param>
-    protected override void OnLaunched(LaunchActivatedEventArgs args)
-    {
-        _window = new MainWindow();
-        _window.Activate();
     }
 }

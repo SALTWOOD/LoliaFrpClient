@@ -143,6 +143,13 @@ public sealed partial class MainWindow : Window
             }
         }
     }
+    
+    public static void NavigateTo(Type pageType)
+    {
+        (App.MainWindow as MainWindow)?.ContentFrame.Navigate(pageType);
+    }
+    
+    public static void NavigateTo<T>() => NavigateTo(typeof(T));
 
     private void ToggleTheme()
     {
@@ -190,11 +197,10 @@ public sealed partial class MainWindow : Window
             Content =
                 $"当前版本: {updateResult.CurrentVersion}\n最新版本: {updateResult.LatestVersion}\n\n{TruncateReleaseNotes(updateResult.ReleaseNotes, 200)}",
             PrimaryButtonText = "前往下载",
-            CloseButtonText = "稍后提醒",
-            XamlRoot = Content.XamlRoot
+            CloseButtonText = "稍后提醒"
         };
 
-        var result = await dialog.ShowAsync();
+        var result = await DialogManager.Instance.ShowDialogAsync(dialog);
 
         if (result == ContentDialogResult.Primary)
         {
