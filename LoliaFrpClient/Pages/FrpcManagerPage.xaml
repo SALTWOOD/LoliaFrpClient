@@ -169,6 +169,7 @@
                                    FontFamily="Consolas"
                                    FontSize="12"
                                    TextWrapping="Wrap"
+                                   IsTextSelectionEnabled="True"
                                    Text="选择一个实例查看日志输出" />
                     </ScrollViewer>
                 </Border>
