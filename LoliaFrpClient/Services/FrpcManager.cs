@@ -133,6 +133,8 @@ public class FrpcManager : IDisposable
             var baseDataPath = GetAppDataRoot();
             _frpcDirectory = Path.Combine(baseDataPath, "LoliaFrpClient", "frpc");
         }
+        
+        AppDomain.CurrentDomain.ProcessExit += (s, e) => Dispose(); 
 
         // 沟槽的路径映射
         Log($"[INIT] Frpc Directory: {_frpcDirectory}");
@@ -598,7 +600,7 @@ public class FrpcManager : IDisposable
             // 设置 Job Object 限制：当父进程退出时终止所有子进程
             var info = new JOBOBJECT_BASIC_LIMIT_INFORMATION
             {
-                LimitFlags = 0x2000 // JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE
+                LimitFlags = 0x2800
             };
 
             if (!JobObjectApi.SetInformationJobObject(_jobHandle, JOBOBJECTINFOCLASS.BasicLimitInformation, ref info,

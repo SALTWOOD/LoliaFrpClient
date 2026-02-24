@@ -204,54 +204,10 @@ public class OAuthCallbackService
     <meta charset=""UTF-8"">
     <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
     <title>授权成功</title>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-        .container {
-            background: white;
-            padding: 40px;
-            border-radius: 12px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-            text-align: center;
-            max-width: 400px;
-        }
-        .success-icon {
-            font-size: 64px;
-            margin-bottom: 20px;
-        }
-        h1 {
-            color: #333;
-            margin: 0 0 16px 0;
-            font-size: 24px;
-        }
-        p {
-            color: #666;
-            margin: 0 0 24px 0;
-            line-height: 1.6;
-        }
-        .note {
-            background: #f0f0f0;
-            padding: 12px;
-            border-radius: 6px;
-            font-size: 14px;
-            color: #888;
-        }
-    </style>
 </head>
 <body>
-    <div class=""container"">
-        <div class=""success-icon"">✓</div>
-        <h1>授权成功</h1>
-        <p>您已成功授权 LoliaFrp 客户端访问您的账户。</p>
-        <div class=""note"">现在可以关闭此页面并返回应用程序。</div>
-    </div>
+    <h1>授权成功</h1>
+    <p>您现在可以关闭此页面并返回应用程序</p>
 </body>
 </html>";
     }
