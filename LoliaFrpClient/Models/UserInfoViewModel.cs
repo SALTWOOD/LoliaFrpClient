@@ -259,7 +259,7 @@ public class UserInfoViewModel : INotifyPropertyChanged
     private static string FormatBandwidth(int bandwidthLimit)
     {
         if (bandwidthLimit <= 0) return "无限制";
-        return $"{bandwidthLimit} Mbps";
+        return $"{bandwidthLimit*8} Mbps";
     }
 
     /// <summary>
