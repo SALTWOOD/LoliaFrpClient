@@ -147,12 +147,19 @@
                                            Style="{StaticResource SubtitleTextBlockStyle}"
                                            FontWeight="SemiBold" />
 
-                                <TextBlock Grid.Row="0" Grid.Column="1"
-                                           Text="{Binding StatusDisplayText}"
-                                           Style="{StaticResource CaptionTextBlockStyle}"
-                                           VerticalAlignment="Center"
-                                           Margin="8,0,0,0"
-                                           HorizontalAlignment="Right" />
+                                <StackPanel Grid.Row="0" Grid.Column="1"
+                                            Orientation="Horizontal"
+                                            HorizontalAlignment="Right"
+                                            VerticalAlignment="Center"
+                                            Spacing="6">
+                                    <Ellipse Width="10"
+                                             Height="10"
+                                             Fill="{Binding StatusBrush}"
+                                             VerticalAlignment="Center" />
+                                    <TextBlock Text="{Binding StatusDisplayText}"
+                                               Style="{StaticResource CaptionTextBlockStyle}"
+                                               VerticalAlignment="Center" />
+                                </StackPanel>
 
                                 <TextBlock Grid.Row="1" Grid.Column="0"
                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}">
