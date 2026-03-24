@@ -10,6 +10,7 @@ using LoliaFrpClient.Services;
 using Microsoft.UI.Text;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
 
 namespace LoliaFrpClient.Pages;
 
@@ -262,9 +263,13 @@ public sealed partial class TunnelListPage : Page, INotifyPropertyChanged
         }
     }
 
-    private async void OnTunnelItemClick(object sender, ItemClickEventArgs e)
+    private async void OnTunnelCardRightClick(object sender, RightTappedRoutedEventArgs e)
     {
-        if (e.ClickedItem is TunnelViewModel tunnel) await ShowTunnelDetailDialogAsync(tunnel);
+        if (sender is FrameworkElement element && element.DataContext is TunnelViewModel tunnel)
+        {
+            e.Handled = true;
+            await ShowTunnelDetailDialogAsync(tunnel);
+        }
     }
 
     private async Task ShowTunnelDetailDialogAsync(TunnelViewModel tunnel)
@@ -377,15 +382,15 @@ public sealed partial class TunnelListPage : Page, INotifyPropertyChanged
     }
 
     /// <summary>
-    ///     切换隧道启用状态
+    ///     双击卡片切换隧道启用状态
     /// </summary>
-    private async void OnTunnelSwitchToggled(object sender, RoutedEventArgs e)
+    private async void OnTunnelCardDoubleTapped(object sender, Microsoft.UI.Xaml.Input.DoubleTappedRoutedEventArgs e)
     {
-        if (sender is ToggleSwitch toggleSwitch && toggleSwitch.Tag is TunnelViewModel tunnel)
+        if (sender is Border border && border.Tag is TunnelViewModel tunnel)
         {
             // 保存原始状态，以便在操作失败时恢复
             var originalState = tunnel.IsEnabled;
-            var newState = toggleSwitch.IsOn;
+            var newState = !originalState;
 
             if (newState)
             {

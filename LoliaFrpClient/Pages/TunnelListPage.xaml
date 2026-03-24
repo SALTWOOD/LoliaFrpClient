@@ -117,10 +117,7 @@
 
             <!-- 隧道列表 -->
             <ListView x:Name="TunnelListView"
-                      ItemsSource="{x:Bind FilteredTunnels, Mode=OneWay}"
-                      SelectionMode="Single"
-                      IsItemClickEnabled="True"
-                      ItemClick="OnTunnelItemClick">
+                      ItemsSource="{x:Bind FilteredTunnels, Mode=OneWay}">
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
@@ -128,7 +125,10 @@
                                 Padding="16"
                                 Margin="0,0,0,8"
                                 BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                                BorderThickness="1">
+                                BorderThickness="1"
+                                RightTapped="OnTunnelCardRightClick"
+                                DoubleTapped="OnTunnelCardDoubleTapped"
+                                Tag="{Binding}">
                             <Grid ColumnSpacing="12" RowSpacing="8">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
@@ -147,14 +147,12 @@
                                            Style="{StaticResource SubtitleTextBlockStyle}"
                                            FontWeight="SemiBold" />
 
-                                <ToggleSwitch Grid.Row="0" Grid.Column="1"
-                                              IsOn="{Binding IsEnabled, Mode=TwoWay}"
-                                              OnContent="已启用"
-                                              OffContent="未启用"
-                                              Toggled="OnTunnelSwitchToggled"
-                                              Tag="{Binding}"
-                                              Margin="8,0,0,0"
-                                              HorizontalAlignment="Right" />
+                                <TextBlock Grid.Row="0" Grid.Column="1"
+                                           Text="{Binding StatusDisplayText}"
+                                           Style="{StaticResource CaptionTextBlockStyle}"
+                                           VerticalAlignment="Center"
+                                           Margin="8,0,0,0"
+                                           HorizontalAlignment="Right" />
 
                                 <TextBlock Grid.Row="1" Grid.Column="0"
                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}">
