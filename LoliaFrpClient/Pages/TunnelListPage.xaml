@@ -116,7 +116,7 @@
             </Grid>
 
             <!-- 提示信息 -->
-            <TextBlock Text="TIPS：双击卡片可以启动/关闭隧道"
+            <TextBlock Text="TIPS：双击卡片可以启动/关闭隧道，右键可以对隧道进行操作"
                        Style="{StaticResource CaptionTextBlockStyle}"
                        Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
 
