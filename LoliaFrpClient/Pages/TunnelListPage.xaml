@@ -115,6 +115,11 @@
                 </ComboBox>
             </Grid>
 
+            <!-- 提示信息 -->
+            <TextBlock Text="TIPS：双击卡片可以启动/关闭隧道"
+                       Style="{StaticResource CaptionTextBlockStyle}"
+                       Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+
             <!-- 隧道列表 -->
             <ListView x:Name="TunnelListView"
                       ItemsSource="{x:Bind FilteredTunnels, Mode=OneWay}">
