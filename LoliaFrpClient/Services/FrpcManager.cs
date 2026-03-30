@@ -49,6 +49,7 @@ public partial class FrpcManager : IDisposable
     private readonly ConcurrentDictionary<int, FrpcProcessInfo> _processes = new();
     private readonly SemaphoreSlim _lock = new(1, 1);
     private nint _jobHandle;
+    private bool _disposed;
 
     public string? InstalledVersion { get; private set; }
     public bool IsAnyRunning => _processes.Values.Any(p => p.IsRunning);
@@ -270,8 +271,18 @@ public partial class FrpcManager : IDisposable
     }
     public void Dispose()
     {
+        if (_disposed) return;
+        _disposed = true;
+
         StopAll();
-        if (_jobHandle != nint.Zero) JobObjectApi.CloseHandle(_jobHandle);
+
+        if (_jobHandle != nint.Zero)
+        {
+            try{ JobObjectApi.CloseHandle(_jobHandle); }
+            catch { /* 忽略关闭句柄时的异常 */ }
+            _jobHandle = nint.Zero;
+        }
+
         _lock.Dispose();
         GC.SuppressFinalize(this);
     }
