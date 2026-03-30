@@ -397,22 +397,32 @@ public sealed partial class TunnelListPage : Page, INotifyPropertyChanged
                 // 启用隧道
                 var success = await EnableTunnelAsync(tunnel);
                 if (!success)
+                {
                     // 操作失败，恢复原始状态
                     tunnel.IsEnabled = originalState;
+                }
                 else
-                    // 操作成功，刷新数据以更新统计信息
+                {
+                    // 操作成功，显示提示并刷新数据
+                    await DialogManager.Instance.ShowMessageAsync("启用成功", $"隧道 \"{tunnel.Name}\" 已成功启动");
                     await LoadTunnelsAsync();
+                }
             }
             else
             {
                 // 禁用隧道
                 var success = await DisableTunnelAsync(tunnel);
                 if (!success)
+                {
                     // 操作失败，恢复原始状态
                     tunnel.IsEnabled = originalState;
+                }
                 else
-                    // 操作成功，刷新数据以更新统计信息
+                {
+                    // 操作成功，显示提示并刷新数据
+                    await DialogManager.Instance.ShowMessageAsync("关闭成功", $"隧道 \"{tunnel.Name}\" 已成功关闭");
                     await LoadTunnelsAsync();
+                }
             }
         }
     }
