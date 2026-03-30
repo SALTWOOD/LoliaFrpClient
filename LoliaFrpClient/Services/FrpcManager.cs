@@ -24,7 +24,7 @@ public record FrpcProcessInfo(int TunnelId, string TunnelName, string? TunnelRem
 {
     public ObservableCollection<string> Logs { get; } = [];
     public DateTime StartTime { get; init; } = DateTime.Now;
-    public bool IsRunning => !Process.HasExited;
+    public bool IsRunning { get; private set; } = true;
     public IEnumerable<string> LogOutput => Logs;
 
     public void AddLog(string message)
@@ -33,6 +33,8 @@ public record FrpcProcessInfo(int TunnelId, string TunnelName, string? TunnelRem
         Logs.Add(line);
         if (Logs.Count > 500) Logs.RemoveAt(0);
     }
+
+    public void MarkAsExited() => IsRunning = false;
 }
 
 public partial class FrpcManager : IDisposable
@@ -185,6 +187,7 @@ public partial class FrpcManager : IDisposable
         };
         proc.Exited += (_, _) =>
         {
+            info.MarkAsExited();
             _processes.TryRemove(id, out var removed);
             TunnelProcessExited?.Invoke(this, info);
         };
@@ -201,9 +204,11 @@ public partial class FrpcManager : IDisposable
     public void Stop(int id)
     {
         if (!_processes.TryRemove(id, out var info)) return;
+        var wasRunning = info.IsRunning;
+        info.MarkAsExited();
         try
         {
-            if (!info.Process.HasExited) info.Process.Kill(true);
+            if (wasRunning) info.Process.Kill(true);
         }
         catch (Exception ex)
         {
