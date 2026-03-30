@@ -296,7 +296,7 @@ public sealed partial class FrpcManagerPage : Page, INotifyPropertyChanged
 
         try
         {
-            _frpcManager.RestartTunnelProcess(SelectedProcess.TunnelId);
+            _frpcManager.Restart(SelectedProcess.TunnelId);
             _currentLogs.Clear();
             UpdateLogDisplay();
         }

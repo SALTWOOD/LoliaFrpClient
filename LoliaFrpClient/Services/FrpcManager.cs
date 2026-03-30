@@ -229,12 +229,12 @@ public partial class FrpcManager : IDisposable
 
     public IReadOnlyCollection<FrpcProcessInfo> GetAllProcesses() => _processes.Values.ToList();
 
-    public void RestartTunnelProcess(int tunnelId)
+    public void Restart(int tunnelId)
     {
         if (!_processes.TryGetValue(tunnelId, out var info)) return;
         var args = info.Process.StartInfo.Arguments;
         Stop(tunnelId);
-        Start(tunnelId, info.TunnelName, info.TunnelRemark, args);
+        Start(tunnelId, info.TunnelName, args, info.TunnelRemark);
     }
 
     #endregion
