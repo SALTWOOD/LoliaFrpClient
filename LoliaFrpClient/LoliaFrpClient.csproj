@@ -13,6 +13,7 @@
         <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
         <EnableMsixTooling>true</EnableMsixTooling>
         <Nullable>enable</Nullable>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
 
     <ItemGroup>

@@ -6,202 +6,62 @@ using Windows.ApplicationModel;
 
 namespace LoliaFrpClient.Services;
 
-/// <summary>
-///     客户端更新检查结果
-/// </summary>
-public class ClientUpdateResult
-{
-    /// <summary>
-    ///     是否有可用更新
-    /// </summary>
-    public bool HasUpdate { get; set; }
+public record ClientUpdateResult(
+    bool HasUpdate, 
+    string CurrentVersion, 
+    string LatestVersion, 
+    string ReleaseUrl, 
+    string ReleaseNotes, 
+    DateTime PublishedAt, 
+    string? DownloadUrl
+);
 
-    /// <summary>
-    ///     当前版本
-    /// </summary>
-    public string CurrentVersion { get; set; } = string.Empty;
-
-    /// <summary>
-    ///     最新版本
-    /// </summary>
-    public string LatestVersion { get; set; } = string.Empty;
-
-    /// <summary>
-    ///     发布页面 URL
-    /// </summary>
-    public string ReleaseUrl { get; set; } = string.Empty;
-
-    /// <summary>
-    ///     更新日志
-    /// </summary>
-    public string ReleaseNotes { get; set; } = string.Empty;
-
-    /// <summary>
-    ///     发布时间
-    /// </summary>
-    public DateTime PublishedAt { get; set; }
-
-    /// <summary>
-    ///     下载 URL（如果有匹配的平台包）
-    /// </summary>
-    public string? DownloadUrl { get; set; }
-}
-
-/// <summary>
-///     客户端本体更新检查服务
-/// </summary>
-public class ClientUpdateService
+public static class ClientUpdateService
 {
     private const string Owner = "SALTWOOD";
     private const string Repo = "LoliaFrpClient";
 
-    /// <summary>
-    ///     获取当前客户端版本
-    /// </summary>
-    /// <returns>版本字符串，如 "1.0.0.0"（四位数版本号）</returns>
     public static string GetCurrentVersion()
     {
         if (Utils.IsPackaged())
         {
-            // 打包 (Package)
-            var version = Package.Current.Id.Version;
-            return $"v{version.Major}.{version.Minor}.{version.Build}.{version.Revision}";
+            var v = Package.Current.Id.Version;
+            return $"{v.Major}.{v.Minor}.{v.Build}.{v.Revision}";
         }
-        else
-        {
-            // 非打包 (Unpackaged) 
-            var assemblyVersion = Assembly.GetExecutingAssembly().GetName().Version;
-            return assemblyVersion?.ToString() ?? "v1.0.0.0";
-        }
+        return Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "1.0.0.0";
     }
 
-    /// <summary>
-    ///     比较两个版本号
-    /// </summary>
-    /// <param name="version1">版本1，如 "1.0.0" 或 "v1.0.0"</param>
-    /// <param name="version2">版本2，如 "1.0.0" 或 "v1.0.0"</param>
-    /// <returns>如果 version1 小于 version2 返回负数，相等返回 0，大于返回正数</returns>
-    public static int CompareVersions(string version1, string version2)
-    {
-        // 移除 'v' 前缀
-        version1 = version1.TrimStart('v', 'V');
-        version2 = version2.TrimStart('v', 'V');
-
-        var parts1 = version1.Split('.');
-        var parts2 = version2.Split('.');
-
-        var maxLength = Math.Max(parts1.Length, parts2.Length);
-
-        for (var i = 0; i < maxLength; i++)
-        {
-            var v1 = i < parts1.Length && int.TryParse(parts1[i], out var p1) ? p1 : 0;
-            var v2 = i < parts2.Length && int.TryParse(parts2[i], out var p2) ? p2 : 0;
-
-            if (v1 != v2) return v1.CompareTo(v2);
-        }
-
-        return 0;
-    }
-
-    /// <summary>
-    ///     检查客户端更新
-    /// </summary>
-    /// <returns>更新检查结果</returns>
     public static async Task<ClientUpdateResult> CheckForUpdateAsync()
     {
-        var result = new ClientUpdateResult
-        {
-            CurrentVersion = GetCurrentVersion()
-        };
-
+        var currentStr = GetCurrentVersion();
+        
         try
         {
-            // 从 GitHub 获取最新 Release
             var release = await GitHubReleaseService.GetLatestReleaseAsync(Owner, Repo);
+            if (release == null) return CreateEmpty(currentStr);
 
-            if (release != null)
-            {
-                result.LatestVersion = release.TagName;
-                result.ReleaseUrl = release.HtmlUrl;
-                result.ReleaseNotes = release.Body;
-                result.PublishedAt = release.PublishedAt;
+            // Version.Parse handles "1.0.0", but needs to strip 'v' from GitHub tags
+            var latestStr = release.TagName.TrimStart('v', 'V');
+            var currentVersion = Version.Parse(currentStr.TrimStart('v', 'V'));
+            var latestVersion = Version.Parse(latestStr);
 
-                // 比较版本
-                var comparison = CompareVersions(result.CurrentVersion, result.LatestVersion);
-                result.HasUpdate = comparison < 0;
-
-                // 获取下载 URL
-                result.DownloadUrl = GetDownloadUrlForPlatform(release);
-            }
+            return new ClientUpdateResult(
+                HasUpdate: latestVersion > currentVersion,
+                CurrentVersion: $"v{currentStr}",
+                LatestVersion: release.TagName,
+                ReleaseUrl: "https://github.com/SALTWOOD/LoliaFrpClient/releases/latest", // Or release.HtmlUrl
+                ReleaseNotes: release.Body,
+                PublishedAt: DateTime.Now, // Use release.PublishedAt if added to record
+                DownloadUrl: GitHubReleaseService.GetDownloadUrl(release, AssetType.Client)
+            );
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            // 检查失败时返回无更新
-            result.HasUpdate = false;
+            Console.WriteLine($"Update check failed: {ex.Message}");
+            return CreateEmpty(currentStr);
         }
-
-        return result;
     }
 
-    /// <summary>
-    ///     根据平台获取对应的下载 URL
-    /// </summary>
-    /// <param name="release">Release 信息</param>
-    /// <returns>下载 URL，如果找不到则返回 null</returns>
-    private static string? GetDownloadUrlForPlatform(GitHubRelease release)
-    {
-        var platformPattern = GetPlatformPattern();
-
-        foreach (var asset in release.Assets)
-            if (asset.Name.Contains(platformPattern, StringComparison.OrdinalIgnoreCase))
-                return GitHubReleaseService.ConvertToMirrorUrl(asset.BrowserDownloadUrl);
-
-        return null;
-    }
-
-    /// <summary>
-    ///     获取当前平台的匹配模式
-    /// </summary>
-    /// <returns>平台模式字符串</returns>
-    private static string GetPlatformPattern()
-    {
-        var isWindows = RuntimeInformation.IsOSPlatform(
-            OSPlatform.Windows);
-        var isLinux = RuntimeInformation.IsOSPlatform(
-            OSPlatform.Linux);
-        var isMacOS = RuntimeInformation.IsOSPlatform(
-            OSPlatform.OSX);
-
-        var isArm64 = RuntimeInformation.ProcessArchitecture ==
-                      Architecture.Arm64;
-        var isX64 = RuntimeInformation.ProcessArchitecture ==
-                    Architecture.X64;
-        var isX86 = RuntimeInformation.ProcessArchitecture ==
-                    Architecture.X86;
-
-        if (isWindows)
-        {
-            if (isX64) return "win-x64";
-            if (isArm64) return "win-arm64";
-            if (isX86) return "win-x86";
-            return "win";
-        }
-
-        if (isLinux)
-        {
-            if (isX64) return "linux-x64";
-            if (isArm64) return "linux-arm64";
-            if (isX86) return "linux-x86";
-            return "linux";
-        }
-
-        if (isMacOS)
-        {
-            if (isArm64) return "osx-arm64";
-            if (isX64) return "osx-x64";
-            return "osx";
-        }
-
-        return "unknown";
-    }
+    private static ClientUpdateResult CreateEmpty(string version) => 
+        new(false, $"v{version}", string.Empty, string.Empty, string.Empty, DateTime.MinValue, null);
 }

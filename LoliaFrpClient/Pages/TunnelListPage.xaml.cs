@@ -424,39 +424,33 @@ public sealed partial class TunnelListPage : Page, INotifyPropertyChanged
     {
         try
         {
-            // 检查 frpc 是否已安装
-            if (!_frpcManager.IsFrpcReady())
-            {
-                await ShowErrorDialogAsync("frpc 未安装", "请在设置页面先安装 frpc");
-                return false;
-            }
-
-            // 获取 frpc 配置 token
-            var configResponse = await _apiClientProvider.Client.User.Tunnel[tunnel.Name]
+            var tokenResponse = await _apiClientProvider.Client.User.Tunnel[tunnel.Name]
                 .GetAsWithTunnel_nameGetResponseAsync();
-            var token = configResponse?.Data?.TunnelToken;
+            var id = tokenResponse?.Data?.Id;
+            var token = tokenResponse?.Data?.TunnelToken;
 
             if (string.IsNullOrEmpty(token))
             {
-                await ShowErrorDialogAsync("获取配置失败", "无法获取 frpc token");
+                await ShowErrorDialogAsync("启用失败", "无法获取隧道连接密钥 (Token)");
                 return false;
             }
 
-            // 使用 frpc 启动隧道
-            var tunnelId = tunnel.Id.ToString();
-            var tunnelRemark = tunnel.Remark ?? string.Empty;
-            var success =
-                _frpcManager.StartTunnelProcess(tunnel.Id, tunnel.Name, tunnelRemark, $"-t {tunnelId}:{token}");
+            _frpcManager.Start(
+                tunnel.Id, 
+                tunnel.Name, 
+                $"-t {id}:{token}"
+            );
 
-            if (success)
+            // 3. 更新 UI 状态
+            tunnel.IsEnabled = true;
+        
+            // 记录到本地字典（如果需要跟踪）
+            if (_frpcManager.GetProcessInfo(tunnel.Id) is { } info)
             {
-                tunnel.IsEnabled = true;
-                await ShowErrorDialogAsync("启用成功", $"隧道 {tunnel.Name} 已启用");
-                return true;
+                _tunnelProcesses[tunnel.Id] = info;
             }
 
-            await ShowErrorDialogAsync("启用失败", "无法启动 frpc 进程");
-            return false;
+            return true;
         }
         catch (Exception ex)
         {
@@ -465,25 +459,15 @@ public sealed partial class TunnelListPage : Page, INotifyPropertyChanged
         }
     }
 
-    /// <summary>
-    ///     禁用隧道
-    /// </summary>
     private async Task<bool> DisableTunnelAsync(TunnelViewModel tunnel)
     {
         try
         {
-            // 停止指定隧道的 frpc 进程
-            var success = _frpcManager.StopTunnelProcess(tunnel.Id);
+            _frpcManager.Stop(tunnel.Id);
+            _tunnelProcesses.Remove(tunnel.Id);
+            tunnel.IsEnabled = false;
 
-            if (success)
-            {
-                tunnel.IsEnabled = false;
-                await ShowErrorDialogAsync("禁用成功", $"隧道 {tunnel.Name} 已禁用");
-                return true;
-            }
-
-            await ShowErrorDialogAsync("禁用失败", "无法停止 frpc 进程");
-            return false;
+            return true;
         }
         catch (Exception ex)
         {

@@ -6,202 +6,102 @@ using Windows.Storage;
 
 namespace LoliaFrpClient.Services;
 
-/// <summary>
-///     Settings Storage service class for storing user data and dark mode settings
-/// </summary>
 public class SettingsStorage
 {
     private static readonly Lazy<SettingsStorage> _instance = new(() => new SettingsStorage());
-    private readonly Dictionary<string, object?> _fileSettings;
+    public static SettingsStorage Instance => _instance.Value;
 
     private readonly ApplicationDataContainer? _localSettings;
-    private readonly string _settingsFilePath;
-    private readonly bool _useFileStorage;
+    private readonly string? _settingsFilePath;
+    private readonly Dictionary<string, object?> _fileCache;
+    private readonly bool _isPackaged;
+
+    private readonly Dictionary<string, object> _defaults = new()
+    {
+        { nameof(IsDarkMode), false },
+        { nameof(AutoCheckClientUpdate), true },
+        { nameof(DownloadUrlTemplate), "https://github.com/{owner}/{repo}/releases/download/{tag}/{asset}" },
+        { nameof(ApiBaseUrl), "https://api.lolia.io" } // Example default
+    };
 
     private SettingsStorage()
     {
-        if (Utils.IsPackaged())
+        _isPackaged = Utils.IsPackaged();
+
+        if (_isPackaged)
         {
             _localSettings = ApplicationData.Current.LocalSettings;
-            _useFileStorage = false;
-            _settingsFilePath = string.Empty;
-            _fileSettings = new Dictionary<string, object?>();
+            _fileCache = [];
         }
         else
         {
-            _localSettings = null;
-            _useFileStorage = true;
-
-            var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            var appFolder = Path.Combine(appDataPath, "LoliaFrpClient");
-
-            if (!Directory.Exists(appFolder)) Directory.CreateDirectory(appFolder);
-
-            _settingsFilePath = Path.Combine(appFolder, "settings.json");
-            _fileSettings = LoadSettingsFromFile();
+            var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "LoliaFrpClient");
+            Directory.CreateDirectory(path);
+            _settingsFilePath = Path.Combine(path, "settings.json");
+            _fileCache = LoadFromFile();
         }
     }
 
-    public static SettingsStorage Instance => _instance.Value;
+    #region Properties
 
-    /// <summary>
-    ///     Dark mode setting
-    /// </summary>
-    public bool IsDarkMode
-    {
-        get => Read<bool>("IsDarkMode");
-        set => Write("IsDarkMode", value);
-    }
+    public bool IsDarkMode { get => Read(nameof(IsDarkMode), (bool)_defaults[nameof(IsDarkMode)]); set => Write(nameof(IsDarkMode), value); }
+    public string? OAuthToken { get => Read<string?>("Authorization"); set => Write("Authorization", value); }
+    public string? RefreshToken { get => Read<string?>("RefreshToken"); set => Write("RefreshToken", value); }
+    public string? ApiBaseUrl { get => Read(nameof(ApiBaseUrl), (string)_defaults[nameof(ApiBaseUrl)]); set => Write(nameof(ApiBaseUrl), value); }
+    public bool AutoCheckClientUpdate { get => Read(nameof(AutoCheckClientUpdate), (bool)_defaults[nameof(AutoCheckClientUpdate)]); set => Write(nameof(AutoCheckClientUpdate), value); }
+    
+    // New Template property to replace MirrorType
+    public string DownloadUrlTemplate { get => Read(nameof(DownloadUrlTemplate), (string)_defaults[nameof(DownloadUrlTemplate)]); set => Write(nameof(DownloadUrlTemplate), value); }
 
-    /// <summary>
-    ///     OAuth token
-    /// </summary>
-    public string? OAuthToken
-    {
-        get => Read<string?>("Authorization");
-        set => Write("Authorization", value);
-    }
+    #endregion
 
-    /// <summary>
-    ///     Refresh token
-    /// </summary>
-    public string? RefreshToken
-    {
-        get => Read<string?>("RefreshToken");
-        set => Write("RefreshToken", value);
-    }
-
-    /// <summary>
-    ///     API Base URL
-    /// </summary>
-    public string? ApiBaseUrl
-    {
-        get => Read<string?>("ApiBaseUrl");
-        set => Write("ApiBaseUrl", value);
-    }
-
-    /// <summary>
-    ///     GitHub 镜像源类型
-    ///     0: 直接访问 (github.com)
-    ///     1: 镜像源 (cdn.akaere.online/github.com)
-    /// </summary>
-    public int GitHubMirrorType
-    {
-        get => Read<int>("GitHubMirrorType");
-        set => Write("GitHubMirrorType", value);
-    }
-
-    /// <summary>
-    ///     是否在启动时自动检查客户端更新
-    /// </summary>
-    public bool AutoCheckClientUpdate
-    {
-        get => Read("AutoCheckClientUpdate", true);
-        set => Write("AutoCheckClientUpdate", value);
-    }
-
-    /// <summary>
-    ///     Load settings from a file
-    /// </summary>
-    private Dictionary<string, object?> LoadSettingsFromFile()
-    {
-        if (!File.Exists(_settingsFilePath)) return new Dictionary<string, object?>();
-
-        try
-        {
-            var json = File.ReadAllText(_settingsFilePath);
-            return JsonSerializer.Deserialize<Dictionary<string, object?>>(json)
-                   ?? new Dictionary<string, object?>();
-        }
-        catch
-        {
-            return new Dictionary<string, object?>();
-        }
-    }
-
-    /// <summary>
-    ///     Save settings to a file
-    /// </summary>
-    private void SaveSettingsToFile()
-    {
-        var json = JsonSerializer.Serialize(_fileSettings, new JsonSerializerOptions
-        {
-            WriteIndented = true
-        });
-        File.WriteAllText(_settingsFilePath, json);
-    }
-
-    /// <summary>
-    ///     Read setting
-    /// </summary>
     public T Read<T>(string key, T defaultValue = default!)
     {
-        if (_useFileStorage)
+        if (_isPackaged)
         {
-            if (_fileSettings.TryGetValue(key, out var value))
-            {
-                if (value is JsonElement jsonElement)
-                    return JsonSerializer.Deserialize<T>(jsonElement.GetRawText()) ?? defaultValue;
-                if (value is T typedValue) return typedValue;
-            }
-
-            return defaultValue;
+            return _localSettings!.Values.TryGetValue(key, out var val) && val is T typedVal ? typedVal : defaultValue;
         }
-        else
+
+        if (_fileCache.TryGetValue(key, out var raw))
         {
-            if (_localSettings!.Values.TryGetValue(key, out var value))
-                if (value is T typedValue)
-                    return typedValue;
-
-            return defaultValue;
+            if (raw is T alreadyTyped) return alreadyTyped;
+            if (raw is JsonElement json) return JsonSerializer.Deserialize<T>(json.GetRawText()) ?? defaultValue;
         }
+        return defaultValue;
     }
 
-    /// <summary>
-    ///     Write setting
-    /// </summary>
     public void Write<T>(string key, T value)
     {
-        if (_useFileStorage)
-        {
-            _fileSettings[key] = value;
-            SaveSettingsToFile();
-        }
-        else
+        if (_isPackaged)
         {
             _localSettings!.Values[key] = value;
         }
-    }
-
-    /// <summary>
-    ///     Delete setting
-    /// </summary>
-    public void Delete(string key)
-    {
-        if (_useFileStorage)
-        {
-            _fileSettings.Remove(key);
-            SaveSettingsToFile();
-        }
         else
         {
-            _localSettings!.Values.Remove(key);
+            _fileCache[key] = value;
+            SaveToFile();
         }
     }
 
-    /// <summary>
-    ///     Clear all settings
-    /// </summary>
+    private Dictionary<string, object?> LoadFromFile()
+    {
+        if (!File.Exists(_settingsFilePath)) return [];
+        try
+        {
+            return JsonSerializer.Deserialize<Dictionary<string, object?>>(File.ReadAllText(_settingsFilePath!)) ?? [];
+        }
+        catch { return []; }
+    }
+
+    private void SaveToFile() 
+    {
+        var options = new JsonSerializerOptions { WriteIndented = true };
+        File.WriteAllText(_settingsFilePath!, JsonSerializer.Serialize(_fileCache, options));
+    }
+
     public void Clear()
     {
-        if (_useFileStorage)
-        {
-            _fileSettings.Clear();
-            SaveSettingsToFile();
-        }
-        else
-        {
-            _localSettings!.Values.Clear();
-        }
+        if (_isPackaged) _localSettings!.Values.Clear();
+        else { _fileCache.Clear(); SaveToFile(); }
     }
 }

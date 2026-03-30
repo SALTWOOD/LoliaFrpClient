@@ -8,629 +8,266 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Json;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Windows.Storage;
+using LoliaFrpClient.Utilities;
 
 namespace LoliaFrpClient.Services;
 
-/// <summary>
-///     Windows Job Object API用于管理子进程生命周期
-/// </summary>
-internal static class JobObjectApi
+public enum FrpcInstallStatus { NotInstalled, Installed, Outdated }
+
+public record FrpcProcessInfo(int TunnelId, string TunnelName, string? TunnelRemark, Process Process)
 {
-    [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
-    public static extern IntPtr CreateJobObject(IntPtr lpJobAttributes, string lpName);
+    public ObservableCollection<string> Logs { get; } = [];
+    public DateTime StartTime { get; init; } = DateTime.Now;
+    public bool IsRunning => !Process.HasExited;
+    public IEnumerable<string> LogOutput => Logs;
 
-    [DllImport("kernel32.dll")]
-    public static extern bool SetInformationJobObject(IntPtr hJob, JOBOBJECTINFOCLASS JobObjectInfoClass,
-        ref JOBOBJECT_BASIC_LIMIT_INFORMATION lpJobObjectInfo, uint cbJobObjectInfoLength);
-
-    [DllImport("kernel32.dll")]
-    public static extern bool AssignProcessToJobObject(IntPtr hJob, IntPtr hProcess);
-
-    [DllImport("kernel32.dll")]
-    public static extern bool CloseHandle(IntPtr hObject);
-
-    [DllImport("kernel32.dll")]
-    public static extern bool TerminateJobObject(IntPtr hJob, uint uExitCode);
-}
-
-internal enum JOBOBJECTINFOCLASS
-{
-    BasicLimitInformation = 2
-}
-
-[StructLayout(LayoutKind.Sequential)]
-internal struct JOBOBJECT_BASIC_LIMIT_INFORMATION
-{
-    public long PerProcessUserTimeLimit;
-    public long PerJobUserTimeLimit;
-    public uint LimitFlags;
-    public UIntPtr MinimumWorkingSetSize;
-    public UIntPtr MaximumWorkingSetSize;
-    public uint ActiveProcessLimit;
-    public long Affinity;
-    public uint PriorityClass;
-    public uint SchedulingClass;
-}
-
-/// <summary>
-///     Frpc 进程信息
-/// </summary>
-public class FrpcProcessInfo
-{
-    private bool _hasExited;
-
-    public Process Process { get; set; } = null!;
-    public int TunnelId { get; set; }
-    public string TunnelName { get; set; } = string.Empty;
-    public string TunnelRemark { get; set; } = string.Empty;
-    public DateTime StartTime { get; set; }
-
-    public bool IsRunning
+    public void AddLog(string message)
     {
-        get
-        {
-            if (_hasExited) return false;
-            try
-            {
-                return Process != null && !Process.HasExited;
-            }
-            catch
-            {
-                return false;
-            }
-        }
-    }
-
-    public ObservableCollection<string> LogOutput { get; } = new();
-    public int MaxLogLines { get; set; } = 500;
-
-    public void MarkAsExited()
-    {
-        _hasExited = true;
+        var line = $"[{DateTime.Now:HH:mm:ss}] {message}";
+        Logs.Add(line);
+        if (Logs.Count > 500) Logs.RemoveAt(0);
     }
 }
 
-/// <summary>
-///     Frpc 安装状态
-/// </summary>
-public enum FrpcInstallStatus
+public partial class FrpcManager : IDisposable
 {
-    NotInstalled,
-    Installed,
-    Outdated
-}
-
-/// <summary>
-///     Frpc 管理器
-/// </summary>
-public class FrpcManager : IDisposable
-{
-    private static readonly HttpClient _httpClient = new();
-    private readonly string _frpcDirectory;
-    private readonly string _frpcExecutablePath;
-
-    private readonly SemaphoreSlim _installSemaphore = new(1, 1);
-
-    private readonly ConcurrentDictionary<int, FrpcProcessInfo> _tunnelProcesses = new();
-    private bool _disposed;
-
-    // Windows Job Object 用于管理子进程生命周期
-    private IntPtr _jobHandle;
-
-    public FrpcManager(string? frpcDirectory = null)
-    {
-        if (!string.IsNullOrEmpty(frpcDirectory))
-        {
-            _frpcDirectory = frpcDirectory;
-        }
-        else
-        {
-            var baseDataPath = GetAppDataRoot();
-            _frpcDirectory = Path.Combine(baseDataPath, "LoliaFrpClient", "frpc");
-        }
-        
-        AppDomain.CurrentDomain.ProcessExit += (s, e) => Dispose(); 
-
-        // 沟槽的路径映射
-        Log($"[INIT] Frpc Directory: {_frpcDirectory}");
-
-        // 初始化 Windows Job Object（仅在 Windows 上）
-        InitializeJobObject();
-
-        if (!Directory.Exists(_frpcDirectory)) Directory.CreateDirectory(_frpcDirectory);
-
-        var isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-        _frpcExecutablePath = Path.Combine(_frpcDirectory, isWindows ? "frpc.exe" : "frpc");
-
-        LoadInstalledVersion();
-    }
-
-    public string? InstalledVersion { get; private set; }
-
-    public bool IsAnyProcessRunning => _tunnelProcesses.Values.Any(p => p.IsRunning);
-
-    public IEnumerable<FrpcProcessInfo> RunningProcesses => _tunnelProcesses.Values.Where(p => p.IsRunning);
-
-    #region IDisposable
-
-    public void Dispose()
-    {
-        if (_disposed) return;
-        _disposed = true;
-
-        // 停止所有进程
-        StopAllTunnelProcesses();
-
-        // 关闭 Job Object 句柄（这会自动终止所有关联的子进程）
-        if (_jobHandle != IntPtr.Zero)
-        {
-            try
-            {
-                JobObjectApi.CloseHandle(_jobHandle);
-                Log("[JOB] Job Object handle closed");
-            }
-            catch
-            {
-            }
-
-            _jobHandle = IntPtr.Zero;
-        }
-
-        _installSemaphore.Dispose();
-    }
-
-    #endregion
-
-    public event EventHandler<FrpcProcessInfo>? TunnelProcessExited;
     public event EventHandler<FrpcProcessInfo>? TunnelProcessStarted;
+    public event EventHandler<FrpcProcessInfo>? TunnelProcessExited;
     public event EventHandler<(int TunnelId, string LogLine)>? TunnelProcessLogAdded;
 
-    #region Path Adapter (Handle MSIX Virtualization)
+    private readonly string _workDir;
+    private readonly string _binPath;
+    private readonly HttpClient _http = new();
+    private readonly ConcurrentDictionary<int, FrpcProcessInfo> _processes = new();
+    private readonly SemaphoreSlim _lock = new(1, 1);
+    private nint _jobHandle;
 
-    private string GetAppDataRoot()
+    public string? InstalledVersion { get; private set; }
+    public bool IsAnyRunning => _processes.Values.Any(p => p.IsRunning);
+    public bool IsAnyProcessRunning => IsAnyRunning;
+
+    public FrpcManager(string? path = null)
     {
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            try
-            {
-                return ApplicationData.Current.LocalFolder.Path;
-            }
-            catch (InvalidOperationException)
-            {
-                // 说明是普通 Win32 运行，没有程序包标识符
-                Log("[PATH] Running as unpackaged Win32 app.");
-            }
-            catch (Exception ex)
-            {
-                Log($"[PATH] Error detecting package path: {ex.Message}");
-            }
-
-        return Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        _workDir = path ?? Path.Combine(GetAppDataPath(), "frpc");
+        Directory.CreateDirectory(_workDir);
+        
+        _binPath = Path.Combine(_workDir, RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "frpc.exe" : "frpc");
+        
+        InitJobObject();
+        LoadVersion();
+        
+        AppDomain.CurrentDomain.ProcessExit += (_, _) => Dispose();
     }
 
-    #endregion
-
-    #region Version Management
-
-    private void LoadInstalledVersion()
+    private string GetAppDataPath()
     {
-        var versionFile = Path.Combine(_frpcDirectory, "version.txt");
-        if (File.Exists(versionFile)) InstalledVersion = File.ReadAllText(versionFile).Trim();
+        try { return ApplicationData.Current.LocalFolder.Path; }
+        catch { return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "LoliaFrpClient"); }
     }
 
-    private void SaveInstalledVersion(string version)
+    #region Installation
+
+    public async Task<bool> InstallAsync(string url, string version, IProgress<double>? progress = null)
     {
-        var versionFile = Path.Combine(_frpcDirectory, "version.txt");
-        File.WriteAllText(versionFile, version);
-        InstalledVersion = version;
-    }
-
-    public bool IsFrpcReady()
-    {
-        return File.Exists(_frpcExecutablePath);
-    }
-
-    public FrpcInstallStatus GetInstallStatus(string? latestVersion = null)
-    {
-        if (!IsFrpcReady()) return FrpcInstallStatus.NotInstalled;
-        if (!string.IsNullOrEmpty(latestVersion) && latestVersion != InstalledVersion)
-            return FrpcInstallStatus.Outdated;
-        return FrpcInstallStatus.Installed;
-    }
-
-    #endregion
-
-    #region Download and Install
-
-    public async Task<string> DownloadFrpcAsync(string downloadUrl, IProgress<double>? progress = null,
-        CancellationToken cancellationToken = default)
-    {
-        var tempDirectory = Path.Combine(_frpcDirectory, "temp");
-        Directory.CreateDirectory(tempDirectory);
-
-        var fileName = Path.GetFileName(new Uri(downloadUrl).LocalPath);
-        var downloadPath = Path.Combine(tempDirectory, fileName);
-
-        using var response =
-            await _httpClient.GetAsync(downloadUrl, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
-        response.EnsureSuccessStatusCode();
-
-        var totalBytes = response.Content.Headers.ContentLength ?? 0;
-        var totalBytesRead = 0L;
-
-        await using var contentStream = await response.Content.ReadAsStreamAsync(cancellationToken);
-        await using var fileStream =
-            new FileStream(downloadPath, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true);
-
-        var buffer = new byte[8192];
-        int bytesRead;
-
-        while ((bytesRead = await contentStream.ReadAsync(buffer, cancellationToken)) > 0)
-        {
-            await fileStream.WriteAsync(buffer.AsMemory(0, bytesRead), cancellationToken);
-            totalBytesRead += bytesRead;
-
-            if (totalBytes > 0)
-                progress?.Report((double)totalBytesRead / totalBytes);
-        }
-
-        return downloadPath;
-    }
-
-    public async Task<bool> InstallFrpcAsync(string downloadPath, string version)
-    {
-        // 使用信号量加锁，防止多线程同时安装导致文件占用
-        await _installSemaphore.WaitAsync();
+        await _lock.WaitAsync();
         try
         {
-            var tempDir = Path.Combine(_frpcDirectory, "temp");
-            var extractPath = Path.Combine(tempDir, $"extract_{Guid.NewGuid():N}");
-            Directory.CreateDirectory(extractPath);
-
-            Log($"[INSTALL] Extracting to: {extractPath}");
-
-            if (downloadPath.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
+            var tempFile = Path.Combine(_workDir, "download.tmp");
+            using (var resp = await _http.GetAsync(url, HttpCompletionOption.ResponseHeadersRead))
             {
-                ZipFile.ExtractToDirectory(downloadPath, extractPath);
+                resp.EnsureSuccessStatusCode();
+                var total = resp.Content.Headers.ContentLength ?? -1L;
+                await using var fs = new FileStream(tempFile, FileMode.Create);
+                await using var stream = await resp.Content.ReadAsStreamAsync();
+                
+                var buffer = new byte[8192];
+                long read = 0;
+                int n;
+                while ((n = await stream.ReadAsync(buffer)) > 0)
+                {
+                    await fs.WriteAsync(buffer.AsMemory(0, n));
+                    read += n;
+                    if (total > 0) progress?.Report((double)read / total);
+                }
             }
-            else if (downloadPath.EndsWith(".tar.gz", StringComparison.OrdinalIgnoreCase))
+
+            var extractDir = Path.Combine(_workDir, "extract_temp");
+            if (Directory.Exists(extractDir)) Directory.Delete(extractDir, true);
+
+            if (url.EndsWith(".zip")) ZipFile.ExtractToDirectory(tempFile, extractDir);
+            else
             {
-                await using var fs = File.OpenRead(downloadPath);
+                await using var fs = File.OpenRead(tempFile);
                 await using var gzip = new GZipStream(fs, CompressionMode.Decompress);
-                // .NET 7+ 原生 TarFile 支持，不需要 TarInputStream 类了
-                await TarFile.ExtractToDirectoryAsync(gzip, extractPath, true);
+                await TarFile.ExtractToDirectoryAsync(gzip, extractDir, true);
             }
 
-            var executableName = Path.GetFileName(_frpcExecutablePath);
-            var foundFile = Directory.GetFiles(extractPath, executableName, SearchOption.AllDirectories)
-                .FirstOrDefault();
+            var exeName = Path.GetFileName(_binPath);
+            var sourceExe = Directory.GetFiles(extractDir, exeName, SearchOption.AllDirectories).FirstOrDefault() 
+                ?? throw new FileNotFoundException("Binary not found in package");
 
-            if (foundFile == null)
-                throw new FileNotFoundException("Could not find frpc binary in the downloaded package.");
-
-            // 替换旧文件
-            if (File.Exists(_frpcExecutablePath)) File.Delete(_frpcExecutablePath);
-            File.Copy(foundFile, _frpcExecutablePath);
-
-            // Linux/macOS 权限修复
+            StopAll();
+            if (File.Exists(_binPath)) File.Delete(_binPath);
+            File.Move(sourceExe, _binPath);
+            
             if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                try
-                {
-                    Process.Start("chmod", $"+x {_frpcExecutablePath}")?.WaitForExit();
-                }
-                catch
-                {
-                    /* ignore */
-                }
+                Process.Start("chmod", $"+x {_binPath}")?.WaitForExit();
 
-            SaveInstalledVersion(version);
-
-            // 清理临时文件
-            try
-            {
-                Directory.Delete(tempDir, true);
-            }
-            catch
-            {
-                /* ignore */
-            }
-
-            Log("[INSTALL] Frpc installed successfully.");
+            File.WriteAllText(Path.Combine(_workDir, "version.txt"), version);
+            InstalledVersion = version;
             return true;
         }
         finally
         {
-            _installSemaphore.Release();
+            _lock.Release();
         }
     }
 
-    public async Task<bool> UpdateFrpcAsync(string downloadUrl, string version, IProgress<double>? progress = null,
-        CancellationToken cancellationToken = default)
+    public FrpcInstallStatus GetInstallStatus(string? latestVersion)
     {
-        StopAllTunnelProcesses();
-        var path = await DownloadFrpcAsync(downloadUrl, progress, cancellationToken);
-        return await InstallFrpcAsync(path, version);
+        if (string.IsNullOrEmpty(InstalledVersion)) return FrpcInstallStatus.NotInstalled;
+        if (latestVersion == null || InstalledVersion == latestVersion) return FrpcInstallStatus.Installed;
+        return FrpcInstallStatus.Outdated;
+    }
+
+    public void UninstallFrpc()
+    {
+        StopAll();
+        if (File.Exists(_binPath)) File.Delete(_binPath);
+        var versionFile = Path.Combine(_workDir, "version.txt");
+        if (File.Exists(versionFile)) File.Delete(versionFile);
+        InstalledVersion = null;
     }
 
     #endregion
 
-    #region Process Control
+    #region Control
 
-    public bool StartTunnelProcess(int tunnelId, string tunnelName, string tunnelRemark, string? arguments = null)
+    public void Start(int id, string name, string args, string? remark = null)
     {
-        if (_tunnelProcesses.TryGetValue(tunnelId, out var existing) && existing.IsRunning)
-            throw new InvalidOperationException($"Tunnel {tunnelId} process is already running.");
+        if (_processes.TryGetValue(id, out var p) && p.IsRunning) return;
 
-        if (!IsFrpcReady()) throw new FileNotFoundException("Frpc binary is missing.");
-
-        try
+        var startInfo = new ProcessStartInfo(_binPath, args)
         {
-            var startInfo = new ProcessStartInfo
+            UseShellExecute = false,
+            CreateNoWindow = true,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            WorkingDirectory = _workDir,
+            StandardOutputEncoding = Encoding.UTF8,
+            StandardErrorEncoding = Encoding.UTF8
+        };
+
+        var proc = new Process { StartInfo = startInfo, EnableRaisingEvents = true };
+        var info = new FrpcProcessInfo(id, name, remark, proc);
+
+        proc.OutputDataReceived += (_, e) =>
+        {
+            if (e.Data != null)
             {
-                FileName = _frpcExecutablePath,
-                Arguments = arguments ?? string.Empty,
-                UseShellExecute = false,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                CreateNoWindow = true,
-                WorkingDirectory = _frpcDirectory, // 显式设置工作目录
-                StandardOutputEncoding = Encoding.UTF8,
-                StandardErrorEncoding = Encoding.UTF8
-            };
-
-            var process = new Process { StartInfo = startInfo, EnableRaisingEvents = true };
-
-            var info = new FrpcProcessInfo
-            {
-                Process = process,
-                TunnelId = tunnelId,
-                TunnelName = tunnelName,
-                TunnelRemark = tunnelRemark,
-                StartTime = DateTime.Now
-            };
-
-            // 设置输出重定向事件
-            process.OutputDataReceived += (s, e) =>
-            {
-                if (!string.IsNullOrEmpty(e.Data)) AddLog(info, e.Data);
-            };
-
-            process.ErrorDataReceived += (s, e) =>
-            {
-                if (!string.IsNullOrEmpty(e.Data)) AddLog(info, $"[ERROR] {e.Data}");
-            };
-
-            process.Exited += (s, e) => OnTunnelProcessExited(tunnelId);
-
-            if (process.Start())
-            {
-                // 将进程分配到 Job Object，使其随父进程退出
-                AssignProcessToJob(process);
-
-                _tunnelProcesses[tunnelId] = info;
-                process.BeginOutputReadLine();
-                process.BeginErrorReadLine();
-                Log($"[PROCESS] Started tunnel {tunnelId} ({tunnelName}). PID: {process.Id}");
-                TunnelProcessStarted?.Invoke(this, info);
-                return true;
+                info.AddLog(e.Data);
+                TunnelProcessLogAdded?.Invoke(this, (id, e.Data));
             }
-
-            return false;
-        }
-        catch (Exception ex)
+        };
+        proc.ErrorDataReceived += (_, e) =>
         {
-            throw new Exception($"Failed to start frpc process: {ex.Message}", ex);
-        }
-    }
-
-    private void AddLog(FrpcProcessInfo info, string message)
-    {
-        var timestamp = DateTime.Now.ToString("HH:mm:ss");
-        var logLine = $"[{timestamp}] {message}";
-
-        // 保存到进程信息的日志集合中
-        info.LogOutput.Add(logLine);
-
-        // 限制日志行数为500行
-        while (info.LogOutput.Count > info.MaxLogLines) info.LogOutput.RemoveAt(0);
-
-        // 通过事件通知 UI 层添加日志
-        TunnelProcessLogAdded?.Invoke(this, (info.TunnelId, logLine));
-    }
-
-    public bool StopTunnelProcess(int tunnelId)
-    {
-        if (_tunnelProcesses.TryRemove(tunnelId, out var info))
-        {
-            info.MarkAsExited();
-            try
+            if (e.Data != null)
             {
-                if (!info.Process.HasExited)
-                {
-                    info.Process.Kill(true); // 递归杀死子进程
-                    var exited = info.Process.WaitForExit(5000);
-                    Log($"[PROCESS] Stopped tunnel {tunnelId}. Success: {exited}");
-                    return exited;
-                }
+                info.AddLog($"[ERR] {e.Data}");
+                TunnelProcessLogAdded?.Invoke(this, (id, $"[ERR] {e.Data}"));
             }
-            catch (Exception ex)
-            {
-                Log($"[ERROR] Stop process error: {ex.Message}");
-            }
-            finally
-            {
-                try
-                {
-                    info.Process.Dispose();
-                }
-                catch
-                {
-                }
-            }
-        }
-
-        return true;
-    }
-
-    public bool RestartTunnelProcess(int tunnelId)
-    {
-        if (_tunnelProcesses.TryGetValue(tunnelId, out var info))
+        };
+        proc.Exited += (_, _) =>
         {
-            var tunnelName = info.TunnelName;
-            var file = info.Process.StartInfo.FileName;
-            var arguments = info.Process.StartInfo.Arguments;
-
-            // 停止进程
-            StopTunnelProcess(tunnelId);
-
-            // 重新启动
-            return StartTunnelProcess(tunnelId, tunnelName, file, arguments);
-        }
-
-        return false;
-    }
-
-    public void StopAllTunnelProcesses()
-    {
-        var ids = _tunnelProcesses.Keys.ToList();
-        foreach (var id in ids) StopTunnelProcess(id);
-    }
-
-    public FrpcProcessInfo? GetProcessInfo(int tunnelId)
-    {
-        _tunnelProcesses.TryGetValue(tunnelId, out var info);
-        return info;
-    }
-
-    public IReadOnlyList<FrpcProcessInfo> GetAllProcesses()
-    {
-        return _tunnelProcesses.Values.ToList();
-    }
-
-    #endregion
-
-    #region Events and Helpers
-
-    private void OnTunnelProcessExited(int tunnelId)
-    {
-        if (_tunnelProcesses.TryGetValue(tunnelId, out var info))
-        {
-            info.MarkAsExited();
-            Log($"[EVENT] Tunnel {tunnelId} exited.");
+            _processes.TryRemove(id, out var removed);
             TunnelProcessExited?.Invoke(this, info);
+        };
 
-            // 从字典中移除
-            _tunnelProcesses.TryRemove(tunnelId, out _);
-
-            // 延迟释放进程对象
-            try
-            {
-                info.Process.Dispose();
-            }
-            catch
-            {
-            }
-        }
+        proc.Start();
+        AssignToJob(proc);
+        proc.BeginOutputReadLine();
+        proc.BeginErrorReadLine();
+        
+        _processes[id] = info;
+        TunnelProcessStarted?.Invoke(this, info);
     }
 
-    public bool UninstallFrpc()
+    public void Stop(int id)
     {
-        StopAllTunnelProcesses();
+        if (!_processes.TryRemove(id, out var info)) return;
         try
         {
-            if (File.Exists(_frpcExecutablePath)) File.Delete(_frpcExecutablePath);
-            var versionFile = Path.Combine(_frpcDirectory, "version.txt");
-            if (File.Exists(versionFile)) File.Delete(versionFile);
-            InstalledVersion = null;
-            Log("[UNINSTALL] Frpc uninstalled.");
-            return true;
+            if (!info.Process.HasExited) info.Process.Kill(true);
         }
         catch (Exception ex)
         {
-            throw new Exception($"Uninstall failed: {ex.Message}");
+            info.AddLog($"Stop Error: {ex.Message}");
+        }
+        finally
+        {
+            info.Process.Dispose();
         }
     }
 
-    public string GetFrpcExecutablePath()
-    {
-        return _frpcExecutablePath;
-    }
+    public void StopAll() => _processes.Keys.ToList().ForEach(Stop);
 
-    public string GetFrpcDirectory()
-    {
-        return _frpcDirectory;
-    }
+    public bool IsTunnelProcessRunning(int tunnelId) => _processes.ContainsKey(tunnelId) && _processes[tunnelId].IsRunning;
 
-    public bool IsTunnelProcessRunning(int tunnelId)
-    {
-        return _tunnelProcesses.TryGetValue(tunnelId, out var p) && p.IsRunning;
-    }
+    public FrpcProcessInfo? GetProcessInfo(int tunnelId) =>_processes.TryGetValue(tunnelId, out var info) ? info : null;
 
-    private void Log(string message)
+    public IReadOnlyCollection<FrpcProcessInfo> GetAllProcesses() => _processes.Values.ToList();
+
+    public void RestartTunnelProcess(int tunnelId)
     {
-        Debug.WriteLine($"[FrpcManager] {message}");
+        if (!_processes.TryGetValue(tunnelId, out var info)) return;
+        var args = info.Process.StartInfo.Arguments;
+        Stop(tunnelId);
+        Start(tunnelId, info.TunnelName, info.TunnelRemark, args);
     }
 
     #endregion
 
-    #region Job Object Management
-
-    private void InitializeJobObject()
+    private void InitJobObject()
     {
-        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-        {
-            Log("[JOB] Job Object only supported on Windows");
-            return;
-        }
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) return;
 
-        try
+        _jobHandle = JobObjectApi.CreateJobObject(IntPtr.Zero, null);
+    
+        var limits = new JOBOBJECT_EXTENDED_LIMIT_INFORMATION
         {
-            // 创建 Job Object
-            _jobHandle = JobObjectApi.CreateJobObject(IntPtr.Zero, null);
-            if (_jobHandle == IntPtr.Zero)
+            BasicLimitInformation = new JOBOBJECT_BASIC_LIMIT_INFORMATION
             {
-                Log("[JOB] Failed to create Job Object");
-                return;
+                LimitFlags = 0x2000 | 0x0800 
             }
+        };
 
-            // 设置 Job Object 限制：当父进程退出时终止所有子进程
-            var info = new JOBOBJECT_BASIC_LIMIT_INFORMATION
-            {
-                LimitFlags = 0x2800
-            };
-
-            if (!JobObjectApi.SetInformationJobObject(_jobHandle, JOBOBJECTINFOCLASS.BasicLimitInformation, ref info,
-                    (uint)Marshal.SizeOf(typeof(JOBOBJECT_BASIC_LIMIT_INFORMATION))))
-                Log("[JOB] Failed to set Job Object limits");
-            else
-                Log("[JOB] Job Object initialized successfully");
-        }
-        catch (Exception ex)
-        {
-            Log($"[JOB] Error initializing Job Object: {ex.Message}");
-        }
+        bool success = JobObjectApi.SetInformationJobObject(
+            _jobHandle, 
+            JOBOBJECTINFOCLASS.ExtendedLimitInformation, 
+            ref limits, 
+            (uint)Marshal.SizeOf<JOBOBJECT_EXTENDED_LIMIT_INFORMATION>());
     }
 
-    private void AssignProcessToJob(Process process)
+    private void AssignToJob(Process p)
     {
-        if (_jobHandle == IntPtr.Zero) return;
-
-        try
-        {
-            if (!JobObjectApi.AssignProcessToJobObject(_jobHandle, process.Handle))
-                Log("[JOB] Failed to assign process to Job Object");
-            else
-                Log("[JOB] Process assigned to Job Object");
-        }
-        catch (Exception ex)
-        {
-            Log($"[JOB] Error assigning process to Job Object: {ex.Message}");
-        }
+        if (_jobHandle != nint.Zero) JobObjectApi.AssignProcessToJobObject(_jobHandle, p.Handle);
     }
-
-    #endregion
+    private void LoadVersion()
+    {
+        var vFile = Path.Combine(_workDir, "version.txt");
+        if (File.Exists(vFile)) InstalledVersion = File.ReadAllText(vFile).Trim();
+    }
+    public void Dispose()
+    {
+        StopAll();
+        if (_jobHandle != nint.Zero) JobObjectApi.CloseHandle(_jobHandle);
+        _lock.Dispose();
+        GC.SuppressFinalize(this);
+    }
 }

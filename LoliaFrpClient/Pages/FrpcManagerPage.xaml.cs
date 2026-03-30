@@ -262,7 +262,7 @@ public sealed partial class FrpcManagerPage : Page, INotifyPropertyChanged
         ControlButtons.Visibility = Visibility.Visible;
         ProcessInfoPanel.Visibility = Visibility.Visible;
 
-        ProcessIdText.Text = info.IsRunning ? info.Process.Id.ToString() : "已退出";
+        ProcessIdText.Text = info.IsRunning ? info.Process.Id.ToString() : "已退出"; // HERE! HERE IS A BUG
         StartTimeText.Text = info.StartTime.ToString("HH:mm:ss");
 
         var runningTime = DateTime.Now - info.StartTime;
@@ -312,7 +312,7 @@ public sealed partial class FrpcManagerPage : Page, INotifyPropertyChanged
 
         try
         {
-            _frpcManager.StopTunnelProcess(SelectedProcess.TunnelId);
+            _frpcManager.Stop(SelectedProcess.TunnelId);
         }
         catch (Exception ex)
         {
