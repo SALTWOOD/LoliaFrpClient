@@ -12,7 +12,7 @@ namespace LoliaFrpClient.Pages;
 public sealed partial class Settings : Page
 {
     private readonly SettingsStorage _settings = SettingsStorage.Instance;
-    private readonly FrpcManager _frpcManager = new();
+    private readonly FrpcManager _frpcManager = ServiceLocator.FrpcManager;
     private ClientUpdateResult? _updateResult;
     private GitHubRelease? _latestFrpcRelease;
 
@@ -25,18 +25,18 @@ public sealed partial class Settings : Page
 
     private void LoadSettings()
     {
-        // Login status
         UpdateLoginStatus();
-
-        // Client Update
         AutoCheckUpdateToggle.IsOn = _settings.AutoCheckClientUpdate;
         ClientCurrentVersionText.Text = ClientUpdateService.GetCurrentVersion();
 
-        // Download Mirror Template
+        LoadDownloadTemplate();
+    }
+
+    private void LoadDownloadTemplate()
+    {
         var currentTemplate = _settings.DownloadUrlTemplate;
         CustomUrlTemplateBox.Text = currentTemplate;
 
-        // Try to match RadioButtons with current template
         var matched = GitHubMirrorRadioButtons.Items
             .OfType<RadioButton>()
             .FirstOrDefault(rb => rb.Tag?.ToString() == currentTemplate);
@@ -59,13 +59,27 @@ public sealed partial class Settings : Page
 
     private async void CheckClientUpdateButton_Click(object sender, RoutedEventArgs e)
     {
+        CheckClientUpdateButton.IsEnabled = false;
         ClientLatestVersionText.Text = "检查中...";
-        _updateResult = await ClientUpdateService.CheckForUpdateAsync();
-        
-        ClientLatestVersionText.Text = _updateResult.LatestVersion;
-        ClientUpdateInfoBar.IsOpen = _updateResult.HasUpdate;
-        ClientUpdateInfoBar.Message = _updateResult.HasUpdate ? $"发现新版本 {_updateResult.LatestVersion}" : "当前已是最新版本";
-        ClientUpdateInfoBar.Severity = _updateResult.HasUpdate ? InfoBarSeverity.Success : InfoBarSeverity.Informational;
+
+        try
+        {
+            _updateResult = await ClientUpdateService.CheckForUpdateAsync();
+            ClientLatestVersionText.Text = string.IsNullOrEmpty(_updateResult.LatestVersion)
+                ? "获取失败"
+                : _updateResult.LatestVersion;
+            ClientUpdateInfoBar.IsOpen = true;
+            ClientUpdateInfoBar.Message = _updateResult.HasUpdate
+                ? $"发现新版本 {_updateResult.LatestVersion}"
+                : "当前已是最新版本";
+            ClientUpdateInfoBar.Severity = _updateResult.HasUpdate
+                ? InfoBarSeverity.Success
+                : InfoBarSeverity.Informational;
+        }
+        finally
+        {
+            CheckClientUpdateButton.IsEnabled = true;
+        }
     }
 
     private async void ClientUpdateButton_Click(object sender, RoutedEventArgs e)
@@ -175,12 +189,14 @@ public sealed partial class Settings : Page
     {
         try
         {
+            RefreshVersionButtonState(false);
             LatestVersionText.Text = "检查中...";
             _latestFrpcRelease = await GitHubReleaseService.GetLatestReleaseAsync("Lolia-FRP", "lolia-frp");
             LatestVersionText.Text = _latestFrpcRelease?.TagName ?? "获取失败";
             UpdateFrpcStatus();
         }
         catch (Exception ex) { await ShowMsg($"获取版本失败: {ex.Message}"); }
+        finally { RefreshVersionButtonState(true); }
     }
 
     private async void InstallButton_Click(object sender, RoutedEventArgs e) => await HandleFrpcAction(false);
@@ -195,18 +211,15 @@ public sealed partial class Settings : Page
 
         try
         {
-            DownloadProgressBar.Visibility = ProgressText.Visibility = Visibility.Visible;
-            var progress = new Progress<double>(v => {
-                DownloadProgressBar.Value = v * 100;
-                ProgressText.Text = $"进度: {v:P0}";
-            });
+            SetFrpcActionState(true);
+            var progress = new Progress<double>(v => UpdateDownloadProgress(v));
 
             var success = await _frpcManager.InstallAsync(url, _latestFrpcRelease.TagName, progress);
             if (success) UpdateFrpcStatus();
             await ShowMsg(success ? (isUpdate ? "更新成功" : "安装成功") : "操作失败");
         }
         catch (Exception ex) { await ShowMsg($"错误: {ex.Message}"); }
-        finally { DownloadProgressBar.Visibility = ProgressText.Visibility = Visibility.Collapsed; }
+        finally { SetFrpcActionState(false); }
     }
 
     private async void UninstallButton_Click(object sender, RoutedEventArgs e)
@@ -219,6 +232,34 @@ public sealed partial class Settings : Page
     }
 
     #endregion
+
+    private void SetFrpcActionState(bool isBusy)
+    {
+        InstallButton.IsEnabled = !isBusy;
+        UpdateButton.IsEnabled = !isBusy;
+        UninstallButton.IsEnabled = !isBusy;
+        RefreshVersionButton.IsEnabled = !isBusy;
+        DownloadProgressBar.Visibility = isBusy ? Visibility.Visible : Visibility.Collapsed;
+        ProgressText.Visibility = isBusy ? Visibility.Visible : Visibility.Collapsed;
+
+        if (!isBusy)
+        {
+            DownloadProgressBar.Value = 0;
+            ProgressText.Text = string.Empty;
+            UpdateFrpcStatus();
+        }
+    }
+
+    private void UpdateDownloadProgress(double value)
+    {
+        DownloadProgressBar.Value = value * 100;
+        ProgressText.Text = $"进度: {value:P0}";
+    }
+
+    private void RefreshVersionButtonState(bool isEnabled)
+    {
+        RefreshVersionButton.IsEnabled = isEnabled;
+    }
 
     private Task ShowMsg(string msg) => DialogManager.Instance.ShowMessageAsync("提示", msg);
 }

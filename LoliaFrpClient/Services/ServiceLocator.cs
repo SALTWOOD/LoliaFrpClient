@@ -24,6 +24,7 @@ public static class ServiceLocator
     /// </summary>
     public static void Reset()
     {
+        _frpcManager?.Dispose();
         _frpcManager = null;
     }
 }

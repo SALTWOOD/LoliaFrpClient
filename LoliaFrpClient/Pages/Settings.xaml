@@ -108,7 +108,7 @@
                         <TextBlock Grid.Row="1" Grid.Column="0" Text="最新版本:" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                         <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Spacing="8">
                             <TextBlock x:Name="LatestVersionText" Text="检查中..." VerticalAlignment="Center" FontWeight="SemiBold" />
-                            <Button Content="刷新" Click="RefreshVersionButton_Click" Padding="8,2" FontSize="12"/>
+                            <Button x:Name="RefreshVersionButton" Content="刷新" Click="RefreshVersionButton_Click" Padding="8,2" FontSize="12"/>
                         </StackPanel>
 
                         <TextBlock Grid.Row="2" Grid.Column="0" Text="状态:" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
