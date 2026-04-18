@@ -69,6 +69,8 @@ public sealed partial class TunnelListPage : Page, INotifyPropertyChanged
         }
         catch (Exception ex)
         {
+            if (AuthErrorHelper.ShouldSilence(ex)) return;
+
             await ShowErrorDialogAsync("加载隧道列表失败", ex.Message);
         }
         finally
@@ -126,6 +128,11 @@ public sealed partial class TunnelListPage : Page, INotifyPropertyChanged
         }
         catch (Exception ex)
         {
+            if (AuthErrorHelper.ShouldSilence(ex))
+            {
+                return;
+            }
+
             await ShowErrorDialogAsync("创建失败", ex.Message);
         }
     }
@@ -227,6 +234,11 @@ public sealed partial class TunnelListPage : Page, INotifyPropertyChanged
         }
         catch (Exception ex)
         {
+            if (AuthErrorHelper.ShouldSilence(ex))
+            {
+                return;
+            }
+
             await ShowErrorDialogAsync("删除失败", ex.Message);
         }
     }
@@ -334,6 +346,11 @@ public sealed partial class TunnelListPage : Page, INotifyPropertyChanged
         }
         catch (Exception ex)
         {
+            if (AuthErrorHelper.ShouldSilence(ex))
+            {
+                return false;
+            }
+
             await ShowErrorDialogAsync("启用失败", ex.Message);
             return false;
         }

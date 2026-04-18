@@ -75,6 +75,8 @@ public sealed partial class CreateTunnelDialog : ContentDialog
         }
         catch (Exception ex)
         {
+            if (AuthErrorHelper.ShouldSilence(ex)) return;
+
             await ShowErrorDialogAsync("加载节点失败", ex.Message);
         }
     }

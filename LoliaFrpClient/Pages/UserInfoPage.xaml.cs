@@ -81,6 +81,8 @@ public sealed partial class UserInfoPage : Page, INotifyPropertyChanged
         }
         catch (Exception ex)
         {
+            if (AuthErrorHelper.ShouldSilence(ex)) return;
+
             await ShowErrorDialogAsync("加载用户数据失败", ex.Message);
         }
         finally
