@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
@@ -19,9 +18,7 @@ namespace LoliaFrpClient.Pages;
 /// </summary>
 public sealed partial class TunnelListPage : Page, INotifyPropertyChanged
 {
-    private readonly ApiClientProvider _apiClientProvider;
-    private readonly FrpcManager _frpcManager = ServiceLocator.FrpcManager;
-    private readonly Dictionary<int, FrpcProcessInfo> _tunnelProcesses = new();
+    private readonly TunnelService _tunnelService = new();
     private string _filterType = "all";
     private string _searchText = string.Empty;
     private ObservableCollection<TunnelViewModel> _tunnels = new();
@@ -29,7 +26,6 @@ public sealed partial class TunnelListPage : Page, INotifyPropertyChanged
     public TunnelListPage()
     {
         InitializeComponent();
-        _apiClientProvider = ApiClientProvider.Instance;
         Loaded += OnPageLoaded;
     }
 
@@ -46,24 +42,9 @@ public sealed partial class TunnelListPage : Page, INotifyPropertyChanged
 
     public ObservableCollection<TunnelViewModel> FilteredTunnels { get; } = new();
 
-    /// <summary>
-    ///     隧道总数
-    /// </summary>
     public int TotalTunnels => Tunnels.Count;
-
-    /// <summary>
-    ///     运行中的隧道数量
-    /// </summary>
     public int ActiveTunnels => Tunnels.Count(t => t.Status == "active");
-
-    /// <summary>
-    ///     未激活的隧道数量
-    /// </summary>
     public int InactiveTunnels => Tunnels.Count(t => t.Status == "inactive");
-
-    /// <summary>
-    ///     已禁用的隧道数量
-    /// </summary>
     public int DisabledTunnels => Tunnels.Count(t => t.Status == "disabled");
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -80,42 +61,11 @@ public sealed partial class TunnelListPage : Page, INotifyPropertyChanged
 
     private async Task LoadTunnelsAsync()
     {
-        LoadingRing.IsActive = true;
-        TunnelListView.Visibility = Visibility.Collapsed;
-        EmptyStatePanel.Visibility = Visibility.Collapsed;
+        SetLoadingState(true);
 
         try
         {
-            var response = await _apiClientProvider.Client.User.Tunnel.GetAsTunnelGetResponseAsync();
-            var tunnelList = response?.Data?.List;
-            if (tunnelList != null)
-            {
-                Tunnels.Clear();
-                foreach (var tunnel in tunnelList)
-                {
-                    var tunnelId = tunnel.Id ?? 0;
-                    var viewModel = new TunnelViewModel
-                    {
-                        Id = tunnelId,
-                        Name = tunnel.Name ?? string.Empty,
-                        Type = tunnel.Type ?? string.Empty,
-                        Status = tunnel.Status ?? string.Empty,
-                        Remark = tunnel.Remark ?? string.Empty,
-                        CustomDomain = tunnel.CustomDomain ?? string.Empty,
-                        LocalIp = tunnel.LocalIp ?? string.Empty,
-                        LocalPort = tunnel.LocalPort ?? 0,
-                        RemotePort = tunnel.RemotePort ?? 0,
-                        NodeId = tunnel.NodeId ?? 0,
-                        BandwidthLimit = tunnel.BandwidthLimit ?? 0
-                    };
-                    // 根据 FrpcManager 中的实际进程状态设置 IsEnabled，避免刷新页面时错误触发 Toggled 事件
-                    viewModel.IsEnabled = _frpcManager.IsTunnelProcessRunning(tunnelId);
-                    Tunnels.Add(viewModel);
-                }
-
-                UpdateFilteredTunnels();
-                UpdateStatistics();
-            }
+            ReplaceTunnels(await _tunnelService.GetTunnelsAsync());
         }
         catch (Exception ex)
         {
@@ -123,48 +73,23 @@ public sealed partial class TunnelListPage : Page, INotifyPropertyChanged
         }
         finally
         {
-            LoadingRing.IsActive = false;
-
-            // 显示空状态或列表
-            if (FilteredTunnels.Count == 0)
-            {
-                EmptyStatePanel.Visibility = Visibility.Visible;
-                TunnelListView.Visibility = Visibility.Collapsed;
-            }
-            else
-            {
-                EmptyStatePanel.Visibility = Visibility.Collapsed;
-                TunnelListView.Visibility = Visibility.Visible;
-            }
+            SetLoadingState(false);
+            UpdateListState();
         }
     }
 
-    /// <summary>
-    ///     更新筛选后的隧道列表
-    /// </summary>
     private void UpdateFilteredTunnels()
     {
         FilteredTunnels.Clear();
 
-        var query = Tunnels.AsEnumerable();
+        foreach (var tunnel in _tunnelService.FilterTunnels(Tunnels, _filterType, _searchText))
+        {
+            FilteredTunnels.Add(tunnel);
+        }
 
-        // 按类型筛选
-        if (_filterType != "all") query = query.Where(t => t.Type == _filterType);
-
-        // 按搜索文本筛选
-        if (!string.IsNullOrWhiteSpace(_searchText))
-            query = query.Where(t =>
-                t.Name.Contains(_searchText, StringComparison.OrdinalIgnoreCase) ||
-                t.Remark.Contains(_searchText, StringComparison.OrdinalIgnoreCase) ||
-                t.CustomDomain.Contains(_searchText, StringComparison.OrdinalIgnoreCase)
-            );
-
-        foreach (var tunnel in query) FilteredTunnels.Add(tunnel);
+        UpdateListState();
     }
 
-    /// <summary>
-    ///     更新统计数据
-    /// </summary>
     private void UpdateStatistics()
     {
         OnPropertyChanged(nameof(TotalTunnels));
@@ -178,98 +103,82 @@ public sealed partial class TunnelListPage : Page, INotifyPropertyChanged
         await LoadTunnelsAsync();
     }
 
-    /// <summary>
-    ///     创建隧道按钮点击事件
-    /// </summary>
     private async void OnCreateTunnelClick(object sender, RoutedEventArgs e)
     {
         await CreateTunnelAsync();
     }
 
-    /// <summary>
-    ///     创建隧道
-    /// </summary>
     private async Task CreateTunnelAsync()
     {
         var dialog = new CreateTunnelDialog();
-
         var result = await DialogManager.Instance.ShowDialogAsync(dialog);
 
-        if (result == ContentDialogResult.Primary)
-            try
-            {
-                var requestBody = dialog.GetTunnelRequestBody();
-                await _apiClientProvider.Client.User.Tunnel.PostAsync(requestBody);
-
-                await ShowErrorDialogAsync("创建成功", "隧道已成功创建");
-                await LoadTunnelsAsync();
-            }
-            catch (Exception ex)
-            {
-                await ShowErrorDialogAsync("创建失败", ex.Message);
-            }
-    }
-
-    /// <summary>
-    ///     搜索文本变化
-    /// </summary>
-    private void OnSearchTextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
-    {
-        if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
+        if (result != ContentDialogResult.Primary)
         {
-            _searchText = sender.Text;
-            UpdateFilteredTunnels();
-            UpdateEmptyState();
+            return;
+        }
+
+        try
+        {
+            await _tunnelService.CreateTunnelAsync(dialog.GetTunnelRequestBody());
+            await ShowErrorDialogAsync("创建成功", "隧道已成功创建");
+            await LoadTunnelsAsync();
+        }
+        catch (Exception ex)
+        {
+            await ShowErrorDialogAsync("创建失败", ex.Message);
         }
     }
 
-    /// <summary>
-    ///     搜索查询提交
-    /// </summary>
+    private void OnSearchTextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
+    {
+        if (args.Reason != AutoSuggestionBoxTextChangeReason.UserInput)
+        {
+            return;
+        }
+
+        _searchText = sender.Text;
+        UpdateFilteredTunnels();
+    }
+
     private void OnSearchQuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
     {
         _searchText = args.QueryText;
         UpdateFilteredTunnels();
-        UpdateEmptyState();
     }
 
-    /// <summary>
-    ///     筛选类型变化
-    /// </summary>
     private void OnFilterTypeChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (sender is ComboBox comboBox && comboBox.SelectedItem is ComboBoxItem selectedItem)
+        if (sender is not ComboBox comboBox || comboBox.SelectedItem is not ComboBoxItem selectedItem)
         {
-            _filterType = selectedItem.Tag?.ToString() ?? "all";
-            UpdateFilteredTunnels();
-            UpdateEmptyState();
+            return;
         }
+
+        _filterType = selectedItem.Tag?.ToString() ?? "all";
+        UpdateFilteredTunnels();
     }
 
-    /// <summary>
-    ///     更新空状态显示
-    /// </summary>
-    private void UpdateEmptyState()
+    private void UpdateListState()
     {
-        if (FilteredTunnels.Count == 0)
+        if (LoadingRing.IsActive)
         {
-            EmptyStatePanel.Visibility = Visibility.Visible;
-            TunnelListView.Visibility = Visibility.Collapsed;
+            return;
         }
-        else
-        {
-            EmptyStatePanel.Visibility = Visibility.Collapsed;
-            TunnelListView.Visibility = Visibility.Visible;
-        }
+
+        var hasItems = FilteredTunnels.Count > 0;
+        EmptyStatePanel.Visibility = hasItems ? Visibility.Collapsed : Visibility.Visible;
+        TunnelListView.Visibility = hasItems ? Visibility.Visible : Visibility.Collapsed;
     }
 
     private async void OnTunnelCardRightClick(object sender, RightTappedRoutedEventArgs e)
     {
-        if (sender is FrameworkElement element && element.DataContext is TunnelViewModel tunnel)
+        if (sender is not FrameworkElement element || element.DataContext is not TunnelViewModel tunnel)
         {
-            e.Handled = true;
-            await ShowTunnelDetailDialogAsync(tunnel);
+            return;
         }
+
+        e.Handled = true;
+        await ShowTunnelDetailDialogAsync(tunnel);
     }
 
     private async Task ShowTunnelDetailDialogAsync(TunnelViewModel tunnel)
@@ -286,41 +195,40 @@ public sealed partial class TunnelListPage : Page, INotifyPropertyChanged
         var result = await DialogManager.Instance.ShowDialogAsync(dialog);
 
         if (result == ContentDialogResult.Primary)
-            // 编辑功能（API暂不支持）
+        {
             await ShowErrorDialogAsync("功能暂不可用", "编辑隧道功能暂未实现，请等待API支持");
-        else if (result == ContentDialogResult.Secondary)
-            // 删除功能
+            return;
+        }
+
+        if (result == ContentDialogResult.Secondary)
+        {
             await DeleteTunnelAsync(tunnel);
+        }
     }
 
-    /// <summary>
-    ///     删除隧道
-    /// </summary>
     private async Task DeleteTunnelAsync(TunnelViewModel tunnel)
     {
-        // 确认删除
         var result = await DialogManager.Instance.ShowConfirmAsync(
             "确认删除",
             $"确定要删除隧道 \"{tunnel.Name}\" 吗？此操作不可撤销。",
             "删除",
             "取消");
 
-        if (result == ContentDialogResult.Primary)
-            try
-            {
-                // 如果隧道正在运行，先停止它
-                if (tunnel.IsEnabled) await DisableTunnelAsync(tunnel);
+        if (result != ContentDialogResult.Primary)
+        {
+            return;
+        }
 
-                // 调用API删除隧道
-                await _apiClientProvider.Client.User.Tunnel[tunnel.Name].DeleteAsWithTunnel_nameDeleteResponseAsync();
-
-                await ShowErrorDialogAsync("删除成功", $"隧道 \"{tunnel.Name}\" 已成功删除");
-                await LoadTunnelsAsync();
-            }
-            catch (Exception ex)
-            {
-                await ShowErrorDialogAsync("删除失败", ex.Message);
-            }
+        try
+        {
+            await _tunnelService.DeleteTunnelAsync(tunnel);
+            await ShowErrorDialogAsync("删除成功", $"隧道 \"{tunnel.Name}\" 已成功删除");
+            await LoadTunnelsAsync();
+        }
+        catch (Exception ex)
+        {
+            await ShowErrorDialogAsync("删除失败", ex.Message);
+        }
     }
 
     private UIElement CreateTunnelDetailContent(TunnelViewModel tunnel)
@@ -330,14 +238,11 @@ public sealed partial class TunnelListPage : Page, INotifyPropertyChanged
         var infoGrid = new Grid { ColumnSpacing = 12, RowSpacing = 8 };
         infoGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Auto) });
         infoGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-        infoGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-        infoGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-        infoGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-        infoGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-        infoGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-        infoGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-        infoGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-        infoGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+
+        for (var i = 0; i < 8; i++)
+        {
+            infoGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        }
 
         var row = 0;
         AddInfoRow(infoGrid, row++, "名称:", tunnel.Name);
@@ -347,7 +252,7 @@ public sealed partial class TunnelListPage : Page, INotifyPropertyChanged
         AddInfoRow(infoGrid, row++, "自定义域名:", tunnel.CustomDomain);
         AddInfoRow(infoGrid, row++, "本地地址:", $"{tunnel.LocalIp}:{tunnel.LocalPort}");
         AddInfoRow(infoGrid, row++, "远程端口:", tunnel.RemotePort.ToString());
-        AddInfoRow(infoGrid, row++, "节点 ID:", tunnel.NodeId.ToString());
+        AddInfoRow(infoGrid, row, "节点 ID:", tunnel.NodeId.ToString());
 
         stackPanel.Children.Add(infoGrid);
         return stackPanel;
@@ -381,86 +286,51 @@ public sealed partial class TunnelListPage : Page, INotifyPropertyChanged
         await DialogManager.Instance.ShowErrorAsync(title, message);
     }
 
-    /// <summary>
-    ///     双击卡片切换隧道启用状态
-    /// </summary>
-    private async void OnTunnelCardDoubleTapped(object sender, Microsoft.UI.Xaml.Input.DoubleTappedRoutedEventArgs e)
+    private async void OnTunnelCardDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
     {
-        if (sender is Border border && border.Tag is TunnelViewModel tunnel)
+        if (sender is not Border border || border.Tag is not TunnelViewModel tunnel)
         {
-            // 保存原始状态，以便在操作失败时恢复
-            var originalState = tunnel.IsEnabled;
-            var newState = !originalState;
-
-            if (newState)
-            {
-                // 启用隧道
-                var success = await EnableTunnelAsync(tunnel);
-                if (!success)
-                {
-                    // 操作失败，恢复原始状态
-                    tunnel.IsEnabled = originalState;
-                }
-                else
-                {
-                    // 操作成功，显示提示并刷新数据
-                    await DialogManager.Instance.ShowMessageAsync("启用成功", $"隧道 \"{tunnel.Name}\" 已成功启动");
-                    await LoadTunnelsAsync();
-                }
-            }
-            else
-            {
-                // 禁用隧道
-                var success = await DisableTunnelAsync(tunnel);
-                if (!success)
-                {
-                    // 操作失败，恢复原始状态
-                    tunnel.IsEnabled = originalState;
-                }
-                else
-                {
-                    // 操作成功，显示提示并刷新数据
-                    await DialogManager.Instance.ShowMessageAsync("关闭成功", $"隧道 \"{tunnel.Name}\" 已成功关闭");
-                    await LoadTunnelsAsync();
-                }
-            }
+            return;
         }
+
+        var originalState = tunnel.IsEnabled;
+
+        if (!originalState)
+        {
+            var success = await EnableTunnelAsync(tunnel);
+            if (!success)
+            {
+                tunnel.IsEnabled = originalState;
+                return;
+            }
+
+            await DialogManager.Instance.ShowMessageAsync("启用成功", $"隧道 \"{tunnel.Name}\" 已成功启动");
+            await LoadTunnelsAsync();
+            return;
+        }
+
+        var disableSuccess = await DisableTunnelAsync(tunnel);
+        if (!disableSuccess)
+        {
+            tunnel.IsEnabled = originalState;
+            return;
+        }
+
+        await DialogManager.Instance.ShowMessageAsync("关闭成功", $"隧道 \"{tunnel.Name}\" 已成功关闭");
+        await LoadTunnelsAsync();
     }
 
-    /// <summary>
-    ///     启用隧道
-    /// </summary>
     private async Task<bool> EnableTunnelAsync(TunnelViewModel tunnel)
     {
         try
         {
-            var tokenResponse = await _apiClientProvider.Client.User.Tunnel[tunnel.Name]
-                .GetAsWithTunnel_nameGetResponseAsync();
-            var id = tokenResponse?.Data?.Id;
-            var token = tokenResponse?.Data?.TunnelToken;
-
-            if (string.IsNullOrEmpty(token))
-            {
-                await ShowErrorDialogAsync("启用失败", "无法获取隧道连接密钥 (Token)");
-                return false;
-            }
-
-            _frpcManager.Start(
-                tunnel.Id, 
-                tunnel.Name, 
-                $"-t {id}:{token}"
-            );
-
-            // 3. 更新 UI 状态
-            tunnel.IsEnabled = true;
-        
-            // 记录到本地字典（如果需要跟踪）
-            if (_frpcManager.GetProcessInfo(tunnel.Id) is { } info)
-            {
-                _tunnelProcesses[tunnel.Id] = info;
-            }
-
+            await _tunnelService.StartTunnelAsync(tunnel);
             return true;
+        }
+        catch (InvalidOperationException)
+        {
+            await ShowErrorDialogAsync("启用失败", "无法获取隧道连接密钥 (Token)");
+            return false;
         }
         catch (Exception ex)
         {
@@ -473,16 +343,37 @@ public sealed partial class TunnelListPage : Page, INotifyPropertyChanged
     {
         try
         {
-            _frpcManager.Stop(tunnel.Id);
-            _tunnelProcesses.Remove(tunnel.Id);
-            tunnel.IsEnabled = false;
-
+            _tunnelService.StopTunnel(tunnel);
             return true;
         }
         catch (Exception ex)
         {
             await ShowErrorDialogAsync("禁用失败", ex.Message);
             return false;
+        }
+    }
+
+    private void ReplaceTunnels(System.Collections.Generic.IEnumerable<TunnelViewModel> tunnels)
+    {
+        Tunnels.Clear();
+
+        foreach (var tunnel in tunnels)
+        {
+            Tunnels.Add(tunnel);
+        }
+
+        UpdateFilteredTunnels();
+        UpdateStatistics();
+    }
+
+    private void SetLoadingState(bool isLoading)
+    {
+        LoadingRing.IsActive = isLoading;
+
+        if (isLoading)
+        {
+            TunnelListView.Visibility = Visibility.Collapsed;
+            EmptyStatePanel.Visibility = Visibility.Collapsed;
         }
     }
 }
