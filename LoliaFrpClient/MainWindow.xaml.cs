@@ -25,6 +25,7 @@ public sealed partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        AuthSessionService.Instance.UnauthorizedDetected += HandleUnauthorizedAsync;
         InitializeTitleBar();
         InitializeTheme();
         InitializeNavigation();
@@ -38,6 +39,7 @@ public sealed partial class MainWindow : Window
 
     private void OnWindowClosed(object sender, WindowEventArgs args)
     {
+        AuthSessionService.Instance.UnauthorizedDetected -= HandleUnauthorizedAsync;
         // 释放 FrpcManager，这会关闭 Job Object 句柄
         // 由于设置了 JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE，所有子进程会自动终止
         ServiceLocator.FrpcManager.Dispose();
@@ -150,6 +152,56 @@ public sealed partial class MainWindow : Window
     }
     
     public static void NavigateTo<T>() => NavigateTo(typeof(T));
+
+    private async Task HandleUnauthorizedAsync()
+    {
+        if (DispatcherQueue == null)
+        {
+            AuthSessionService.Instance.CompleteUnauthorizedHandling();
+            return;
+        }
+
+        var completion = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        if (!DispatcherQueue.TryEnqueue(async () =>
+        {
+            try
+            {
+                if (Content?.XamlRoot == null)
+                {
+                    completion.TrySetResult(true);
+                    return;
+                }
+
+                var result = await DialogManager.Instance.ShowConfirmAsync(
+                    "登录已失效",
+                    "您的登录信息已过期，是否重新登录？",
+                    "是",
+                    "否");
+
+                if (result == ContentDialogResult.Primary)
+                {
+                    NavigateTo<Settings>();
+                }
+
+                completion.TrySetResult(true);
+            }
+            catch (Exception ex)
+            {
+                completion.TrySetException(ex);
+            }
+            finally
+            {
+                AuthSessionService.Instance.CompleteUnauthorizedHandling();
+            }
+        }))
+        {
+            AuthSessionService.Instance.CompleteUnauthorizedHandling();
+            return;
+        }
+
+        await completion.Task;
+    }
 
     private void ToggleTheme()
     {
