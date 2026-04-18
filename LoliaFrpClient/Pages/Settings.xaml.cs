@@ -150,6 +150,7 @@ public sealed partial class Settings : Page
     private async void LogoutButton_Click(object sender, RoutedEventArgs e)
     {
         _settings.OAuthToken = null;
+        _settings.RefreshToken = null;
         ApiClientProvider.Instance.ReinitializeClient();
         UpdateLoginStatus();
         await ShowMsg("已退出登录");
