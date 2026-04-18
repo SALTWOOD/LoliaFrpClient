@@ -151,19 +151,19 @@
                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                                FontSize="14" />
                                     <TextBlock Text="{x:Bind ViewModel.KycStatusFormatted, Mode=OneWay}"
-                                               Style="{StaticResource BodyStrongTextBlockStyle}"
-                                               FontSize="16"
-                                               Foreground="{x:Bind KycStatusColor, Mode=OneWay}" />
+                                                Style="{StaticResource BodyStrongTextBlockStyle}"
+                                                FontSize="16"
+                                                Foreground="{x:Bind KycStatusBrush, Mode=OneWay}" />
                                 </StackPanel>
 
                                 <StackPanel Grid.Column="1" Spacing="4">
                                     <TextBlock Text="账户状态" Style="{StaticResource CaptionTextBlockStyle}"
                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                                FontSize="14" />
-                                    <TextBlock Text="{x:Bind IsBanedText, Mode=OneWay}"
-                                               Style="{StaticResource BodyStrongTextBlockStyle}"
-                                               Foreground="{x:Bind BanedColor, Mode=OneWay}"
-                                               FontSize="16" />
+                                    <TextBlock Text="{x:Bind ViewModel.IsBanedText, Mode=OneWay}"
+                                                Style="{StaticResource BodyStrongTextBlockStyle}"
+                                                Foreground="{x:Bind BanedBrush, Mode=OneWay}"
+                                                FontSize="16" />
                                 </StackPanel>
                             </Grid>
                         </StackPanel>

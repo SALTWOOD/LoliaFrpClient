@@ -164,6 +164,8 @@ public class UserInfoViewModel : INotifyPropertyChanged
         {
             _isBaned = value;
             OnPropertyChanged();
+            OnPropertyChanged(nameof(IsBanedText));
+            OnPropertyChanged(nameof(IsBanedColor));
         }
     }
 
@@ -226,6 +228,12 @@ public class UserInfoViewModel : INotifyPropertyChanged
     ///     获取 KYC 状态对应的文本颜色
     /// </summary>
     public string KycStatusColor => GetKycStatusColor(KycStatus);
+
+    public string IsBanedText => IsBaned ? "已封禁" : "正常";
+
+    public string IsBanedColor => IsBaned
+        ? "SystemFillColorCautionBrush"
+        : "SystemFillColorSuccessBrush";
 
     /// <summary>
     ///     获取 KYC 状态对应的背景色
