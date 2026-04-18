@@ -1,9 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Web;
 using Windows.System;
-using LoliaFrpClient.Constants;
 using LoliaFrpClient.Controls;
 using LoliaFrpClient.Services;
 using Microsoft.UI.Xaml;
@@ -102,17 +100,9 @@ public sealed partial class Settings : Page
 
     private async void LoginButton_Click(object sender, RoutedEventArgs e)
     {
-        var callbackUrl = OAuthCallbackService.GetCallbackUrl();
-        var uriBuilder = new UriBuilder(OAuthConstants.AuthorizeEndpoint);
-        var query = HttpUtility.ParseQueryString(uriBuilder.Query);
-        
-        query["client_id"] = OAuthConstants.ClientId;
-        query["redirect_uri"] = callbackUrl;
-        query["response_type"] = OAuthConstants.ResponseType;
-        query["scope"] = OAuthConstants.Scope;
-        uriBuilder.Query = query.ToString();
+        var url = OAuthTokenService.GetAuthorizationUrl();
 
-        var loginDialog = new LoginDialog(uriBuilder.ToString(), OnCallbackReceived);
+        var loginDialog = new LoginDialog(url, OnCallbackReceived);
         await DialogManager.Instance.ShowDialogAsync(loginDialog);
     }
 
@@ -124,9 +114,15 @@ public sealed partial class Settings : Page
             return;
         }
 
+        if (string.IsNullOrEmpty(result.Code))
+        {
+            await ShowMsg("授权失败: 回调中缺少授权码");
+            return;
+        }
+
         try
         {
-            var tokenResponse = await OAuthTokenService.ExchangeCodeForTokenAsync(result.Code!);
+            var tokenResponse = await OAuthTokenService.ExchangeCodeForTokenAsync(result.Code, result.State);
             _settings.OAuthToken = tokenResponse.AccessToken;
             _settings.RefreshToken = tokenResponse.RefreshToken;
             

@@ -18,12 +18,7 @@ public static class OAuthConstants
     /// <summary>
     ///     OAuth 客户端 ID
     /// </summary>
-    public const string ClientId = "6e3hz082f8f2t5s9";
-
-    /// <summary>
-    ///     OAuth 客户端密钥
-    /// </summary>
-    public const string ClientSecret = "oioqkqmzbcb7s6xvauxobtv4fq2tw85j";
+    public const string ClientId = "goibzooz0s14ntgc";
 
     /// <summary>
     ///     OAuth 响应类型
