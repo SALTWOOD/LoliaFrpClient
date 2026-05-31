@@ -19,12 +19,32 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "properties": {}
+                "properties": {
+                  "username": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string"
+                  },
+                  "captcha_token": {
+                    "type": "string"
+                  },
+                  "keep_login": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "username",
+                  "password",
+                  "captcha_token",
+                  "keep_login"
+                ]
               },
               "example": {
                 "username": "test",
                 "password": "1145514",
-                "captcha_token": ""
+                "captcha_token": "",
+                "keep_login": true
               }
             }
           },
@@ -428,8 +448,11 @@
                         "id": {
                           "type": "integer"
                         },
-                        "is_baned": {
+                        "is_banned": {
                           "type": "boolean"
+                        },
+                        "kyc_count": {
+                          "type": "integer"
                         },
                         "kyc_status": {
                           "type": "string"
@@ -444,13 +467,16 @@
                           "type": "boolean"
                         },
                         "traffic_limit": {
-                          "$ref": "#/components/schemas/long"
+                          "type": "integer"
                         },
                         "traffic_used": {
-                          "$ref": "#/components/schemas/long"
+                          "type": "integer"
                         },
                         "username": {
                           "type": "string"
+                        },
+                        "is_baned": {
+                          "type": "boolean"
                         }
                       },
                       "required": [
@@ -460,14 +486,16 @@
                         "email",
                         "has_kyc",
                         "id",
-                        "is_baned",
+                        "is_banned",
+                        "kyc_count",
                         "kyc_status",
                         "max_tunnel_count",
                         "role",
                         "today_checked",
                         "traffic_limit",
                         "traffic_used",
-                        "username"
+                        "username",
+                        "is_baned"
                       ]
                     }
                   },
@@ -481,20 +509,21 @@
                   "code": 200,
                   "msg": "获取成功",
                   "data": {
-                    "avatar": "https://cn.cravatar.com/avatar/ccd1317597a7796d8b5f2b2785e88d5f?s=180&d=mp&r=g",
+                    "avatar": "https://cn.cravatar.com/avatar/e4d49a63f94851590b66ea8b898556d5?s=180&d=mp&r=g",
                     "bandwidth_limit": 10,
-                    "created_at": "2026-01-01T11:12:03.123921Z",
-                    "email": "mxmilu666@gmail.com",
-                    "has_kyc": true,
+                    "created_at": "2025-11-22T01:08:11.376398+08:00",
+                    "email": "114514@qq.com",
+                    "has_kyc": false,
                     "id": 1,
-                    "is_baned": false,
-                    "kyc_status": "success",
+                    "is_banned": false,
+                    "kyc_count": 0,
+                    "kyc_status": "certifying",
                     "max_tunnel_count": 10,
-                    "role": "user",
+                    "role": "admin",
                     "today_checked": false,
-                    "traffic_limit": 2135672487936,
-                    "traffic_used": 45,
-                    "username": "Mxmilu"
+                    "traffic_limit": 526133493760,
+                    "traffic_used": 0,
+                    "username": "test"
                   }
                 }
               }
@@ -557,11 +586,52 @@
     },
     "/user/logout": {
       "post": {
-        "summary": "用户登出",
+        "summary": "登出当前会话",
         "deprecated": false,
         "description": "",
         "tags": [],
         "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                },
+                "example": {
+                  "code": 401,
+                  "msg": "token has been revoked"
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/user/username": {
+      "put": {
+        "summary": "更改用户名",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {}
+              },
+              "example": {
+                "username": "test"
+              }
+            }
+          },
+          "required": true
+        },
         "responses": {
           "200": {
             "description": "",
@@ -579,12 +649,12 @@
                     "data": {
                       "type": "object",
                       "properties": {
-                        "message": {
+                        "username": {
                           "type": "string"
                         }
                       },
                       "required": [
-                        "message"
+                        "username"
                       ]
                     }
                   },
@@ -593,9 +663,195 @@
                     "msg",
                     "data"
                   ]
+                },
+                "example": {
+                  "code": 200,
+                  "msg": "用户名更新成功",
+                  "data": {
+                    "username": "test"
+                  }
                 }
               }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/admin/user/{user_id}": {
+      "put": {
+        "summary": "修改用户信息",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
             }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {}
+              },
+              "example": {
+                "username": "new_name",
+                "email": "new@example.com",
+                "role": "user",
+                "max_tunnel_count": 30,
+                "bandwidth_limit": 20,
+                "avatar": "https://example.com/avatar.png",
+                "is_baned": false,
+                "traffic_limit": 10737418240
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      },
+      "get": {
+        "summary": "获取用户信息",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "example": "1",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "msg": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "active_sessions": {
+                          "type": "integer"
+                        },
+                        "avatar": {
+                          "type": "string"
+                        },
+                        "bandwidth_limit": {
+                          "type": "integer"
+                        },
+                        "created_at": {
+                          "type": "string"
+                        },
+                        "email": {
+                          "type": "string"
+                        },
+                        "id": {
+                          "type": "integer"
+                        },
+                        "is_baned": {
+                          "type": "boolean"
+                        },
+                        "max_tunnel_count": {
+                          "type": "integer"
+                        },
+                        "role": {
+                          "type": "string"
+                        },
+                        "traffic_limit": {
+                          "$ref": "#/components/schemas/long"
+                        },
+                        "traffic_used": {
+                          "$ref": "#/components/schemas/long"
+                        },
+                        "updated_at": {
+                          "type": "string"
+                        },
+                        "username": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "active_sessions",
+                        "avatar",
+                        "bandwidth_limit",
+                        "created_at",
+                        "email",
+                        "id",
+                        "is_baned",
+                        "max_tunnel_count",
+                        "role",
+                        "traffic_limit",
+                        "traffic_used",
+                        "updated_at",
+                        "username"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "msg",
+                    "data"
+                  ]
+                },
+                "example": {
+                  "code": 200,
+                  "msg": "获取成功",
+                  "data": {
+                    "active_sessions": 11,
+                    "avatar": "",
+                    "bandwidth_limit": 10,
+                    "created_at": "2025-11-22T01:08:11.376398+08:00",
+                    "email": "114514@qq.com",
+                    "id": 1,
+                    "is_baned": false,
+                    "max_tunnel_count": 10,
+                    "role": "admin",
+                    "traffic_limit": 526133493760,
+                    "traffic_used": 0,
+                    "updated_at": "2025-11-22T01:08:11.376398+08:00",
+                    "username": "test"
+                  }
+                }
+              }
+            },
+            "headers": {}
           }
         },
         "security": []
@@ -796,13 +1052,13 @@
                                 }
                               },
                               "total_in": {
-                                "type": "integer"
+                                "$ref": "#/components/schemas/long"
                               },
                               "total_out": {
-                                "type": "integer"
+                                "$ref": "#/components/schemas/long"
                               },
                               "total_traffic": {
-                                "type": "integer"
+                                "$ref": "#/components/schemas/long"
                               }
                             },
                             "required": [
@@ -960,13 +1216,13 @@
                                 "type": "string"
                               },
                               "total_in": {
-                                "type": "integer"
+                                "$ref": "#/components/schemas/long"
                               },
                               "total_out": {
-                                "type": "integer"
+                                "$ref": "#/components/schemas/long"
                               },
                               "total_traffic": {
-                                "type": "integer"
+                                "$ref": "#/components/schemas/long"
                               },
                               "max_connections": {
                                 "type": "integer"
@@ -1007,7 +1263,366 @@
                   ]
                 }
               }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/user/tunnel/{tunnel_name}": {
+      "put": {
+        "summary": "编辑隧道信息",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "tunnel_name",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "example": "4861097abed145b78cd7caadb9433239",
+            "schema": {
+              "type": "string"
             }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {}
+              },
+              "example": {
+                "local_ip": "127.0.0.1",
+                "local_port": 8080,
+                "custom_domain": "demo.example.com",
+                "auto_tls": true,
+                "remark": "my tunnel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "msg": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "auto_tls": {
+                          "type": "boolean"
+                        },
+                        "custom_domain": {
+                          "type": "string"
+                        },
+                        "id": {
+                          "type": "integer"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "node_id": {
+                          "type": "integer"
+                        },
+                        "status": {
+                          "type": "string"
+                        },
+                        "type": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "auto_tls",
+                        "custom_domain",
+                        "id",
+                        "name",
+                        "node_id",
+                        "status",
+                        "type"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "msg",
+                    "data"
+                  ]
+                },
+                "example": {
+                  "code": 200,
+                  "msg": "Auto TLS 已开启",
+                  "data": {
+                    "auto_tls": true,
+                    "custom_domain": "114514.com",
+                    "id": 20,
+                    "name": "4861097abed145b78cd7caadb9433239",
+                    "node_id": 1,
+                    "status": "inactive",
+                    "type": "http"
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      },
+      "get": {
+        "summary": "获取隧道详情",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "tunnel_name",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "msg": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "bandwidth_limit": {
+                          "type": "integer"
+                        },
+                        "client_version": {
+                          "type": "string"
+                        },
+                        "created_at": {
+                          "type": "string"
+                        },
+                        "custom_domain": {
+                          "type": "string"
+                        },
+                        "id": {
+                          "type": "integer"
+                        },
+                        "local_ip": {
+                          "type": "string"
+                        },
+                        "local_port": {
+                          "type": "integer"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "node_address": {
+                          "type": "string"
+                        },
+                        "node_id": {
+                          "type": "integer"
+                        },
+                        "node_name": {
+                          "type": "string"
+                        },
+                        "remark": {
+                          "type": "string"
+                        },
+                        "remote_port": {
+                          "type": "integer"
+                        },
+                        "status": {
+                          "type": "string"
+                        },
+                        "tunnel_token": {
+                          "type": "string"
+                        },
+                        "type": {
+                          "type": "string"
+                        },
+                        "auto_tls": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "bandwidth_limit",
+                        "client_version",
+                        "created_at",
+                        "custom_domain",
+                        "id",
+                        "local_ip",
+                        "local_port",
+                        "name",
+                        "node_address",
+                        "node_id",
+                        "node_name",
+                        "remark",
+                        "remote_port",
+                        "status",
+                        "tunnel_token",
+                        "type",
+                        "auto_tls"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "msg",
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      },
+      "delete": {
+        "summary": "删除隧道",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "tunnel_name",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "msg": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "msg",
+                    "data"
+                  ]
+                },
+                "example": {
+                  "code": 200,
+                  "msg": "删除成功",
+                  "data": {
+                    "message": "隧道已删除"
+                  }
+                }
+              }
+            },
+            "headers": {}
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "msg": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "null"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "msg",
+                    "data"
+                  ]
+                },
+                "example": {
+                  "code": 400,
+                  "msg": "隧道名称不能为空",
+                  "data": null
+                }
+              }
+            },
+            "headers": {}
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "msg": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "null"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "msg",
+                    "data"
+                  ]
+                },
+                "example": {
+                  "code": 404,
+                  "msg": "隧道不存在",
+                  "data": null
+                }
+              }
+            },
+            "headers": {}
           }
         },
         "security": []
@@ -1150,8 +1765,14 @@
                           "items": {
                             "type": "object",
                             "properties": {
+                              "auto_tls": {
+                                "type": "boolean"
+                              },
                               "bandwidth_limit": {
                                 "type": "integer"
+                              },
+                              "client_version": {
+                                "type": "string"
                               },
                               "custom_domain": {
                                 "type": "string"
@@ -1168,8 +1789,14 @@
                               "name": {
                                 "type": "string"
                               },
+                              "node_address": {
+                                "type": "string"
+                              },
                               "node_id": {
                                 "type": "integer"
+                              },
+                              "node_name": {
+                                "type": "string"
                               },
                               "remark": {
                                 "type": "string"
@@ -1223,248 +1850,35 @@
                     "msg",
                     "data"
                   ]
-                }
-              }
-            }
-          }
-        },
-        "security": []
-      }
-    },
-    "/user/tunnel/{tunnel_name}": {
-      "get": {
-        "summary": "获取隧道详情",
-        "deprecated": false,
-        "description": "",
-        "tags": [],
-        "parameters": [
-          {
-            "name": "tunnel_name",
-            "in": "path",
-            "description": "",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "code": {
-                      "type": "integer"
-                    },
-                    "msg": {
-                      "type": "string"
-                    },
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "bandwidth_limit": {
-                          "type": "integer"
-                        },
-                        "client_version": {
-                          "type": "string"
-                        },
-                        "created_at": {
-                          "type": "string"
-                        },
-                        "custom_domain": {
-                          "type": "string"
-                        },
-                        "id": {
-                          "type": "integer"
-                        },
-                        "local_ip": {
-                          "type": "string"
-                        },
-                        "local_port": {
-                          "type": "integer"
-                        },
-                        "name": {
-                          "type": "string"
-                        },
-                        "node_address": {
-                          "type": "string"
-                        },
-                        "node_id": {
-                          "type": "integer"
-                        },
-                        "node_name": {
-                          "type": "string"
-                        },
-                        "remark": {
-                          "type": "string"
-                        },
-                        "remote_port": {
-                          "type": "integer"
-                        },
-                        "status": {
-                          "type": "string"
-                        },
-                        "tunnel_token": {
-                          "type": "string"
-                        },
-                        "type": {
-                          "type": "string"
-                        }
-                      },
-                      "required": [
-                        "bandwidth_limit",
-                        "client_version",
-                        "created_at",
-                        "custom_domain",
-                        "id",
-                        "local_ip",
-                        "local_port",
-                        "name",
-                        "node_address",
-                        "node_id",
-                        "node_name",
-                        "remark",
-                        "remote_port",
-                        "status",
-                        "tunnel_token",
-                        "type"
-                      ]
-                    }
-                  },
-                  "required": [
-                    "code",
-                    "msg",
-                    "data"
-                  ]
-                }
-              }
-            },
-            "headers": {}
-          }
-        },
-        "security": []
-      },
-      "delete": {
-        "summary": "删除隧道",
-        "deprecated": false,
-        "description": "",
-        "tags": [],
-        "parameters": [
-          {
-            "name": "tunnel_name",
-            "in": "path",
-            "description": "",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "code": {
-                      "type": "integer"
-                    },
-                    "msg": {
-                      "type": "string"
-                    },
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "message": {
-                          "type": "string"
-                        }
-                      },
-                      "required": [
-                        "message"
-                      ]
-                    }
-                  },
-                  "required": [
-                    "code",
-                    "msg",
-                    "data"
-                  ]
                 },
                 "example": {
                   "code": 200,
-                  "msg": "删除成功",
+                  "msg": "获取成功",
                   "data": {
-                    "message": "隧道已删除"
+                    "limit": 10,
+                    "list": [
+                      {
+                        "auto_tls": true,
+                        "bandwidth_limit": 10,
+                        "client_version": "",
+                        "custom_domain": "pysio.tel",
+                        "id": 20,
+                        "local_ip": "127.0.0.1",
+                        "local_port": 8081,
+                        "name": "4861097abed145b78cd7caadb9433239",
+                        "node_address": "127.0.0.1",
+                        "node_id": 1,
+                        "node_name": "Test-node",
+                        "remark": "114514",
+                        "remote_port": 80,
+                        "status": "inactive",
+                        "type": "http"
+                      }
+                    ],
+                    "page": 1,
+                    "total": 5,
+                    "total_page": 1
                   }
-                }
-              }
-            },
-            "headers": {}
-          },
-          "400": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "code": {
-                      "type": "integer"
-                    },
-                    "msg": {
-                      "type": "string"
-                    },
-                    "data": {
-                      "type": "null"
-                    }
-                  },
-                  "required": [
-                    "code",
-                    "msg",
-                    "data"
-                  ]
-                },
-                "example": {
-                  "code": 400,
-                  "msg": "隧道名称不能为空",
-                  "data": null
-                }
-              }
-            },
-            "headers": {}
-          },
-          "404": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "code": {
-                      "type": "integer"
-                    },
-                    "msg": {
-                      "type": "string"
-                    },
-                    "data": {
-                      "type": "null"
-                    }
-                  },
-                  "required": [
-                    "code",
-                    "msg",
-                    "data"
-                  ]
-                },
-                "example": {
-                  "code": 404,
-                  "msg": "隧道不存在",
-                  "data": null
                 }
               }
             },
@@ -1623,7 +2037,41 @@
                       "properties": {
                         "domains": {
                           "type": "array",
-                          "items": {}
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "integer"
+                              },
+                              "domain": {
+                                "type": "string"
+                              },
+                              "is_verified": {
+                                "type": "boolean"
+                              },
+                              "status": {
+                                "type": "string"
+                              },
+                              "verification_subdomain": {
+                                "type": "string"
+                              },
+                              "verification_token": {
+                                "type": "string"
+                              },
+                              "domain_connect_url": {
+                                "type": "string"
+                              },
+                              "has_beian": {
+                                "type": "boolean"
+                              },
+                              "expires_at": {
+                                "type": "string"
+                              },
+                              "created_at": {
+                                "type": "string"
+                              }
+                            }
+                          }
                         },
                         "total": {
                           "type": "integer"
@@ -1648,9 +2096,33 @@
                     "msg",
                     "data"
                   ]
+                },
+                "example": {
+                  "code": 200,
+                  "msg": "获取成功",
+                  "data": {
+                    "domains": [
+                      {
+                        "id": 9,
+                        "domain": "awa.fan",
+                        "is_verified": false,
+                        "status": "pending",
+                        "verification_subdomain": "lolia_bvglr4b7.awa.fan",
+                        "verification_token": "zdy2mfgq0z933wb6",
+                        "domain_connect_url": "https://dash.cloudflare.com/domainconnect/v2/domainTemplates/providers/lolia.link/services/verify-domain/apply?domain=awa.fan&domain-verify-key=zdy2mfgq0z933wb6&domain-verify-name=bvglr4b7&key=_dck1&redirect_uri=https%3A%2F%2Fdash.lolia.link%2Fdash%2Fdomain&sigts=1774972339&sig=bZJxmwGzShiLkMirT%2BLnapn64RKV%2FHtLmLLqfudojnzbbvzIbOdG%2FTf6k6eE0T0Xlu%2FxijRIgNWf%2FfzP82k7P%2BwepkeblI5TgR5BWHW0MOsK025vApju%2FTqKtDuaMtl8N0oY415NchA3PetknU3FGqhPbRw3kMQRQUvFIU24J0br2AStBMu4Mb9iYs3pcg6bzB9vq3FSK1Kvs5O65Gf1PtnJJ%2FoNmtzjik13tgzWJk8gIq4viyUo1BbQHGl8RSB5OgKtudXvBuDtpSLq2h3Cm5sJ6SYs9kmQ0D9CcXIMzsF9%2BY9JW965Lw0ok93qNIwo%2F%2BODTYMv%2FxmUPA3hWxwWaQ%3D%3D",
+                        "has_beian": false,
+                        "expires_at": "2026-04-01T23:07:09+08:00",
+                        "created_at": "2026-03-31T23:07:09+08:00"
+                      }
+                    ],
+                    "total": 1,
+                    "page": 1,
+                    "limit": 10
+                  }
                 }
               }
-            }
+            },
+            "headers": {}
           }
         },
         "security": []
@@ -1669,7 +2141,7 @@
                 "properties": {}
               },
               "example": {
-                "domain": "pysio.tel",
+                "domain": "pysio.online",
                 "remark": "测试"
               }
             }
@@ -1699,6 +2171,9 @@
                         "domain": {
                           "type": "string"
                         },
+                        "domain_connect_url": {
+                          "type": "string"
+                        },
                         "expires_at": {
                           "type": "string"
                         },
@@ -1718,6 +2193,7 @@
                       "required": [
                         "created_at",
                         "domain",
+                        "domain_connect_url",
                         "expires_at",
                         "id",
                         "status",
@@ -1731,9 +2207,24 @@
                     "msg",
                     "data"
                   ]
+                },
+                "example": {
+                  "code": 201,
+                  "msg": "域名添加成功",
+                  "data": {
+                    "created_at": "2026-03-31T23:53:12+08:00",
+                    "domain": "pysio.online",
+                    "domain_connect_url": "https://dash.cloudflare.com/domainconnect/v2/domainTemplates/providers/lolia.link/services/verify-domain/apply?domain=pysio.online&domain-verify-key=nqtetu77j9swtsos&domain-verify-name=7uustjw2&key=_dck1&redirect_uri=https%3A%2F%2Fdash.lolia.link%2Fdash%2Fdomain&sigts=1774972392&sig=fzH2NT6OtGsA4kBFwZICB3gxN90q%2F0b6nktK%2BG2P%2FOEDAAsKcI37fXIEUT4Z0Ha0ZxyZ0E3OLI8A52XEoYHj%2B6LYrdlpWWV9gTwFW%2BoI32kDkS%2B0OGn1f6QVSABq%2FHZeVOTu9PBbiIcU8BqIFrkGadSDaevIyTaaQ9nSGP9N9ZikfrpGx3CfdwGjobtP4aVEXQPelk9HqWHuRjOMM0LWFLDHfOf4U%2BPKpXun6EStnzRk%2FSVWCRD4lgHI%2FNkIFfD2EnTBgkwSQPc%2FiW%2Bp%2F%2BPCm2jIgojPHC0u0IyaEe1qyyphUp4eeiCZHkMkdoGv8ZhgBUXlFIjnZw76WKahSiguCA%3D%3D",
+                    "expires_at": "2026-04-01T23:53:12+08:00",
+                    "id": 11,
+                    "status": "pending",
+                    "verification_subdomain": "lolia_7uustjw2.pysio.online",
+                    "verification_token": "nqtetu77j9swtsos"
+                  }
                 }
               }
-            }
+            },
+            "headers": {}
           }
         },
         "security": []
@@ -1847,6 +2338,44 @@
         "security": []
       }
     },
+    "/user/tunnel/token/reset": {
+      "post": {
+        "summary": "重置节点隧道Token",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {}
+              },
+              "example": {
+                "node_id": 1
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
     "/user/nodes": {
       "post": {
         "summary": "获取节点列表",
@@ -1854,6 +2383,32 @@
         "description": "",
         "tags": [],
         "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "page": {
+                    "type": "integer"
+                  },
+                  "limit": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "page",
+                  "limit"
+                ]
+              },
+              "example": {
+                "page": 1,
+                "limit": 1000
+              }
+            }
+          },
+          "required": true
+        },
         "responses": {
           "200": {
             "description": "",
@@ -1882,10 +2437,10 @@
                               "name": {
                                 "type": "string"
                               },
-                              "status": {
+                              "region_code": {
                                 "type": "string"
                               },
-                              "ip_address": {
+                              "status": {
                                 "type": "string"
                               },
                               "supported_protocols": {
@@ -1897,18 +2452,14 @@
                               "need_kyc": {
                                 "type": "boolean"
                               },
+                              "beian_required": {
+                                "type": "boolean"
+                              },
                               "frps_version": {
                                 "type": "string"
                               },
                               "agent_version": {
                                 "type": "string"
-                              },
-                              "available_ports": {
-                                "type": "object",
-                                "properties": {}
-                              },
-                              "frps_port": {
-                                "type": "integer"
                               },
                               "sponsor": {
                                 "type": "string"
@@ -1916,11 +2467,11 @@
                               "bandwidth": {
                                 "type": "integer"
                               },
-                              "last_seen": {
+                              "remark": {
                                 "type": "string"
                               },
-                              "created_at": {
-                                "type": "string"
+                              "load": {
+                                "type": "number"
                               }
                             }
                           }
@@ -1948,9 +2499,40 @@
                     "msg",
                     "data"
                   ]
+                },
+                "example": {
+                  "code": 200,
+                  "msg": "获取成功",
+                  "data": {
+                    "nodes": [
+                      {
+                        "id": 1,
+                        "name": "Test-node",
+                        "region_code": "CN",
+                        "status": "offline",
+                        "supported_protocols": [
+                          "tcp",
+                          "udp",
+                          "http"
+                        ],
+                        "need_kyc": false,
+                        "beian_required": false,
+                        "frps_version": "LoliaFRP-CLI 0.67.2",
+                        "agent_version": "LolinaFRPs-Agent-v0.0.3",
+                        "sponsor": "LoliaTeam",
+                        "bandwidth": 100,
+                        "remark": "需要安装原神",
+                        "load": 14.86
+                      }
+                    ],
+                    "total": 2,
+                    "page": 1,
+                    "limit": 1000
+                  }
                 }
               }
-            }
+            },
+            "headers": {}
           }
         },
         "security": []
@@ -2535,6 +3117,2112 @@
         "security": []
       }
     },
+    "/admin/stats": {
+      "get": {
+        "summary": "总体状态",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "msg": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "online_tunnel_count": {
+                          "type": "integer"
+                        },
+                        "total_traffic_used": {
+                          "$ref": "#/components/schemas/long"
+                        },
+                        "total_tunnel_count": {
+                          "type": "integer"
+                        },
+                        "user_count": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "online_tunnel_count",
+                        "total_traffic_used",
+                        "total_tunnel_count",
+                        "user_count"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "msg",
+                    "data"
+                  ]
+                },
+                "example": {
+                  "code": 200,
+                  "msg": "获取成功",
+                  "data": {
+                    "online_tunnel_count": 0,
+                    "total_traffic_used": 0,
+                    "total_tunnel_count": 6,
+                    "user_count": 3
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/admin/tunnels": {
+      "get": {
+        "summary": "获取所有用户隧道",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "msg": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "auto_tls": {
+                                "type": "boolean"
+                              },
+                              "bandwidth_limit": {
+                                "type": "integer"
+                              },
+                              "client_version": {
+                                "type": "string"
+                              },
+                              "connections": {
+                                "type": "integer"
+                              },
+                              "created_at": {
+                                "type": "string"
+                              },
+                              "custom_domain": {
+                                "type": "string"
+                              },
+                              "id": {
+                                "type": "integer"
+                              },
+                              "local_ip": {
+                                "type": "string"
+                              },
+                              "local_port": {
+                                "type": "integer"
+                              },
+                              "name": {
+                                "type": "string"
+                              },
+                              "node_address": {
+                                "type": "string"
+                              },
+                              "node_id": {
+                                "type": "integer"
+                              },
+                              "node_name": {
+                                "type": "string"
+                              },
+                              "remark": {
+                                "type": "string"
+                              },
+                              "remote_port": {
+                                "type": "integer"
+                              },
+                              "status": {
+                                "type": "string"
+                              },
+                              "total_traffic": {
+                                "type": "integer"
+                              },
+                              "traffic_in": {
+                                "$ref": "#/components/schemas/long"
+                              },
+                              "traffic_out": {
+                                "$ref": "#/components/schemas/long"
+                              },
+                              "traffic_updated_at": {
+                                "type": "string"
+                              },
+                              "type": {
+                                "type": "string"
+                              },
+                              "updated_at": {
+                                "type": "string"
+                              },
+                              "user_id": {
+                                "type": "integer"
+                              },
+                              "username": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "auto_tls",
+                              "bandwidth_limit",
+                              "client_version",
+                              "connections",
+                              "created_at",
+                              "custom_domain",
+                              "id",
+                              "local_ip",
+                              "local_port",
+                              "name",
+                              "node_address",
+                              "node_id",
+                              "node_name",
+                              "remark",
+                              "remote_port",
+                              "status",
+                              "total_traffic",
+                              "traffic_in",
+                              "traffic_out",
+                              "traffic_updated_at",
+                              "type",
+                              "updated_at",
+                              "user_id",
+                              "username"
+                            ]
+                          }
+                        },
+                        "total": {
+                          "type": "integer"
+                        },
+                        "limit": {
+                          "type": "integer"
+                        },
+                        "page": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "items",
+                        "total",
+                        "limit",
+                        "page"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "msg",
+                    "data"
+                  ]
+                },
+                "example": {
+                  "code": 200,
+                  "msg": "获取成功",
+                  "data": {
+                    "items": [
+                      {
+                        "auto_tls": false,
+                        "bandwidth_limit": 10,
+                        "client_version": "",
+                        "connections": 0,
+                        "created_at": "2026-01-03T17:33:27.995735+08:00",
+                        "custom_domain": "pysio.tel",
+                        "id": 20,
+                        "local_ip": "127.0.0.1",
+                        "local_port": 8080,
+                        "name": "4861097abed145b78cd7caadb9433239",
+                        "node_address": "192.168.31.154",
+                        "node_id": 1,
+                        "node_name": "Test-node",
+                        "remark": "xvxcvxcv",
+                        "remote_port": 80,
+                        "status": "inactive",
+                        "total_traffic": 0,
+                        "traffic_in": 0,
+                        "traffic_out": 0,
+                        "traffic_updated_at": "2026-01-12T23:27:53.699189+08:00",
+                        "type": "http",
+                        "updated_at": "2026-02-20T14:54:23.220215+08:00",
+                        "user_id": 1,
+                        "username": "test"
+                      },
+                      {
+                        "auto_tls": false,
+                        "bandwidth_limit": 10,
+                        "client_version": "LoliaFRP-CLI 0.67.1",
+                        "connections": 0,
+                        "created_at": "2025-12-21T15:56:10.379695+08:00",
+                        "custom_domain": "",
+                        "id": 18,
+                        "local_ip": "127.0.0.1",
+                        "local_port": 11451,
+                        "name": "05745df0004e4b6d9081e06a1e3b8f9e",
+                        "node_address": "192.168.31.154",
+                        "node_id": 1,
+                        "node_name": "Test-node",
+                        "remark": "Test-C",
+                        "remote_port": 11451,
+                        "status": "inactive",
+                        "total_traffic": 0,
+                        "traffic_in": 0,
+                        "traffic_out": 0,
+                        "traffic_updated_at": "2026-01-12T23:52:49.093595+08:00",
+                        "type": "tcp",
+                        "updated_at": "2026-02-21T07:49:15.319982+08:00",
+                        "user_id": 1,
+                        "username": "test"
+                      },
+                      {
+                        "auto_tls": true,
+                        "bandwidth_limit": 10,
+                        "client_version": "",
+                        "connections": 0,
+                        "created_at": "2025-12-14T19:46:03.407+08:00",
+                        "custom_domain": "",
+                        "id": 3,
+                        "local_ip": "127.0.0.1",
+                        "local_port": 3000,
+                        "name": "946978624732161e390348",
+                        "node_address": "192.168.31.154",
+                        "node_id": 1,
+                        "node_name": "Test-node",
+                        "remark": "Test3",
+                        "remote_port": 15124,
+                        "status": "inactive",
+                        "total_traffic": 341038620,
+                        "traffic_in": 341038596,
+                        "traffic_out": 24,
+                        "traffic_updated_at": "2025-12-13T16:13:21.0376+08:00",
+                        "type": "udp",
+                        "updated_at": "2026-01-13T00:03:59.071818+08:00",
+                        "user_id": 1,
+                        "username": "test"
+                      },
+                      {
+                        "auto_tls": false,
+                        "bandwidth_limit": 10,
+                        "client_version": "0.65.0",
+                        "connections": 0,
+                        "created_at": "2025-12-14T18:54:32.851+08:00",
+                        "custom_domain": "localhost.dev.lolia.link",
+                        "id": 4,
+                        "local_ip": "127.0.0.1",
+                        "local_port": 3000,
+                        "name": "946978624732161e390341",
+                        "node_address": "192.168.31.154",
+                        "node_id": 1,
+                        "node_name": "Test-node",
+                        "remark": "Test-HTTP",
+                        "remote_port": 0,
+                        "status": "inactive",
+                        "total_traffic": 13732000388,
+                        "traffic_in": 233774897,
+                        "traffic_out": 13498225491,
+                        "traffic_updated_at": "2025-12-26T01:48:21.584719+08:00",
+                        "type": "http",
+                        "updated_at": "2026-01-13T00:03:58.993412+08:00",
+                        "user_id": 1,
+                        "username": "test"
+                      },
+                      {
+                        "auto_tls": true,
+                        "bandwidth_limit": 10,
+                        "client_version": "",
+                        "connections": 0,
+                        "created_at": "2025-11-23T13:05:17.147+08:00",
+                        "custom_domain": "",
+                        "id": 2,
+                        "local_ip": "127.0.0.1",
+                        "local_port": 3001,
+                        "name": "298cd2e0911f58e4ade9a9edd353a9e2",
+                        "node_address": "192.168.31.154",
+                        "node_id": 1,
+                        "node_name": "Test-node",
+                        "remark": "Test1",
+                        "remote_port": 15125,
+                        "status": "inactive",
+                        "total_traffic": 0,
+                        "traffic_in": 0,
+                        "traffic_out": 0,
+                        "traffic_updated_at": "2026-02-21T06:34:40.322003+08:00",
+                        "type": "udp",
+                        "updated_at": "2025-12-13T14:17:16.788922+08:00",
+                        "user_id": 2,
+                        "username": "test2"
+                      },
+                      {
+                        "auto_tls": false,
+                        "bandwidth_limit": 10,
+                        "client_version": "0.65.0",
+                        "connections": 0,
+                        "created_at": "2025-11-22T01:21:06.125+08:00",
+                        "custom_domain": "",
+                        "id": 1,
+                        "local_ip": "127.0.0.1",
+                        "local_port": 3000,
+                        "name": "946978624732161e390349",
+                        "node_address": "192.168.31.154",
+                        "node_id": 1,
+                        "node_name": "Test-node",
+                        "remark": "Test2",
+                        "remote_port": 15124,
+                        "status": "inactive",
+                        "total_traffic": 8897877495,
+                        "traffic_in": 8897876436,
+                        "traffic_out": 1059,
+                        "traffic_updated_at": "2025-12-14T13:16:41.539243+08:00",
+                        "type": "tcp",
+                        "updated_at": "2025-12-26T01:48:21.945685+08:00",
+                        "user_id": 1,
+                        "username": "test"
+                      }
+                    ],
+                    "total": 6
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/admin/tunnel/{tunnel_id}/offline": {
+      "post": {
+        "summary": "下线隧道",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "tunnel_id",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "example": "18",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "msg": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "tunnel_id": {
+                          "type": "string"
+                        },
+                        "tunnel_name": {
+                          "type": "string"
+                        },
+                        "user_id": {
+                          "type": "string"
+                        },
+                        "node_id": {
+                          "type": "string"
+                        },
+                        "status": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "tunnel_id",
+                        "tunnel_name",
+                        "user_id",
+                        "node_id",
+                        "status"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "msg",
+                    "data"
+                  ]
+                },
+                "example": {
+                  "code": 401,
+                  "msg": "invalid token"
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/admin/user/{user_id}/tunnels": {
+      "get": {
+        "summary": "获取用户创建隧道",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "example": "1",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "msg": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "auto_tls": {
+                                "type": "boolean"
+                              },
+                              "bandwidth_limit": {
+                                "type": "integer"
+                              },
+                              "client_version": {
+                                "type": "string"
+                              },
+                              "created_at": {
+                                "type": "string"
+                              },
+                              "custom_domain": {
+                                "type": "string"
+                              },
+                              "id": {
+                                "type": "integer"
+                              },
+                              "local_ip": {
+                                "type": "string"
+                              },
+                              "local_port": {
+                                "type": "integer"
+                              },
+                              "name": {
+                                "type": "string"
+                              },
+                              "node_id": {
+                                "type": "integer"
+                              },
+                              "node_name": {
+                                "type": "string"
+                              },
+                              "remark": {
+                                "type": "string"
+                              },
+                              "remote_port": {
+                                "type": "integer"
+                              },
+                              "status": {
+                                "type": "string"
+                              },
+                              "type": {
+                                "type": "string"
+                              },
+                              "updated_at": {
+                                "type": "string"
+                              },
+                              "user_id": {
+                                "type": "integer"
+                              },
+                              "username": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "auto_tls",
+                              "bandwidth_limit",
+                              "client_version",
+                              "created_at",
+                              "custom_domain",
+                              "id",
+                              "local_ip",
+                              "local_port",
+                              "name",
+                              "node_id",
+                              "node_name",
+                              "remark",
+                              "remote_port",
+                              "status",
+                              "type",
+                              "updated_at",
+                              "user_id",
+                              "username"
+                            ]
+                          }
+                        },
+                        "limit": {
+                          "type": "integer"
+                        },
+                        "page": {
+                          "type": "integer"
+                        },
+                        "total": {
+                          "type": "integer"
+                        },
+                        "user_id": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "items",
+                        "limit",
+                        "page",
+                        "total",
+                        "user_id"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "msg",
+                    "data"
+                  ]
+                },
+                "example": {
+                  "code": 200,
+                  "msg": "获取成功",
+                  "data": {
+                    "items": [
+                      {
+                        "auto_tls": false,
+                        "bandwidth_limit": 10,
+                        "client_version": "",
+                        "created_at": "2026-01-03T17:33:27.995735+08:00",
+                        "custom_domain": "pysio.tel",
+                        "id": 20,
+                        "local_ip": "127.0.0.1",
+                        "local_port": 8080,
+                        "name": "4861097abed145b78cd7caadb9433239",
+                        "node_id": 1,
+                        "node_name": "Test-node",
+                        "remark": "xvxcvxcv",
+                        "remote_port": 80,
+                        "status": "inactive",
+                        "type": "http",
+                        "updated_at": "2026-02-20T14:54:23.220215+08:00",
+                        "user_id": 1,
+                        "username": "test"
+                      },
+                      {
+                        "auto_tls": false,
+                        "bandwidth_limit": 10,
+                        "client_version": "LoliaFRP-CLI 0.66.3",
+                        "created_at": "2025-12-21T15:56:10.379695+08:00",
+                        "custom_domain": "",
+                        "id": 18,
+                        "local_ip": "127.0.0.1",
+                        "local_port": 11451,
+                        "name": "05745df0004e4b6d9081e06a1e3b8f9e",
+                        "node_id": 1,
+                        "node_name": "Test-node",
+                        "remark": "Test-C",
+                        "remote_port": 11451,
+                        "status": "inactive",
+                        "type": "tcp",
+                        "updated_at": "2026-02-04T15:59:32.344221+08:00",
+                        "user_id": 1,
+                        "username": "test"
+                      },
+                      {
+                        "auto_tls": true,
+                        "bandwidth_limit": 10,
+                        "client_version": "",
+                        "created_at": "2025-12-14T19:46:03.407+08:00",
+                        "custom_domain": "",
+                        "id": 3,
+                        "local_ip": "127.0.0.1",
+                        "local_port": 3000,
+                        "name": "946978624732161e390348",
+                        "node_id": 1,
+                        "node_name": "Test-node",
+                        "remark": "Test3",
+                        "remote_port": 15124,
+                        "status": "inactive",
+                        "type": "udp",
+                        "updated_at": "2026-01-13T00:03:59.071818+08:00",
+                        "user_id": 1,
+                        "username": "test"
+                      },
+                      {
+                        "auto_tls": false,
+                        "bandwidth_limit": 10,
+                        "client_version": "0.65.0",
+                        "created_at": "2025-12-14T18:54:32.851+08:00",
+                        "custom_domain": "localhost.dev.lolia.link",
+                        "id": 4,
+                        "local_ip": "127.0.0.1",
+                        "local_port": 3000,
+                        "name": "946978624732161e390341",
+                        "node_id": 1,
+                        "node_name": "Test-node",
+                        "remark": "Test-HTTP",
+                        "remote_port": 0,
+                        "status": "inactive",
+                        "type": "http",
+                        "updated_at": "2026-01-13T00:03:58.993412+08:00",
+                        "user_id": 1,
+                        "username": "test"
+                      },
+                      {
+                        "auto_tls": false,
+                        "bandwidth_limit": 10,
+                        "client_version": "0.65.0",
+                        "created_at": "2025-11-22T01:21:06.125+08:00",
+                        "custom_domain": "",
+                        "id": 1,
+                        "local_ip": "127.0.0.1",
+                        "local_port": 3000,
+                        "name": "946978624732161e390349",
+                        "node_id": 1,
+                        "node_name": "Test-node",
+                        "remark": "Test2",
+                        "remote_port": 15124,
+                        "status": "inactive",
+                        "type": "tcp",
+                        "updated_at": "2025-12-26T01:48:21.945685+08:00",
+                        "user_id": 1,
+                        "username": "test"
+                      }
+                    ],
+                    "limit": 20,
+                    "page": 1,
+                    "total": 5,
+                    "user_id": 1
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/admin/user/{user_id}/ban": {
+      "post": {
+        "summary": "BAN 掉用户",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "example": "1",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "msg": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "is_baned": {
+                          "type": "boolean"
+                        },
+                        "user_id": {
+                          "type": "integer"
+                        },
+                        "username": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "is_baned",
+                        "user_id",
+                        "username"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "msg",
+                    "data"
+                  ]
+                },
+                "example": {
+                  "code": 200,
+                  "msg": "封禁成功",
+                  "data": {
+                    "is_baned": true,
+                    "user_id": 1,
+                    "username": "test"
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/admin/tunnel/{tunnel_id}/traffic": {
+      "get": {
+        "summary": "查询隧道流量",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "tunnel_id",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "example": "20",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "msg": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "tunnel_name": {
+                          "type": "string"
+                        },
+                        "node_id": {
+                          "type": "integer"
+                        },
+                        "node_name": {
+                          "type": "string"
+                        },
+                        "traffic_in": {
+                          "$ref": "#/components/schemas/long"
+                        },
+                        "traffic_out": {
+                          "$ref": "#/components/schemas/long"
+                        },
+                        "total_traffic": {
+                          "$ref": "#/components/schemas/long"
+                        },
+                        "connections": {
+                          "type": "integer"
+                        },
+                        "tunnel_type": {
+                          "type": "string"
+                        },
+                        "remote_port": {
+                          "type": "integer"
+                        },
+                        "custom_domain": {
+                          "type": "string"
+                        },
+                        "status": {
+                          "type": "string"
+                        },
+                        "remark": {
+                          "type": "string"
+                        },
+                        "updated_at": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "tunnel_name",
+                        "node_id",
+                        "node_name",
+                        "traffic_in",
+                        "traffic_out",
+                        "total_traffic",
+                        "connections",
+                        "tunnel_type",
+                        "remote_port",
+                        "custom_domain",
+                        "status",
+                        "remark",
+                        "updated_at"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "msg",
+                    "data"
+                  ]
+                },
+                "example": {
+                  "code": 200,
+                  "msg": "获取成功",
+                  "data": {
+                    "tunnel_name": "4861097abed145b78cd7caadb9433239",
+                    "node_id": 1,
+                    "node_name": "Test-node",
+                    "traffic_in": 0,
+                    "traffic_out": 0,
+                    "total_traffic": 0,
+                    "connections": 0,
+                    "tunnel_type": "http",
+                    "remote_port": 80,
+                    "custom_domain": "pysio.tel",
+                    "status": "inactive",
+                    "remark": "xvxcvxcv",
+                    "updated_at": "2026-01-12T23:27:53.699189+08:00"
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/admin/tunnel/{tunnel_id}/traffic/daily": {
+      "get": {
+        "summary": "查询隧道指定天内流量",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "tunnel_id",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "example": "20",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "msg": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "daily_stats": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "date": {
+                                "type": "string"
+                              },
+                              "tunnel_name": {
+                                "type": "string"
+                              },
+                              "node_id": {
+                                "type": "string"
+                              },
+                              "total_in": {
+                                "$ref": "#/components/schemas/long"
+                              },
+                              "total_out": {
+                                "$ref": "#/components/schemas/long"
+                              },
+                              "total_traffic": {
+                                "$ref": "#/components/schemas/long"
+                              },
+                              "remark": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "date",
+                              "tunnel_name",
+                              "node_id",
+                              "total_in",
+                              "total_out",
+                              "total_traffic",
+                              "remark"
+                            ]
+                          }
+                        },
+                        "days": {
+                          "type": "integer"
+                        },
+                        "tunnel_id": {
+                          "type": "integer"
+                        },
+                        "tunnel_name": {
+                          "type": "string"
+                        },
+                        "user_id": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "daily_stats",
+                        "days",
+                        "tunnel_id",
+                        "tunnel_name",
+                        "user_id"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "msg",
+                    "data"
+                  ]
+                },
+                "example": {
+                  "code": 200,
+                  "msg": "获取成功",
+                  "data": {
+                    "daily_stats": [
+                      {
+                        "date": "2026-02-15T00:00:00+08:00",
+                        "tunnel_name": "4861097abed145b78cd7caadb9433239",
+                        "node_id": "1",
+                        "total_in": 0,
+                        "total_out": 0,
+                        "total_traffic": 0,
+                        "remark": "xvxcvxcv"
+                      },
+                      {
+                        "date": "2026-02-16T00:00:00+08:00",
+                        "tunnel_name": "4861097abed145b78cd7caadb9433239",
+                        "node_id": "1",
+                        "total_in": 0,
+                        "total_out": 0,
+                        "total_traffic": 0,
+                        "remark": "xvxcvxcv"
+                      },
+                      {
+                        "date": "2026-02-17T00:00:00+08:00",
+                        "tunnel_name": "4861097abed145b78cd7caadb9433239",
+                        "node_id": "1",
+                        "total_in": 0,
+                        "total_out": 0,
+                        "total_traffic": 0,
+                        "remark": "xvxcvxcv"
+                      },
+                      {
+                        "date": "2026-02-18T00:00:00+08:00",
+                        "tunnel_name": "4861097abed145b78cd7caadb9433239",
+                        "node_id": "1",
+                        "total_in": 0,
+                        "total_out": 0,
+                        "total_traffic": 0,
+                        "remark": "xvxcvxcv"
+                      },
+                      {
+                        "date": "2026-02-19T00:00:00+08:00",
+                        "tunnel_name": "4861097abed145b78cd7caadb9433239",
+                        "node_id": "1",
+                        "total_in": 0,
+                        "total_out": 0,
+                        "total_traffic": 0,
+                        "remark": "xvxcvxcv"
+                      },
+                      {
+                        "date": "2026-02-20T00:00:00+08:00",
+                        "tunnel_name": "4861097abed145b78cd7caadb9433239",
+                        "node_id": "1",
+                        "total_in": 0,
+                        "total_out": 0,
+                        "total_traffic": 0,
+                        "remark": "xvxcvxcv"
+                      },
+                      {
+                        "date": "2026-02-21T00:00:00+08:00",
+                        "tunnel_name": "4861097abed145b78cd7caadb9433239",
+                        "node_id": "1",
+                        "total_in": 0,
+                        "total_out": 0,
+                        "total_traffic": 0,
+                        "remark": "xvxcvxcv"
+                      }
+                    ],
+                    "days": 7,
+                    "tunnel_id": 20,
+                    "tunnel_name": "4861097abed145b78cd7caadb9433239",
+                    "user_id": "1"
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/admin/user/{user_id}/traffic/daily": {
+      "get": {
+        "summary": "查询用户指定天内流量",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "example": "1",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "msg": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "daily_stats": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "date": {
+                                "type": "string"
+                              },
+                              "tunnel_stats": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "total_in": {
+                                "$ref": "#/components/schemas/long"
+                              },
+                              "total_out": {
+                                "$ref": "#/components/schemas/long"
+                              },
+                              "total_traffic": {
+                                "$ref": "#/components/schemas/long"
+                              }
+                            },
+                            "required": [
+                              "date",
+                              "tunnel_stats",
+                              "total_in",
+                              "total_out",
+                              "total_traffic"
+                            ]
+                          }
+                        },
+                        "days": {
+                          "type": "integer"
+                        },
+                        "user_id": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "daily_stats",
+                        "days",
+                        "user_id"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "msg",
+                    "data"
+                  ]
+                },
+                "example": {
+                  "code": 200,
+                  "msg": "获取成功",
+                  "data": {
+                    "daily_stats": [
+                      {
+                        "date": "2026-02-15T00:00:00+08:00",
+                        "tunnel_stats": [],
+                        "total_in": 0,
+                        "total_out": 0,
+                        "total_traffic": 0
+                      },
+                      {
+                        "date": "2026-02-16T00:00:00+08:00",
+                        "tunnel_stats": [],
+                        "total_in": 0,
+                        "total_out": 0,
+                        "total_traffic": 0
+                      },
+                      {
+                        "date": "2026-02-17T00:00:00+08:00",
+                        "tunnel_stats": [],
+                        "total_in": 0,
+                        "total_out": 0,
+                        "total_traffic": 0
+                      },
+                      {
+                        "date": "2026-02-18T00:00:00+08:00",
+                        "tunnel_stats": [],
+                        "total_in": 0,
+                        "total_out": 0,
+                        "total_traffic": 0
+                      },
+                      {
+                        "date": "2026-02-19T00:00:00+08:00",
+                        "tunnel_stats": [],
+                        "total_in": 0,
+                        "total_out": 0,
+                        "total_traffic": 0
+                      },
+                      {
+                        "date": "2026-02-20T00:00:00+08:00",
+                        "tunnel_stats": [],
+                        "total_in": 0,
+                        "total_out": 0,
+                        "total_traffic": 0
+                      },
+                      {
+                        "date": "2026-02-21T00:00:00+08:00",
+                        "tunnel_stats": [],
+                        "total_in": 0,
+                        "total_out": 0,
+                        "total_traffic": 0
+                      }
+                    ],
+                    "days": 7,
+                    "user_id": "1"
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/user/billing/bills": {
+      "get": {
+        "summary": "查询账单",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "msg": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "amount": {
+                                "type": "string"
+                              },
+                              "closed_at": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "created_at": {
+                                "type": "string"
+                              },
+                              "description": {
+                                "type": "string"
+                              },
+                              "expires_at": {
+                                "type": "string"
+                              },
+                              "order_no": {
+                                "type": "string"
+                              },
+                              "paid_at": {
+                                "type": "null"
+                              },
+                              "payment_method": {
+                                "type": "string"
+                              },
+                              "product_type": {
+                                "type": "string"
+                              },
+                              "provider_trade_no": {
+                                "type": "string"
+                              },
+                              "status": {
+                                "type": "string"
+                              },
+                              "subject": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "amount",
+                              "closed_at",
+                              "created_at",
+                              "description",
+                              "expires_at",
+                              "order_no",
+                              "paid_at",
+                              "payment_method",
+                              "product_type",
+                              "provider_trade_no",
+                              "status",
+                              "subject"
+                            ]
+                          }
+                        },
+                        "limit": {
+                          "type": "integer"
+                        },
+                        "page": {
+                          "type": "integer"
+                        },
+                        "total": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "items",
+                        "limit",
+                        "page",
+                        "total"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "msg",
+                    "data"
+                  ]
+                },
+                "example": {
+                  "code": 200,
+                  "msg": "获取成功",
+                  "data": {
+                    "items": [],
+                    "limit": 20,
+                    "page": 1,
+                    "total": 0
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      },
+      "post": {
+        "summary": "创建账单",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {}
+              },
+              "example": {
+                "product_type": "kyc_fee"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "msg": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "amount": {
+                          "type": "string"
+                        },
+                        "closed_at": {
+                          "type": "null"
+                        },
+                        "created_at": {
+                          "type": "string"
+                        },
+                        "description": {
+                          "type": "string"
+                        },
+                        "expires_at": {
+                          "type": "string"
+                        },
+                        "order_no": {
+                          "type": "string"
+                        },
+                        "paid_at": {
+                          "type": "null"
+                        },
+                        "payment_method": {
+                          "type": "string"
+                        },
+                        "payment_url": {
+                          "type": "string"
+                        },
+                        "product_type": {
+                          "type": "string"
+                        },
+                        "provider_trade_no": {
+                          "type": "string"
+                        },
+                        "status": {
+                          "type": "string"
+                        },
+                        "subject": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "amount",
+                        "closed_at",
+                        "created_at",
+                        "description",
+                        "expires_at",
+                        "order_no",
+                        "paid_at",
+                        "payment_method",
+                        "payment_url",
+                        "product_type",
+                        "provider_trade_no",
+                        "status",
+                        "subject"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "msg",
+                    "data"
+                  ]
+                },
+                "example": {
+                  "code": 400,
+                  "msg": "请求参数错误: EOF"
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/user/billing/bills/{order_no}": {
+      "get": {
+        "summary": "查询指定账单",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "order_no",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "example": "LOLIAX20260328123649BZFU6V9F46S3",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "msg": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "amount": {
+                          "type": "string"
+                        },
+                        "closed_at": {
+                          "type": "null"
+                        },
+                        "created_at": {
+                          "type": "string"
+                        },
+                        "description": {
+                          "type": "string"
+                        },
+                        "expires_at": {
+                          "type": "string"
+                        },
+                        "order_no": {
+                          "type": "string"
+                        },
+                        "paid_at": {
+                          "type": "null"
+                        },
+                        "payment_method": {
+                          "type": "string"
+                        },
+                        "payment_url": {
+                          "type": "string"
+                        },
+                        "product_type": {
+                          "type": "string"
+                        },
+                        "provider_trade_no": {
+                          "type": "string"
+                        },
+                        "status": {
+                          "type": "string"
+                        },
+                        "subject": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "amount",
+                        "closed_at",
+                        "created_at",
+                        "description",
+                        "expires_at",
+                        "order_no",
+                        "paid_at",
+                        "payment_method",
+                        "payment_url",
+                        "product_type",
+                        "provider_trade_no",
+                        "status",
+                        "subject"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "msg",
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/user/sessions": {
+      "get": {
+        "summary": "获取用户的所有活跃会话",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "msg": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "count": {
+                          "type": "integer"
+                        },
+                        "sessions": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "session_id": {
+                                "type": "string"
+                              },
+                              "token": {
+                                "type": "string"
+                              },
+                              "issued_at": {
+                                "type": "string"
+                              },
+                              "expires_at": {
+                                "type": "string"
+                              },
+                              "ip_address": {
+                                "type": "string"
+                              },
+                              "current": {
+                                "type": "boolean"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "required": [
+                        "count",
+                        "sessions"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "msg",
+                    "data"
+                  ]
+                },
+                "example": {
+                  "code": 200,
+                  "msg": "get sessions successful",
+                  "data": {
+                    "count": 1,
+                    "sessions": [
+                      {
+                        "token": "eyJhbGciOiJSUzI1NiIs...",
+                        "issued_at": "2026-04-12T04:32:11.491297368Z",
+                        "expires_at": "2026-04-12T16:32:11.491297433Z",
+                        "ip_address": "2409:8a28:1a0a:3a00:2154:1008:95d5:b695"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/user/logout/all": {
+      "post": {
+        "summary": "登出所有会话",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                },
+                "example": {
+                  "code": 200,
+                  "msg": "all sessions logged out",
+                  "data": {
+                    "message": "All sessions logged out successfully"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/user/sessions/{session_id}": {
+      "delete": {
+        "summary": "登出指定会话",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "example": "3079e9207defbdb1036503d5dc5cc837f54ad182dd6d9505fa80e1f501727961",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "msg": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "msg",
+                    "data"
+                  ]
+                },
+                "example": {
+                  "code": 200,
+                  "msg": "session logged out",
+                  "data": {
+                    "message": "Session logged out successfully"
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/user/qq/challenge": {
+      "post": {
+        "summary": "发起 QQ 绑定",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "msg": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "challenge": {
+                          "type": "string"
+                        },
+                        "expires_in": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "challenge",
+                        "expires_in"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "msg",
+                    "data"
+                  ]
+                },
+                "example": {
+                  "code": 200,
+                  "msg": "创建成功",
+                  "data": {
+                    "challenge": "82394fc841125a5296c65f41a5a3e459",
+                    "expires_in": 600
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/user/qq": {
+      "delete": {
+        "summary": "解绑 QQ",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                },
+                "example": {
+                  "code": 404,
+                  "msg": "未绑定QQ"
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      },
+      "get": {
+        "summary": "获取 QQ 绑定",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "msg": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "qq": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "qq"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "msg",
+                    "data"
+                  ]
+                },
+                "example": {
+                  "code": 200,
+                  "msg": "未绑定QQ"
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/qqbot/qq/bind": {
+      "post": {
+        "summary": "绑定 QQ（napcat）",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {}
+              },
+              "example": {
+                "challenge": "156f21d59054b019161524e2d29e7832",
+                "qq": "123456789"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/qqbot/qq/userinfo": {
+      "post": {
+        "summary": "获取用户信息（napcat）",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {}
+              },
+              "example": {
+                "qq": "2842755165"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "msg": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "avatar": {
+                          "type": "string"
+                        },
+                        "bandwidth_limit": {
+                          "type": "integer"
+                        },
+                        "created_at": {
+                          "type": "string"
+                        },
+                        "email": {
+                          "type": "string"
+                        },
+                        "has_kyc": {
+                          "type": "boolean"
+                        },
+                        "id": {
+                          "type": "integer"
+                        },
+                        "is_banned": {
+                          "type": "boolean"
+                        },
+                        "kyc_count": {
+                          "type": "integer"
+                        },
+                        "kyc_status": {
+                          "type": "string"
+                        },
+                        "max_tunnel_count": {
+                          "type": "integer"
+                        },
+                        "role": {
+                          "type": "string"
+                        },
+                        "today_checked": {
+                          "type": "boolean"
+                        },
+                        "traffic_limit": {
+                          "type": "integer"
+                        },
+                        "traffic_used": {
+                          "type": "integer"
+                        },
+                        "username": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "avatar",
+                        "bandwidth_limit",
+                        "created_at",
+                        "email",
+                        "has_kyc",
+                        "id",
+                        "is_banned",
+                        "kyc_count",
+                        "kyc_status",
+                        "max_tunnel_count",
+                        "role",
+                        "today_checked",
+                        "traffic_limit",
+                        "traffic_used",
+                        "username"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "msg",
+                    "data"
+                  ]
+                },
+                "example": "404 page not found"
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/client/version": {
       "get": {
         "summary": "获取客户端最新版本",
@@ -2644,7 +5332,12 @@
       }
     },
     "responses": {},
-    "securitySchemes": {}
+    "securitySchemes": {
+      "bearer": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
   },
   "servers": [],
   "security": []
