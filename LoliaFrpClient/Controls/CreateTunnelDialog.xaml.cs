@@ -37,7 +37,7 @@ public sealed partial class CreateTunnelDialog : ContentDialog
     {
         try
         {
-            var response = await _apiClientProvider.Client.User.Nodes.PostAsNodesPostResponseAsync();
+            var response = await _apiClientProvider.Client.User.Nodes.PostAsNodesPostResponseAsync(new());
             var nodesData = response?.Data?.Nodes;
 
             if (nodesData != null)
@@ -50,12 +50,9 @@ public sealed partial class CreateTunnelDialog : ContentDialog
                         Id = node.Id ?? 0,
                         Name = node.Name ?? string.Empty,
                         Status = node.Status ?? string.Empty,
-                        Host = node.IpAddress ?? string.Empty,
-                        Port = node.FrpsPort ?? 0,
                         AgentVersion = node.AgentVersion ?? string.Empty,
                         FrpsVersion = node.FrpsVersion ?? string.Empty,
                         Sponsor = node.Sponsor ?? string.Empty,
-                        LastSeen = node.LastSeen ?? string.Empty,
                         Bandwidth = node.Bandwidth ?? 0
                     };
 
@@ -64,7 +61,7 @@ public sealed partial class CreateTunnelDialog : ContentDialog
                         nodeInfo.SupportedProtocols = string.Join(", ", node.SupportedProtocols);
 
                     // 设置显示名称
-                    nodeInfo.DisplayName = $"{nodeInfo.Name} ({nodeInfo.Host}:{nodeInfo.Port})";
+                    nodeInfo.DisplayName = nodeInfo.Name;
 
                     _nodes.Add(nodeInfo);
                 }
