@@ -46,6 +46,10 @@ namespace LoliaFrpClient.Core.User.Info
         public int? Id { get; set; }
         /// <summary>The is_baned property</summary>
         public bool? IsBaned { get; set; }
+        /// <summary>The is_banned property</summary>
+        public bool? IsBanned { get; set; }
+        /// <summary>The kyc_count property</summary>
+        public int? KycCount { get; set; }
         /// <summary>The kyc_status property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
@@ -67,9 +71,9 @@ namespace LoliaFrpClient.Core.User.Info
         /// <summary>The today_checked property</summary>
         public bool? TodayChecked { get; set; }
         /// <summary>The traffic_limit property</summary>
-        public long? TrafficLimit { get; set; }
+        public int? TrafficLimit { get; set; }
         /// <summary>The traffic_used property</summary>
-        public long? TrafficUsed { get; set; }
+        public int? TrafficUsed { get; set; }
         /// <summary>The username property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
@@ -110,12 +114,14 @@ namespace LoliaFrpClient.Core.User.Info
                 { "has_kyc", n => { HasKyc = n.GetBoolValue(); } },
                 { "id", n => { Id = n.GetIntValue(); } },
                 { "is_baned", n => { IsBaned = n.GetBoolValue(); } },
+                { "is_banned", n => { IsBanned = n.GetBoolValue(); } },
+                { "kyc_count", n => { KycCount = n.GetIntValue(); } },
                 { "kyc_status", n => { KycStatus = n.GetStringValue(); } },
                 { "max_tunnel_count", n => { MaxTunnelCount = n.GetIntValue(); } },
                 { "role", n => { Role = n.GetStringValue(); } },
                 { "today_checked", n => { TodayChecked = n.GetBoolValue(); } },
-                { "traffic_limit", n => { TrafficLimit = n.GetLongValue(); } },
-                { "traffic_used", n => { TrafficUsed = n.GetLongValue(); } },
+                { "traffic_limit", n => { TrafficLimit = n.GetIntValue(); } },
+                { "traffic_used", n => { TrafficUsed = n.GetIntValue(); } },
                 { "username", n => { Username = n.GetStringValue(); } },
             };
         }
@@ -133,12 +139,14 @@ namespace LoliaFrpClient.Core.User.Info
             writer.WriteBoolValue("has_kyc", HasKyc);
             writer.WriteIntValue("id", Id);
             writer.WriteBoolValue("is_baned", IsBaned);
+            writer.WriteBoolValue("is_banned", IsBanned);
+            writer.WriteIntValue("kyc_count", KycCount);
             writer.WriteStringValue("kyc_status", KycStatus);
             writer.WriteIntValue("max_tunnel_count", MaxTunnelCount);
             writer.WriteStringValue("role", Role);
             writer.WriteBoolValue("today_checked", TodayChecked);
-            writer.WriteLongValue("traffic_limit", TrafficLimit);
-            writer.WriteLongValue("traffic_used", TrafficUsed);
+            writer.WriteIntValue("traffic_limit", TrafficLimit);
+            writer.WriteIntValue("traffic_used", TrafficUsed);
             writer.WriteStringValue("username", Username);
             writer.WriteAdditionalData(AdditionalData);
         }

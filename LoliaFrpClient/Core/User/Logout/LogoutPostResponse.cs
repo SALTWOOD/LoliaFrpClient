@@ -14,24 +14,6 @@ namespace LoliaFrpClient.Core.User.Logout
     {
         /// <summary>Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.</summary>
         public IDictionary<string, object> AdditionalData { get; set; }
-        /// <summary>The code property</summary>
-        public int? Code { get; set; }
-        /// <summary>The data property</summary>
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
-#nullable enable
-        public global::LoliaFrpClient.Core.User.Logout.LogoutPostResponse_data? Data { get; set; }
-#nullable restore
-#else
-        public global::LoliaFrpClient.Core.User.Logout.LogoutPostResponse_data Data { get; set; }
-#endif
-        /// <summary>The msg property</summary>
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
-#nullable enable
-        public string? Msg { get; set; }
-#nullable restore
-#else
-        public string Msg { get; set; }
-#endif
         /// <summary>
         /// Instantiates a new <see cref="global::LoliaFrpClient.Core.User.Logout.LogoutPostResponse"/> and sets the default values.
         /// </summary>
@@ -57,9 +39,6 @@ namespace LoliaFrpClient.Core.User.Logout
         {
             return new Dictionary<string, Action<IParseNode>>
             {
-                { "code", n => { Code = n.GetIntValue(); } },
-                { "data", n => { Data = n.GetObjectValue<global::LoliaFrpClient.Core.User.Logout.LogoutPostResponse_data>(global::LoliaFrpClient.Core.User.Logout.LogoutPostResponse_data.CreateFromDiscriminatorValue); } },
-                { "msg", n => { Msg = n.GetStringValue(); } },
             };
         }
         /// <summary>
@@ -69,9 +48,6 @@ namespace LoliaFrpClient.Core.User.Logout
         public virtual void Serialize(ISerializationWriter writer)
         {
             if(ReferenceEquals(writer, null)) throw new ArgumentNullException(nameof(writer));
-            writer.WriteIntValue("code", Code);
-            writer.WriteObjectValue<global::LoliaFrpClient.Core.User.Logout.LogoutPostResponse_data>("data", Data);
-            writer.WriteStringValue("msg", Msg);
             writer.WriteAdditionalData(AdditionalData);
         }
     }

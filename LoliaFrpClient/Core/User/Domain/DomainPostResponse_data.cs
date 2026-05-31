@@ -30,6 +30,14 @@ namespace LoliaFrpClient.Core.User.Domain
 #else
         public string Domain { get; set; }
 #endif
+        /// <summary>The domain_connect_url property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? DomainConnectUrl { get; set; }
+#nullable restore
+#else
+        public string DomainConnectUrl { get; set; }
+#endif
         /// <summary>The expires_at property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
@@ -91,6 +99,7 @@ namespace LoliaFrpClient.Core.User.Domain
             {
                 { "created_at", n => { CreatedAt = n.GetStringValue(); } },
                 { "domain", n => { Domain = n.GetStringValue(); } },
+                { "domain_connect_url", n => { DomainConnectUrl = n.GetStringValue(); } },
                 { "expires_at", n => { ExpiresAt = n.GetStringValue(); } },
                 { "id", n => { Id = n.GetIntValue(); } },
                 { "status", n => { Status = n.GetStringValue(); } },
@@ -107,6 +116,7 @@ namespace LoliaFrpClient.Core.User.Domain
             if(ReferenceEquals(writer, null)) throw new ArgumentNullException(nameof(writer));
             writer.WriteStringValue("created_at", CreatedAt);
             writer.WriteStringValue("domain", Domain);
+            writer.WriteStringValue("domain_connect_url", DomainConnectUrl);
             writer.WriteStringValue("expires_at", ExpiresAt);
             writer.WriteIntValue("id", Id);
             writer.WriteStringValue("status", Status);

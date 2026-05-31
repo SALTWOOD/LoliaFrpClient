@@ -14,6 +14,32 @@ namespace LoliaFrpClient.Core.User.Login
     {
         /// <summary>Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.</summary>
         public IDictionary<string, object> AdditionalData { get; set; }
+        /// <summary>The captcha_token property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? CaptchaToken { get; set; }
+#nullable restore
+#else
+        public string CaptchaToken { get; set; }
+#endif
+        /// <summary>The keep_login property</summary>
+        public bool? KeepLogin { get; set; }
+        /// <summary>The password property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? Password { get; set; }
+#nullable restore
+#else
+        public string Password { get; set; }
+#endif
+        /// <summary>The username property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? Username { get; set; }
+#nullable restore
+#else
+        public string Username { get; set; }
+#endif
         /// <summary>
         /// Instantiates a new <see cref="global::LoliaFrpClient.Core.User.Login.LoginPostRequestBody"/> and sets the default values.
         /// </summary>
@@ -39,6 +65,10 @@ namespace LoliaFrpClient.Core.User.Login
         {
             return new Dictionary<string, Action<IParseNode>>
             {
+                { "captcha_token", n => { CaptchaToken = n.GetStringValue(); } },
+                { "keep_login", n => { KeepLogin = n.GetBoolValue(); } },
+                { "password", n => { Password = n.GetStringValue(); } },
+                { "username", n => { Username = n.GetStringValue(); } },
             };
         }
         /// <summary>
@@ -48,6 +78,10 @@ namespace LoliaFrpClient.Core.User.Login
         public virtual void Serialize(ISerializationWriter writer)
         {
             if(ReferenceEquals(writer, null)) throw new ArgumentNullException(nameof(writer));
+            writer.WriteStringValue("captcha_token", CaptchaToken);
+            writer.WriteBoolValue("keep_login", KeepLogin);
+            writer.WriteStringValue("password", Password);
+            writer.WriteStringValue("username", Username);
             writer.WriteAdditionalData(AdditionalData);
         }
     }

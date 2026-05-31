@@ -14,6 +14,8 @@ namespace LoliaFrpClient.Core.User.Tunnel.Item
     {
         /// <summary>Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.</summary>
         public IDictionary<string, object> AdditionalData { get; set; }
+        /// <summary>The auto_tls property</summary>
+        public bool? AutoTls { get; set; }
         /// <summary>The bandwidth_limit property</summary>
         public int? BandwidthLimit { get; set; }
         /// <summary>The client_version property</summary>
@@ -137,6 +139,7 @@ namespace LoliaFrpClient.Core.User.Tunnel.Item
         {
             return new Dictionary<string, Action<IParseNode>>
             {
+                { "auto_tls", n => { AutoTls = n.GetBoolValue(); } },
                 { "bandwidth_limit", n => { BandwidthLimit = n.GetIntValue(); } },
                 { "client_version", n => { ClientVersion = n.GetStringValue(); } },
                 { "created_at", n => { CreatedAt = n.GetStringValue(); } },
@@ -162,6 +165,7 @@ namespace LoliaFrpClient.Core.User.Tunnel.Item
         public virtual void Serialize(ISerializationWriter writer)
         {
             if(ReferenceEquals(writer, null)) throw new ArgumentNullException(nameof(writer));
+            writer.WriteBoolValue("auto_tls", AutoTls);
             writer.WriteIntValue("bandwidth_limit", BandwidthLimit);
             writer.WriteStringValue("client_version", ClientVersion);
             writer.WriteStringValue("created_at", CreatedAt);

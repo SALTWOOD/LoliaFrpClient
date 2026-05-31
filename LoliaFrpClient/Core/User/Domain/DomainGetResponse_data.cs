@@ -17,10 +17,10 @@ namespace LoliaFrpClient.Core.User.Domain
         /// <summary>The domains property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
-        public UntypedNode? Domains { get; set; }
+        public List<global::LoliaFrpClient.Core.User.Domain.DomainGetResponse_data_domains>? Domains { get; set; }
 #nullable restore
 #else
-        public UntypedNode Domains { get; set; }
+        public List<global::LoliaFrpClient.Core.User.Domain.DomainGetResponse_data_domains> Domains { get; set; }
 #endif
         /// <summary>The limit property</summary>
         public int? Limit { get; set; }
@@ -53,7 +53,7 @@ namespace LoliaFrpClient.Core.User.Domain
         {
             return new Dictionary<string, Action<IParseNode>>
             {
-                { "domains", n => { Domains = n.GetObjectValue<UntypedNode>(UntypedNode.CreateFromDiscriminatorValue); } },
+                { "domains", n => { Domains = n.GetCollectionOfObjectValues<global::LoliaFrpClient.Core.User.Domain.DomainGetResponse_data_domains>(global::LoliaFrpClient.Core.User.Domain.DomainGetResponse_data_domains.CreateFromDiscriminatorValue)?.AsList(); } },
                 { "limit", n => { Limit = n.GetIntValue(); } },
                 { "page", n => { Page = n.GetIntValue(); } },
                 { "total", n => { Total = n.GetIntValue(); } },
@@ -66,7 +66,7 @@ namespace LoliaFrpClient.Core.User.Domain
         public virtual void Serialize(ISerializationWriter writer)
         {
             if(ReferenceEquals(writer, null)) throw new ArgumentNullException(nameof(writer));
-            writer.WriteObjectValue<UntypedNode>("domains", Domains);
+            writer.WriteCollectionOfObjectValues<global::LoliaFrpClient.Core.User.Domain.DomainGetResponse_data_domains>("domains", Domains);
             writer.WriteIntValue("limit", Limit);
             writer.WriteIntValue("page", Page);
             writer.WriteIntValue("total", Total);

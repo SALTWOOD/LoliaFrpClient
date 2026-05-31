@@ -14,8 +14,18 @@ namespace LoliaFrpClient.Core.User.Tunnel
     {
         /// <summary>Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.</summary>
         public IDictionary<string, object> AdditionalData { get; set; }
+        /// <summary>The auto_tls property</summary>
+        public bool? AutoTls { get; set; }
         /// <summary>The bandwidth_limit property</summary>
         public int? BandwidthLimit { get; set; }
+        /// <summary>The client_version property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? ClientVersion { get; set; }
+#nullable restore
+#else
+        public string ClientVersion { get; set; }
+#endif
         /// <summary>The custom_domain property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
@@ -44,8 +54,24 @@ namespace LoliaFrpClient.Core.User.Tunnel
 #else
         public string Name { get; set; }
 #endif
+        /// <summary>The node_address property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? NodeAddress { get; set; }
+#nullable restore
+#else
+        public string NodeAddress { get; set; }
+#endif
         /// <summary>The node_id property</summary>
         public int? NodeId { get; set; }
+        /// <summary>The node_name property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? NodeName { get; set; }
+#nullable restore
+#else
+        public string NodeName { get; set; }
+#endif
         /// <summary>The remark property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
@@ -97,13 +123,17 @@ namespace LoliaFrpClient.Core.User.Tunnel
         {
             return new Dictionary<string, Action<IParseNode>>
             {
+                { "auto_tls", n => { AutoTls = n.GetBoolValue(); } },
                 { "bandwidth_limit", n => { BandwidthLimit = n.GetIntValue(); } },
+                { "client_version", n => { ClientVersion = n.GetStringValue(); } },
                 { "custom_domain", n => { CustomDomain = n.GetStringValue(); } },
                 { "id", n => { Id = n.GetIntValue(); } },
                 { "local_ip", n => { LocalIp = n.GetStringValue(); } },
                 { "local_port", n => { LocalPort = n.GetIntValue(); } },
                 { "name", n => { Name = n.GetStringValue(); } },
+                { "node_address", n => { NodeAddress = n.GetStringValue(); } },
                 { "node_id", n => { NodeId = n.GetIntValue(); } },
+                { "node_name", n => { NodeName = n.GetStringValue(); } },
                 { "remark", n => { Remark = n.GetStringValue(); } },
                 { "remote_port", n => { RemotePort = n.GetIntValue(); } },
                 { "status", n => { Status = n.GetStringValue(); } },
@@ -117,13 +147,17 @@ namespace LoliaFrpClient.Core.User.Tunnel
         public virtual void Serialize(ISerializationWriter writer)
         {
             if(ReferenceEquals(writer, null)) throw new ArgumentNullException(nameof(writer));
+            writer.WriteBoolValue("auto_tls", AutoTls);
             writer.WriteIntValue("bandwidth_limit", BandwidthLimit);
+            writer.WriteStringValue("client_version", ClientVersion);
             writer.WriteStringValue("custom_domain", CustomDomain);
             writer.WriteIntValue("id", Id);
             writer.WriteStringValue("local_ip", LocalIp);
             writer.WriteIntValue("local_port", LocalPort);
             writer.WriteStringValue("name", Name);
+            writer.WriteStringValue("node_address", NodeAddress);
             writer.WriteIntValue("node_id", NodeId);
+            writer.WriteStringValue("node_name", NodeName);
             writer.WriteStringValue("remark", Remark);
             writer.WriteIntValue("remote_port", RemotePort);
             writer.WriteStringValue("status", Status);

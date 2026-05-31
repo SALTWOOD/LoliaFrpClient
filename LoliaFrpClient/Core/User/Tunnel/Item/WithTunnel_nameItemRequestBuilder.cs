@@ -120,6 +120,47 @@ namespace LoliaFrpClient.Core.User.Tunnel.Item
             var requestInfo = ToGetRequestInformation(requestConfiguration);
             return await RequestAdapter.SendAsync<global::LoliaFrpClient.Core.User.Tunnel.Item.WithTunnel_nameResponse>(requestInfo, global::LoliaFrpClient.Core.User.Tunnel.Item.WithTunnel_nameResponse.CreateFromDiscriminatorValue, default, cancellationToken).ConfigureAwait(false);
         }
+        /// <summary>
+        /// 编辑隧道信息
+        /// </summary>
+        /// <returns>A <see cref="global::LoliaFrpClient.Core.User.Tunnel.Item.WithTunnel_namePutResponse"/></returns>
+        /// <param name="body">The request body</param>
+        /// <param name="cancellationToken">Cancellation token to use when cancelling requests</param>
+        /// <param name="requestConfiguration">Configuration for the request such as headers, query parameters, and middleware options.</param>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public async Task<global::LoliaFrpClient.Core.User.Tunnel.Item.WithTunnel_namePutResponse?> PutAsWithTunnel_namePutResponseAsync(global::LoliaFrpClient.Core.User.Tunnel.Item.WithTunnel_namePutRequestBody body, Action<RequestConfiguration<DefaultQueryParameters>>? requestConfiguration = default, CancellationToken cancellationToken = default)
+        {
+#nullable restore
+#else
+        public async Task<global::LoliaFrpClient.Core.User.Tunnel.Item.WithTunnel_namePutResponse> PutAsWithTunnel_namePutResponseAsync(global::LoliaFrpClient.Core.User.Tunnel.Item.WithTunnel_namePutRequestBody body, Action<RequestConfiguration<DefaultQueryParameters>> requestConfiguration = default, CancellationToken cancellationToken = default)
+        {
+#endif
+            if(ReferenceEquals(body, null)) throw new ArgumentNullException(nameof(body));
+            var requestInfo = ToPutRequestInformation(body, requestConfiguration);
+            return await RequestAdapter.SendAsync<global::LoliaFrpClient.Core.User.Tunnel.Item.WithTunnel_namePutResponse>(requestInfo, global::LoliaFrpClient.Core.User.Tunnel.Item.WithTunnel_namePutResponse.CreateFromDiscriminatorValue, default, cancellationToken).ConfigureAwait(false);
+        }
+        /// <summary>
+        /// 编辑隧道信息
+        /// </summary>
+        /// <returns>A <see cref="global::LoliaFrpClient.Core.User.Tunnel.Item.WithTunnel_nameResponse"/></returns>
+        /// <param name="body">The request body</param>
+        /// <param name="cancellationToken">Cancellation token to use when cancelling requests</param>
+        /// <param name="requestConfiguration">Configuration for the request such as headers, query parameters, and middleware options.</param>
+        [Obsolete("This method is obsolete. Use PutAsWithTunnel_namePutResponseAsync instead.")]
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public async Task<global::LoliaFrpClient.Core.User.Tunnel.Item.WithTunnel_nameResponse?> PutAsync(global::LoliaFrpClient.Core.User.Tunnel.Item.WithTunnel_namePutRequestBody body, Action<RequestConfiguration<DefaultQueryParameters>>? requestConfiguration = default, CancellationToken cancellationToken = default)
+        {
+#nullable restore
+#else
+        public async Task<global::LoliaFrpClient.Core.User.Tunnel.Item.WithTunnel_nameResponse> PutAsync(global::LoliaFrpClient.Core.User.Tunnel.Item.WithTunnel_namePutRequestBody body, Action<RequestConfiguration<DefaultQueryParameters>> requestConfiguration = default, CancellationToken cancellationToken = default)
+        {
+#endif
+            if(ReferenceEquals(body, null)) throw new ArgumentNullException(nameof(body));
+            var requestInfo = ToPutRequestInformation(body, requestConfiguration);
+            return await RequestAdapter.SendAsync<global::LoliaFrpClient.Core.User.Tunnel.Item.WithTunnel_nameResponse>(requestInfo, global::LoliaFrpClient.Core.User.Tunnel.Item.WithTunnel_nameResponse.CreateFromDiscriminatorValue, default, cancellationToken).ConfigureAwait(false);
+        }
         /// <returns>A <see cref="RequestInformation"/></returns>
         /// <param name="requestConfiguration">Configuration for the request such as headers, query parameters, and middleware options.</param>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
@@ -152,6 +193,25 @@ namespace LoliaFrpClient.Core.User.Tunnel.Item
             requestInfo.Headers.TryAdd("Accept", "application/json");
             return requestInfo;
         }
+        /// <returns>A <see cref="RequestInformation"/></returns>
+        /// <param name="body">The request body</param>
+        /// <param name="requestConfiguration">Configuration for the request such as headers, query parameters, and middleware options.</param>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public RequestInformation ToPutRequestInformation(global::LoliaFrpClient.Core.User.Tunnel.Item.WithTunnel_namePutRequestBody body, Action<RequestConfiguration<DefaultQueryParameters>>? requestConfiguration = default)
+        {
+#nullable restore
+#else
+        public RequestInformation ToPutRequestInformation(global::LoliaFrpClient.Core.User.Tunnel.Item.WithTunnel_namePutRequestBody body, Action<RequestConfiguration<DefaultQueryParameters>> requestConfiguration = default)
+        {
+#endif
+            if(ReferenceEquals(body, null)) throw new ArgumentNullException(nameof(body));
+            var requestInfo = new RequestInformation(Method.PUT, UrlTemplate, PathParameters);
+            requestInfo.Configure(requestConfiguration);
+            requestInfo.Headers.TryAdd("Accept", "application/json");
+            requestInfo.SetContentFromParsable(RequestAdapter, "application/json", body);
+            return requestInfo;
+        }
         /// <summary>
         /// Returns a request builder with the provided arbitrary URL. Using this method means any other path or query parameters are ignored.
         /// </summary>
@@ -175,6 +235,14 @@ namespace LoliaFrpClient.Core.User.Tunnel.Item
         [Obsolete("This class is deprecated. Please use the generic RequestConfiguration class generated by the generator.")]
         [global::System.CodeDom.Compiler.GeneratedCode("Kiota", "1.0.0")]
         public partial class WithTunnel_nameItemRequestBuilderGetRequestConfiguration : RequestConfiguration<DefaultQueryParameters>
+        {
+        }
+        /// <summary>
+        /// Configuration for the request such as headers, query parameters, and middleware options.
+        /// </summary>
+        [Obsolete("This class is deprecated. Please use the generic RequestConfiguration class generated by the generator.")]
+        [global::System.CodeDom.Compiler.GeneratedCode("Kiota", "1.0.0")]
+        public partial class WithTunnel_nameItemRequestBuilderPutRequestConfiguration : RequestConfiguration<DefaultQueryParameters>
         {
         }
     }

@@ -7,10 +7,10 @@ using System.IO;
 using System;
 namespace LoliaFrpClient.Core.User.Tunnel.Item
 {
-    [Obsolete("This class is obsolete. Use WithTunnel_nameGetResponse instead.")]
+    [Obsolete("This class is obsolete. Use WithTunnel_namePutResponse instead.")]
     [global::System.CodeDom.Compiler.GeneratedCode("Kiota", "1.0.0")]
     #pragma warning disable CS1591
-    public partial class WithTunnel_nameResponse : global::LoliaFrpClient.Core.User.Tunnel.Item.WithTunnel_nameGetResponse, IParsable
+    public partial class WithTunnel_nameResponse : global::LoliaFrpClient.Core.User.Tunnel.Item.WithTunnel_namePutResponse, IParsable
     #pragma warning restore CS1591
     {
         /// <summary>

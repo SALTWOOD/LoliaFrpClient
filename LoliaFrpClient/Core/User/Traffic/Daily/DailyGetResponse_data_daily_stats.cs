@@ -23,11 +23,11 @@ namespace LoliaFrpClient.Core.User.Traffic.Daily
         public string Date { get; set; }
 #endif
         /// <summary>The total_in property</summary>
-        public int? TotalIn { get; set; }
+        public long? TotalIn { get; set; }
         /// <summary>The total_out property</summary>
-        public int? TotalOut { get; set; }
+        public long? TotalOut { get; set; }
         /// <summary>The total_traffic property</summary>
-        public int? TotalTraffic { get; set; }
+        public long? TotalTraffic { get; set; }
         /// <summary>The tunnel_stats property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
@@ -62,9 +62,9 @@ namespace LoliaFrpClient.Core.User.Traffic.Daily
             return new Dictionary<string, Action<IParseNode>>
             {
                 { "date", n => { Date = n.GetStringValue(); } },
-                { "total_in", n => { TotalIn = n.GetIntValue(); } },
-                { "total_out", n => { TotalOut = n.GetIntValue(); } },
-                { "total_traffic", n => { TotalTraffic = n.GetIntValue(); } },
+                { "total_in", n => { TotalIn = n.GetLongValue(); } },
+                { "total_out", n => { TotalOut = n.GetLongValue(); } },
+                { "total_traffic", n => { TotalTraffic = n.GetLongValue(); } },
                 { "tunnel_stats", n => { TunnelStats = n.GetCollectionOfPrimitiveValues<string>()?.AsList(); } },
             };
         }
@@ -76,9 +76,9 @@ namespace LoliaFrpClient.Core.User.Traffic.Daily
         {
             if(ReferenceEquals(writer, null)) throw new ArgumentNullException(nameof(writer));
             writer.WriteStringValue("date", Date);
-            writer.WriteIntValue("total_in", TotalIn);
-            writer.WriteIntValue("total_out", TotalOut);
-            writer.WriteIntValue("total_traffic", TotalTraffic);
+            writer.WriteLongValue("total_in", TotalIn);
+            writer.WriteLongValue("total_out", TotalOut);
+            writer.WriteLongValue("total_traffic", TotalTraffic);
             writer.WriteCollectionOfPrimitiveValues<string>("tunnel_stats", TunnelStats);
             writer.WriteAdditionalData(AdditionalData);
         }

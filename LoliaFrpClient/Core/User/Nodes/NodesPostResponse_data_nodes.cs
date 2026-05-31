@@ -22,26 +22,10 @@ namespace LoliaFrpClient.Core.User.Nodes
 #else
         public string AgentVersion { get; set; }
 #endif
-        /// <summary>The available_ports property</summary>
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
-#nullable enable
-        public global::LoliaFrpClient.Core.User.Nodes.NodesPostResponse_data_nodes_available_ports? AvailablePorts { get; set; }
-#nullable restore
-#else
-        public global::LoliaFrpClient.Core.User.Nodes.NodesPostResponse_data_nodes_available_ports AvailablePorts { get; set; }
-#endif
         /// <summary>The bandwidth property</summary>
         public int? Bandwidth { get; set; }
-        /// <summary>The created_at property</summary>
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
-#nullable enable
-        public string? CreatedAt { get; set; }
-#nullable restore
-#else
-        public string CreatedAt { get; set; }
-#endif
-        /// <summary>The frps_port property</summary>
-        public int? FrpsPort { get; set; }
+        /// <summary>The beian_required property</summary>
+        public bool? BeianRequired { get; set; }
         /// <summary>The frps_version property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
@@ -52,22 +36,8 @@ namespace LoliaFrpClient.Core.User.Nodes
 #endif
         /// <summary>The id property</summary>
         public int? Id { get; set; }
-        /// <summary>The ip_address property</summary>
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
-#nullable enable
-        public string? IpAddress { get; set; }
-#nullable restore
-#else
-        public string IpAddress { get; set; }
-#endif
-        /// <summary>The last_seen property</summary>
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
-#nullable enable
-        public string? LastSeen { get; set; }
-#nullable restore
-#else
-        public string LastSeen { get; set; }
-#endif
+        /// <summary>The load property</summary>
+        public double? Load { get; set; }
         /// <summary>The name property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
@@ -78,6 +48,22 @@ namespace LoliaFrpClient.Core.User.Nodes
 #endif
         /// <summary>The need_kyc property</summary>
         public bool? NeedKyc { get; set; }
+        /// <summary>The region_code property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? RegionCode { get; set; }
+#nullable restore
+#else
+        public string RegionCode { get; set; }
+#endif
+        /// <summary>The remark property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? Remark { get; set; }
+#nullable restore
+#else
+        public string Remark { get; set; }
+#endif
         /// <summary>The sponsor property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
@@ -128,16 +114,15 @@ namespace LoliaFrpClient.Core.User.Nodes
             return new Dictionary<string, Action<IParseNode>>
             {
                 { "agent_version", n => { AgentVersion = n.GetStringValue(); } },
-                { "available_ports", n => { AvailablePorts = n.GetObjectValue<global::LoliaFrpClient.Core.User.Nodes.NodesPostResponse_data_nodes_available_ports>(global::LoliaFrpClient.Core.User.Nodes.NodesPostResponse_data_nodes_available_ports.CreateFromDiscriminatorValue); } },
                 { "bandwidth", n => { Bandwidth = n.GetIntValue(); } },
-                { "created_at", n => { CreatedAt = n.GetStringValue(); } },
-                { "frps_port", n => { FrpsPort = n.GetIntValue(); } },
+                { "beian_required", n => { BeianRequired = n.GetBoolValue(); } },
                 { "frps_version", n => { FrpsVersion = n.GetStringValue(); } },
                 { "id", n => { Id = n.GetIntValue(); } },
-                { "ip_address", n => { IpAddress = n.GetStringValue(); } },
-                { "last_seen", n => { LastSeen = n.GetStringValue(); } },
+                { "load", n => { Load = n.GetDoubleValue(); } },
                 { "name", n => { Name = n.GetStringValue(); } },
                 { "need_kyc", n => { NeedKyc = n.GetBoolValue(); } },
+                { "region_code", n => { RegionCode = n.GetStringValue(); } },
+                { "remark", n => { Remark = n.GetStringValue(); } },
                 { "sponsor", n => { Sponsor = n.GetStringValue(); } },
                 { "status", n => { Status = n.GetStringValue(); } },
                 { "supported_protocols", n => { SupportedProtocols = n.GetCollectionOfPrimitiveValues<string>()?.AsList(); } },
@@ -151,16 +136,15 @@ namespace LoliaFrpClient.Core.User.Nodes
         {
             if(ReferenceEquals(writer, null)) throw new ArgumentNullException(nameof(writer));
             writer.WriteStringValue("agent_version", AgentVersion);
-            writer.WriteObjectValue<global::LoliaFrpClient.Core.User.Nodes.NodesPostResponse_data_nodes_available_ports>("available_ports", AvailablePorts);
             writer.WriteIntValue("bandwidth", Bandwidth);
-            writer.WriteStringValue("created_at", CreatedAt);
-            writer.WriteIntValue("frps_port", FrpsPort);
+            writer.WriteBoolValue("beian_required", BeianRequired);
             writer.WriteStringValue("frps_version", FrpsVersion);
             writer.WriteIntValue("id", Id);
-            writer.WriteStringValue("ip_address", IpAddress);
-            writer.WriteStringValue("last_seen", LastSeen);
+            writer.WriteDoubleValue("load", Load);
             writer.WriteStringValue("name", Name);
             writer.WriteBoolValue("need_kyc", NeedKyc);
+            writer.WriteStringValue("region_code", RegionCode);
+            writer.WriteStringValue("remark", Remark);
             writer.WriteStringValue("sponsor", Sponsor);
             writer.WriteStringValue("status", Status);
             writer.WriteCollectionOfPrimitiveValues<string>("supported_protocols", SupportedProtocols);
