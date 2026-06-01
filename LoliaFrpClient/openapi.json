@@ -467,10 +467,10 @@
                           "type": "boolean"
                         },
                         "traffic_limit": {
-                          "type": "integer"
+                          "$ref": "#/components/schemas/long"
                         },
                         "traffic_used": {
-                          "type": "integer"
+                          "$ref": "#/components/schemas/long"
                         },
                         "username": {
                           "type": "string"
