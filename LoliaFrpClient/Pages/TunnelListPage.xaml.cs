@@ -334,6 +334,22 @@ public sealed partial class TunnelListPage : Page, INotifyPropertyChanged
 
     private async Task<bool> EnableTunnelAsync(TunnelViewModel tunnel)
     {
+        if (ServiceLocator.FrpcManager.GetInstallStatus(null) == FrpcInstallStatus.NotInstalled)
+        {
+            var result = await DialogManager.Instance.ShowConfirmAsync(
+                "未安装 frpc",
+                "尚未安装 frpc 客户端，无法启动隧道。是否前往设置页面安装？",
+                "前往设置"
+                );
+
+            if (result == ContentDialogResult.Primary)
+            {
+                MainWindow.NavigateTo<Settings>();
+            }
+
+            return false;
+        }
+
         try
         {
             await _tunnelService.StartTunnelAsync(tunnel);
