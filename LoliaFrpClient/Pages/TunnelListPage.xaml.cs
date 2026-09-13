@@ -3,10 +3,10 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
+using LoliaFrpClient.Constants;
 using LoliaFrpClient.Controls;
 using LoliaFrpClient.Models;
 using LoliaFrpClient.Services;
-using Microsoft.UI.Text;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
@@ -19,7 +19,7 @@ namespace LoliaFrpClient.Pages;
 public sealed partial class TunnelListPage : Page, INotifyPropertyChanged
 {
     private readonly TunnelService _tunnelService = new();
-    private string _filterType = "all";
+    private string _filterType = TunnelType.All;
     private string _searchText = string.Empty;
     private ObservableCollection<TunnelViewModel> _tunnels = new();
 
@@ -43,9 +43,9 @@ public sealed partial class TunnelListPage : Page, INotifyPropertyChanged
     public ObservableCollection<TunnelViewModel> FilteredTunnels { get; } = new();
 
     public int TotalTunnels => Tunnels.Count;
-    public int ActiveTunnels => Tunnels.Count(t => t.Status == "active");
-    public int InactiveTunnels => Tunnels.Count(t => t.Status == "inactive");
-    public int DisabledTunnels => Tunnels.Count(t => t.Status == "disabled");
+    public int ActiveTunnels => Tunnels.Count(t => t.Status == TunnelStatus.Active);
+    public int InactiveTunnels => Tunnels.Count(t => t.Status == TunnelStatus.Inactive);
+    public int DisabledTunnels => Tunnels.Count(t => t.Status == TunnelStatus.Disabled);
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -61,23 +61,11 @@ public sealed partial class TunnelListPage : Page, INotifyPropertyChanged
 
     private async Task LoadTunnelsAsync()
     {
-        SetLoadingState(true);
+        await PageLoader.RunAsync(SetLoadingState,
+            async () => ReplaceTunnels(await _tunnelService.GetTunnelsAsync()),
+            "加载隧道列表失败");
 
-        try
-        {
-            ReplaceTunnels(await _tunnelService.GetTunnelsAsync());
-        }
-        catch (Exception ex)
-        {
-            if (AuthErrorHelper.ShouldSilence(ex)) return;
-
-            await ShowErrorDialogAsync("加载隧道列表失败", ex.Message);
-        }
-        finally
-        {
-            SetLoadingState(false);
-            UpdateListState();
-        }
+        UpdateListState();
     }
 
     private void UpdateFilteredTunnels()
@@ -161,7 +149,7 @@ public sealed partial class TunnelListPage : Page, INotifyPropertyChanged
             return;
         }
 
-        _filterType = selectedItem.Tag?.ToString() ?? "all";
+        _filterType = selectedItem.Tag?.ToString() ?? TunnelType.All;
         UpdateFilteredTunnels();
     }
 
@@ -193,7 +181,7 @@ public sealed partial class TunnelListPage : Page, INotifyPropertyChanged
         var dialog = new ContentDialog
         {
             Title = "隧道详情",
-            Content = CreateTunnelDetailContent(tunnel),
+            Content = TunnelDetailContent.Create(tunnel),
             CloseButtonText = "关闭",
             PrimaryButtonText = "编辑",
             SecondaryButtonText = "删除"
@@ -243,56 +231,6 @@ public sealed partial class TunnelListPage : Page, INotifyPropertyChanged
         }
     }
 
-    private UIElement CreateTunnelDetailContent(TunnelViewModel tunnel)
-    {
-        var stackPanel = new StackPanel { Spacing = 12 };
-
-        var infoGrid = new Grid { ColumnSpacing = 12, RowSpacing = 8 };
-        infoGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Auto) });
-        infoGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-
-        for (var i = 0; i < 8; i++)
-        {
-            infoGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-        }
-
-        var row = 0;
-        AddInfoRow(infoGrid, row++, "名称:", tunnel.Name);
-        AddInfoRow(infoGrid, row++, "类型:", tunnel.TypeDisplayText);
-        AddInfoRow(infoGrid, row++, "状态:", tunnel.StatusDisplayText);
-        AddInfoRow(infoGrid, row++, "备注:", tunnel.Remark);
-        AddInfoRow(infoGrid, row++, "自定义域名:", tunnel.CustomDomain);
-        AddInfoRow(infoGrid, row++, "本地地址:", $"{tunnel.LocalIp}:{tunnel.LocalPort}");
-        AddInfoRow(infoGrid, row++, "远程端口:", tunnel.RemotePort.ToString());
-        AddInfoRow(infoGrid, row, "节点 ID:", tunnel.NodeId.ToString());
-
-        stackPanel.Children.Add(infoGrid);
-        return stackPanel;
-    }
-
-    private void AddInfoRow(Grid grid, int row, string label, string value)
-    {
-        var labelBlock = new TextBlock
-        {
-            Text = label,
-            VerticalAlignment = VerticalAlignment.Center,
-            FontWeight = FontWeights.SemiBold
-        };
-        Grid.SetRow(labelBlock, row);
-        Grid.SetColumn(labelBlock, 0);
-
-        var valueBlock = new TextBlock
-        {
-            Text = value,
-            VerticalAlignment = VerticalAlignment.Center
-        };
-        Grid.SetRow(valueBlock, row);
-        Grid.SetColumn(valueBlock, 1);
-
-        grid.Children.Add(labelBlock);
-        grid.Children.Add(valueBlock);
-    }
-
     private async Task ShowErrorDialogAsync(string title, string message)
     {
         await DialogManager.Instance.ShowErrorAsync(title, message);
@@ -334,66 +272,52 @@ public sealed partial class TunnelListPage : Page, INotifyPropertyChanged
 
     private async Task<bool> EnableTunnelAsync(TunnelViewModel tunnel)
     {
-        if (ServiceLocator.FrpcManager.GetInstallStatus(null) == FrpcInstallStatus.NotInstalled)
-        {
-            var result = await DialogManager.Instance.ShowConfirmAsync(
-                "未安装 frpc",
-                "尚未安装 frpc 客户端，无法启动隧道。是否前往设置页面安装？",
-                "前往设置"
-                );
+        var result = await _tunnelService.TryEnableAsync(tunnel);
 
-            if (result == ContentDialogResult.Primary)
-            {
-                MainWindow.NavigateTo<Settings>();
-            }
+        switch (result.Kind)
+        {
+            case TunnelActionResultKind.Success:
+                return true;
 
-            return false;
-        }
+            case TunnelActionResultKind.FrpcNotInstalled:
+                var confirm = await DialogManager.Instance.ShowConfirmAsync(
+                    "未安装 frpc",
+                    "尚未安装 frpc 客户端，无法启动隧道。是否前往设置页面安装？",
+                    "前往设置");
 
-        try
-        {
-            await _tunnelService.StartTunnelAsync(tunnel);
-            return true;
-        }
-        catch (InvalidOperationException)
-        {
-            await ShowErrorDialogAsync("启用失败", "无法获取隧道连接密钥 (Token)");
-            return false;
-        }
-        catch (Exception ex)
-        {
-            if (AuthErrorHelper.ShouldSilence(ex))
-            {
+                if (confirm == ContentDialogResult.Primary)
+                {
+                    MainWindow.NavigateTo<Settings>();
+                }
+
                 return false;
-            }
 
-            await ShowErrorDialogAsync("启用失败", ex.Message);
-            return false;
+            case TunnelActionResultKind.TokenUnavailable:
+                await ShowErrorDialogAsync("启用失败", "无法获取隧道连接密钥 (Token)");
+                return false;
+
+            case TunnelActionResultKind.Silent:
+                return false;
+
+            default:
+                await ShowErrorDialogAsync("启用失败", result.ErrorMessage ?? "未知错误");
+                return false;
         }
     }
 
     private async Task<bool> DisableTunnelAsync(TunnelViewModel tunnel)
     {
-        try
-        {
-            _tunnelService.StopTunnel(tunnel);
-            return true;
-        }
-        catch (Exception ex)
-        {
-            await ShowErrorDialogAsync("禁用失败", ex.Message);
-            return false;
-        }
+        var result = _tunnelService.TryDisable(tunnel);
+
+        if (result.IsSuccess) return true;
+
+        await ShowErrorDialogAsync("禁用失败", result.ErrorMessage ?? "未知错误");
+        return false;
     }
 
     private void ReplaceTunnels(System.Collections.Generic.IEnumerable<TunnelViewModel> tunnels)
     {
-        Tunnels.Clear();
-
-        foreach (var tunnel in tunnels)
-        {
-            Tunnels.Add(tunnel);
-        }
+        Tunnels.ReplaceWith(tunnels);
 
         UpdateFilteredTunnels();
         UpdateStatistics();

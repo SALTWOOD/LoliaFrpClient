@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
+using LoliaFrpClient.Constants;
 using LoliaFrpClient.Core;
 using Microsoft.Kiota.Abstractions;
 using Microsoft.Kiota.Abstractions.Authentication;
@@ -14,21 +15,32 @@ using Microsoft.Kiota.Http.HttpClientLibrary;
 
 namespace LoliaFrpClient.Services;
 
-public class ApiClientProvider
+public class ApiClientProvider : IDisposable
 {
     private static readonly Lazy<ApiClientProvider> _instance = new(() => new ApiClientProvider());
     private static readonly HttpRequestOptionsKey<bool> RetryAfterRefreshOptionKey = new("RetryAfterRefresh");
     private readonly SettingsStorage _settings = SettingsStorage.Instance;
+    private readonly object _clientLock = new();
     private ApiClient? _apiClient;
+    private HttpClient? _httpClient;
 
     private ApiClientProvider() { InitializeClient(); }
     public static ApiClientProvider Instance => _instance.Value;
 
-    public ApiClient Client => _apiClient ??= InitializeClient();
+    public ApiClient Client
+    {
+        get
+        {
+            lock (_clientLock)
+            {
+                return _apiClient ??= InitializeClient();
+            }
+        }
+    }
 
     private ApiClient InitializeClient()
     {
-        var baseUrl = "https://api.lolia.link/api/v1";
+        var baseUrl = AppConstants.ApiBaseUrl;
 
         IAuthenticationProvider authProvider = !string.IsNullOrEmpty(_settings.OAuthToken)
             ? new BearerTokenAuthenticationProvider(_settings)
@@ -46,10 +58,40 @@ public class ApiClientProvider
             BaseUrl = baseUrl
         };
 
+        // 记录 HttpClient 以便在重建时释放，避免连接池与 handler 泄漏
+        _httpClient = httpClient;
         return _apiClient = new ApiClient(adapter);
     }
 
-    public void ReinitializeClient() => InitializeClient();
+    /// <summary>
+    ///     重建客户端。旧的 HttpClient 必须释放，否则每次登录/登出都会泄漏
+    ///     一整套 handler 链与底层连接池。
+    /// </summary>
+    public void ReinitializeClient()
+    {
+        lock (_clientLock)
+        {
+            _apiClient = null;
+
+            var previous = _httpClient;
+            _httpClient = null;
+            previous?.Dispose();
+
+            InitializeClient();
+        }
+    }
+
+    public void Dispose()
+    {
+        lock (_clientLock)
+        {
+            _apiClient = null;
+            _httpClient?.Dispose();
+            _httpClient = null;
+        }
+
+        GC.SuppressFinalize(this);
+    }
 
     /// <summary>
     /// 自定义拦截器：处理 401 状态码
@@ -82,10 +124,12 @@ public class ApiClientProvider
             }
 
             var expiredAccessToken = settings.OAuthToken;
+            var lockTaken = false;
 
             try
             {
                 await RefreshLock.WaitAsync(cancellationToken);
+                lockTaken = true;
 
                 if (HasTokenChanged(request, expiredAccessToken, settings.OAuthToken))
                 {
@@ -111,10 +155,8 @@ public class ApiClientProvider
             }
             finally
             {
-                if (RefreshLock.CurrentCount == 0)
-                {
-                    RefreshLock.Release();
-                }
+                // 仅在实际取得锁时释放，避免异常路径下多释放导致信号量计数失衡。
+                if (lockTaken) RefreshLock.Release();
             }
         }
 

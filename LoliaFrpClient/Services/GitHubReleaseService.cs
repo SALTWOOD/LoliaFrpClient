@@ -6,6 +6,7 @@ using System.Net.Http.Json;
 using System.Runtime.InteropServices;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using LoliaFrpClient.Constants;
 
 namespace LoliaFrpClient.Services;
 
@@ -52,8 +53,8 @@ public class GitHubReleaseService
 
         (string owner, string repo) = type switch
         {
-            AssetType.Client => ("SALTWOOD", "LoliaFrpClient"),
-            AssetType.Frpc => ("Lolia-FRP", "lolia-frp"),
+            AssetType.Client => (AppConstants.ClientReleaseOwner, AppConstants.ClientReleaseRepo),
+            AssetType.Frpc => (AppConstants.FrpcReleaseOwner, AppConstants.FrpcReleaseRepo),
             _ => throw new ArgumentOutOfRangeException(nameof(type))
         };
         var template = SettingsStorage.Instance.DownloadUrlTemplate;

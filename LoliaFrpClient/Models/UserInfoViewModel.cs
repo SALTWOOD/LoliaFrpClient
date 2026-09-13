@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel;
 using System.Globalization;
 using System.Runtime.CompilerServices;
+using LoliaFrpClient.Services;
 
 namespace LoliaFrpClient.Models;
 
@@ -10,20 +11,17 @@ namespace LoliaFrpClient.Models;
 /// </summary>
 public class UserInfoViewModel : INotifyPropertyChanged
 {
-    private string _avatar = string.Empty;
-    private int _bandwidthLimit;
     private string _createdAt = string.Empty;
     private string _email = string.Empty;
-    private bool _hasKyc;
     private int _id;
     private bool _isBaned;
     private string _kycStatus = string.Empty;
     private int _maxTunnelCount;
     private string _role = string.Empty;
-    private bool _todayChecked;
     private long _trafficLimit;
     private long _trafficUsed;
     private string _username = string.Empty;
+    private int _bandwidthLimit;
 
     public int Id
     {
@@ -51,16 +49,6 @@ public class UserInfoViewModel : INotifyPropertyChanged
         set
         {
             _email = value;
-            OnPropertyChanged();
-        }
-    }
-
-    public string Avatar
-    {
-        get => _avatar;
-        set
-        {
-            _avatar = value;
             OnPropertyChanged();
         }
     }
@@ -147,16 +135,6 @@ public class UserInfoViewModel : INotifyPropertyChanged
         }
     }
 
-    public bool HasKyc
-    {
-        get => _hasKyc;
-        set
-        {
-            _hasKyc = value;
-            OnPropertyChanged();
-        }
-    }
-
     public bool IsBaned
     {
         get => _isBaned;
@@ -166,16 +144,6 @@ public class UserInfoViewModel : INotifyPropertyChanged
             OnPropertyChanged();
             OnPropertyChanged(nameof(IsBanedText));
             OnPropertyChanged(nameof(IsBanedColor));
-        }
-    }
-
-    public bool TodayChecked
-    {
-        get => _todayChecked;
-        set
-        {
-            _todayChecked = value;
-            OnPropertyChanged();
         }
     }
 
@@ -192,17 +160,17 @@ public class UserInfoViewModel : INotifyPropertyChanged
     /// <summary>
     ///     格式化流量限制显示（人类可读格式）
     /// </summary>
-    public string TrafficLimitFormatted => Utils.FormatBytes(TrafficLimit);
+    public string TrafficLimitFormatted => ByteFormatter.Format(TrafficLimit);
 
     /// <summary>
     ///     格式化已用流量显示（人类可读格式）
     /// </summary>
-    public string TrafficUsedFormatted => Utils.FormatBytes(TrafficUsed);
+    public string TrafficUsedFormatted => ByteFormatter.Format(TrafficUsed);
 
     /// <summary>
     ///     格式化剩余流量显示（人类可读格式）
     /// </summary>
-    public string TrafficRemainingFormatted => Utils.FormatBytes(TrafficRemaining);
+    public string TrafficRemainingFormatted => ByteFormatter.Format(TrafficRemaining);
 
     /// <summary>
     ///     格式化创建时间显示（人类可读格式）

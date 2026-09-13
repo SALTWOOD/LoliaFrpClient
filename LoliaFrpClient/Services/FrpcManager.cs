@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Formats.Tar;
 using System.IO;
@@ -20,18 +19,108 @@ namespace LoliaFrpClient.Services;
 
 public enum FrpcInstallStatus { NotInstalled, Installed, Outdated }
 
-public record FrpcProcessInfo(int TunnelId, string TunnelName, string? TunnelRemark, Process Process)
+/// <summary>
+///     有界环形日志缓冲。stdout 与 stderr 的读取线程会并发写入，
+///     因此所有访问都在内部加锁，且不再依赖非线程安全的 ObservableCollection。
+/// </summary>
+public sealed class BoundedLogBuffer
 {
-    public ObservableCollection<string> Logs { get; } = [];
+    private readonly string?[] _items;
+    private readonly object _sync = new();
+    private int _next;
+    private int _total;
+
+    public BoundedLogBuffer(int capacity)
+    {
+        if (capacity <= 0) throw new ArgumentOutOfRangeException(nameof(capacity));
+        _items = new string?[capacity];
+    }
+
+    public int Count
+    {
+        get
+        {
+            lock (_sync)
+            {
+                return Math.Min(_total, _items.Length);
+            }
+        }
+    }
+
+    internal void Add(string item)
+    {
+        lock (_sync)
+        {
+            _items[_next] = item;
+            _next = (_next + 1) % _items.Length;
+            _total++;
+        }
+    }
+
+    /// <summary>
+    ///     返回按时间升序排列的日志快照（最新一条在末尾）。
+    /// </summary>
+    public IReadOnlyList<string> Snapshot()
+    {
+        lock (_sync)
+        {
+            if (_total == 0) return [];
+
+            if (_total < _items.Length)
+            {
+                var head = new string[_total];
+                Array.Copy(_items, head, _total);
+                return head;
+            }
+
+            var tail = new string[_items.Length];
+            var tailCount = _items.Length - _next; // _next 处是最早的一条
+            Array.Copy(_items, _next, tail, 0, tailCount);
+            Array.Copy(_items, 0, tail, tailCount, _next);
+            return tail;
+        }
+    }
+
+    internal void Clear()
+    {
+        lock (_sync)
+        {
+            Array.Clear(_items);
+            _next = 0;
+            _total = 0;
+        }
+    }
+}
+
+public sealed class FrpcProcessInfo
+{
+    private const int MaxLogLines = 500;
+    private readonly BoundedLogBuffer _logs;
+
+    public FrpcProcessInfo(int tunnelId, string tunnelName, string? tunnelRemark, Process process)
+    {
+        TunnelId = tunnelId;
+        TunnelName = tunnelName;
+        TunnelRemark = tunnelRemark;
+        Process = process;
+        _logs = new BoundedLogBuffer(MaxLogLines);
+    }
+
+    public int TunnelId { get; }
+    public string TunnelName { get; }
+    public string? TunnelRemark { get; }
+    public Process Process { get; }
+
     public DateTime StartTime { get; init; } = DateTime.Now;
     public bool IsRunning { get; private set; } = true;
-    public IEnumerable<string> LogOutput => Logs;
+    public int LogCount => _logs.Count;
+
+    public IReadOnlyList<string> GetLogSnapshot() => _logs.Snapshot();
 
     public void AddLog(string message)
     {
         var line = $"[{DateTime.Now:HH:mm:ss}] {message}";
-        Logs.Add(line);
-        if (Logs.Count > 500) Logs.RemoveAt(0);
+        _logs.Add(line);
     }
 
     public void MarkAsExited() => IsRunning = false;
@@ -170,6 +259,17 @@ public partial class FrpcManager : IDisposable
         var proc = new Process { StartInfo = startInfo, EnableRaisingEvents = true };
         var info = new FrpcProcessInfo(id, name, remark, proc);
 
+        // 订阅时捕获 info 而非局部变量，并在退出后解除订阅，
+        // 避免在同一 Process 上重复挂载处理器（导致句柄/日志累积）。
+        void OnExited(object? sender, EventArgs e)
+        {
+            proc.Exited -= OnExited;
+            info.MarkAsExited();
+            _processes.TryRemove(id, out _); // 仅在仍指向本次启动的实例时才移除
+            TunnelProcessExited?.Invoke(this, info);
+            proc.Dispose();
+        }
+
         proc.OutputDataReceived += (_, e) =>
         {
             if (e.Data != null)
@@ -186,18 +286,14 @@ public partial class FrpcManager : IDisposable
                 TunnelProcessLogAdded?.Invoke(this, (id, $"[ERR] {e.Data}"));
             }
         };
-        proc.Exited += (_, _) =>
-        {
-            info.MarkAsExited();
-            _processes.TryRemove(id, out var removed);
-            TunnelProcessExited?.Invoke(this, info);
-        };
+        proc.Exited += OnExited;
 
         proc.Start();
         AssignToJob(proc);
         proc.BeginOutputReadLine();
         proc.BeginErrorReadLine();
-        
+
+        if (_processes.TryGetValue(id, out var stale) && !ReferenceEquals(stale, info)) stale.Process.Dispose();
         _processes[id] = info;
         TunnelProcessStarted?.Invoke(this, info);
     }
@@ -217,6 +313,8 @@ public partial class FrpcManager : IDisposable
         }
         finally
         {
+            // Dispose 会释放 Process 句柄，并（在 EnableRaisingEvents 下）停止同步的 Exited 事件，
+            // 从而避免自然退出路径与本次停止重复处理。重复 Dispose 是安全的。
             info.Process.Dispose();
         }
     }
@@ -232,9 +330,12 @@ public partial class FrpcManager : IDisposable
     public void Restart(int tunnelId)
     {
         if (!_processes.TryGetValue(tunnelId, out var info)) return;
+        // 必须在 Stop 之前读取：Stop 会 Dispose 掉 Process，之后访问 StartInfo 会抛异常。
         var args = info.Process.StartInfo.Arguments;
+        var name = info.TunnelName;
+        var remark = info.TunnelRemark;
         Stop(tunnelId);
-        Start(tunnelId, info.TunnelName, args, info.TunnelRemark);
+        Start(tunnelId, name, args, remark);
     }
 
     #endregion

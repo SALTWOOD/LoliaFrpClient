@@ -2,6 +2,7 @@ using System;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using LoliaFrpClient.Constants;
 using Windows.ApplicationModel;
 
 namespace LoliaFrpClient.Services;
@@ -18,8 +19,8 @@ public record ClientUpdateResult(
 
 public static class ClientUpdateService
 {
-    private const string Owner = "SALTWOOD";
-    private const string Repo = "LoliaFrpClient";
+    private const string Owner = AppConstants.ClientReleaseOwner;
+    private const string Repo = AppConstants.ClientReleaseRepo;
 
     public static string GetCurrentVersion()
     {
@@ -49,7 +50,7 @@ public static class ClientUpdateService
                 HasUpdate: latestVersion > currentVersion,
                 CurrentVersion: $"v{currentStr}",
                 LatestVersion: release.TagName,
-                ReleaseUrl: "https://github.com/SALTWOOD/LoliaFrpClient/releases/latest", // Or release.HtmlUrl
+                ReleaseUrl: $"https://github.com/{Owner}/{Repo}/releases/latest",
                 ReleaseNotes: release.Body,
                 PublishedAt: DateTime.Now, // Use release.PublishedAt if added to record
                 DownloadUrl: GitHubReleaseService.GetDownloadUrl(release, AssetType.Client)

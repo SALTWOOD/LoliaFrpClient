@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using LoliaFrpClient.Services;
 
 namespace LoliaFrpClient.Models;
 
@@ -76,17 +77,17 @@ public class TunnelTrafficViewModel : INotifyPropertyChanged
     /// <summary>
     ///     格式化的入站流量
     /// </summary>
-    public string FormattedInbound => Utils.FormatBytes(InboundBytes);
+    public string FormattedInbound => ByteFormatter.Format(InboundBytes);
 
     /// <summary>
     ///     格式化的出站流量
     /// </summary>
-    public string FormattedOutbound => Utils.FormatBytes(OutboundBytes);
+    public string FormattedOutbound => ByteFormatter.Format(OutboundBytes);
 
     /// <summary>
     ///     格式化的总流量
     /// </summary>
-    public string FormattedTotal => Utils.FormatBytes(TotalBytes);
+    public string FormattedTotal => ByteFormatter.Format(TotalBytes);
 
     public event PropertyChangedEventHandler? PropertyChanged;
 

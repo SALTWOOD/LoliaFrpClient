@@ -72,23 +72,9 @@ public sealed partial class UserInfoPage : Page, INotifyPropertyChanged
 
     private async Task LoadDashboardAsync()
     {
-        SetLoadingState(true);
-
-        try
-        {
-            var dashboard = await _userInfoService.GetDashboardDataAsync();
-            ApplyDashboardData(dashboard);
-        }
-        catch (Exception ex)
-        {
-            if (AuthErrorHelper.ShouldSilence(ex)) return;
-
-            await ShowErrorDialogAsync("加载用户数据失败", ex.Message);
-        }
-        finally
-        {
-            SetLoadingState(false);
-        }
+        await PageLoader.RunAsync(SetLoadingState,
+            async () => ApplyDashboardData(await _userInfoService.GetDashboardDataAsync()),
+            "加载用户数据失败");
     }
 
     private void ApplyDashboardData(UserDashboardData dashboard)
@@ -98,19 +84,10 @@ public sealed partial class UserInfoPage : Page, INotifyPropertyChanged
         OnPropertyChanged(nameof(BanedBrush));
         OnPropertyChanged(nameof(KycStatusBrush));
 
-        ReplaceCollection(DailyTraffics, dashboard.DailyTraffics);
-        ReplaceCollection(TunnelTraffics, dashboard.TunnelTraffics);
+        DailyTraffics.ReplaceWith(dashboard.DailyTraffics);
+        TunnelTraffics.ReplaceWith(dashboard.TunnelTraffics);
     }
 
-    private static void ReplaceCollection<T>(ObservableCollection<T> target, IEnumerable<T> items)
-    {
-        target.Clear();
-
-        foreach (var item in items)
-        {
-            target.Add(item);
-        }
-    }
 
     private static Brush ResolveBrush(string resourceKey, Color fallbackColor)
     {
@@ -126,10 +103,5 @@ public sealed partial class UserInfoPage : Page, INotifyPropertyChanged
     private async void OnRefreshClick(object sender, RoutedEventArgs e)
     {
         await LoadDashboardAsync();
-    }
-
-    private async Task ShowErrorDialogAsync(string title, string message)
-    {
-        await DialogManager.Instance.ShowErrorAsync(title, message);
     }
 }

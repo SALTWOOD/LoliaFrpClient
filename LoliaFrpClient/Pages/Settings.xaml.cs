@@ -12,9 +12,8 @@ namespace LoliaFrpClient.Pages;
 public sealed partial class Settings : Page
 {
     private readonly SettingsStorage _settings = SettingsStorage.Instance;
-    private readonly FrpcManager _frpcManager = ServiceLocator.FrpcManager;
+    private readonly FrpcInstallationService _frpcInstallation = new(ServiceLocator.FrpcManager);
     private ClientUpdateResult? _updateResult;
-    private GitHubRelease? _latestFrpcRelease;
 
     public Settings()
     {
@@ -168,17 +167,18 @@ public sealed partial class Settings : Page
 
     private void UpdateFrpcStatus()
     {
-        CurrentVersionText.Text = _frpcManager.InstalledVersion ?? "未安装";
-        var status = _frpcManager.GetInstallStatus(_latestFrpcRelease?.TagName);
-        
-        InstallStatusText.Text = status switch {
+        CurrentVersionText.Text = _frpcInstallation.InstalledVersion ?? "未安装";
+
+        var status = _frpcInstallation.InstallStatus;
+        InstallStatusText.Text = status switch
+        {
             FrpcInstallStatus.NotInstalled => "未安装",
             FrpcInstallStatus.Installed => "已安装",
             FrpcInstallStatus.Outdated => "需要更新",
             _ => "未知"
         };
-        ProcessStatusText.Text = _frpcManager.IsAnyProcessRunning ? "运行中" : "未运行";
-        
+        ProcessStatusText.Text = _frpcInstallation.IsAnyProcessRunning ? "运行中" : "未运行";
+
         InstallButton.IsEnabled = status == FrpcInstallStatus.NotInstalled;
         UpdateButton.IsEnabled = status == FrpcInstallStatus.Outdated;
         UninstallButton.IsEnabled = status != FrpcInstallStatus.NotInstalled;
@@ -192,8 +192,9 @@ public sealed partial class Settings : Page
         {
             RefreshVersionButtonState(false);
             LatestVersionText.Text = "检查中...";
-            _latestFrpcRelease = await GitHubReleaseService.GetLatestReleaseAsync("Lolia-FRP", "lolia-frp");
-            LatestVersionText.Text = _latestFrpcRelease?.TagName ?? "获取失败";
+
+            var release = await _frpcInstallation.RefreshLatestReleaseAsync();
+            LatestVersionText.Text = release?.TagName ?? "获取失败";
             UpdateFrpcStatus();
         }
         catch (Exception ex) { await ShowMsg($"获取版本失败: {ex.Message}"); }
@@ -205,19 +206,17 @@ public sealed partial class Settings : Page
 
     private async Task HandleFrpcAction(bool isUpdate)
     {
-        if (_latestFrpcRelease == null) return;
-
-        var url = GitHubReleaseService.GetDownloadUrl(_latestFrpcRelease, AssetType.Frpc);
-        if (url == null) { await ShowMsg("无适用当前平台的包"); return; }
+        if (_frpcInstallation.LatestRelease == null) return;
 
         try
         {
             SetFrpcActionState(true);
-            var progress = new Progress<double>(v => UpdateDownloadProgress(v));
+            var progress = new Progress<double>(UpdateDownloadProgress);
 
-            var success = await _frpcManager.InstallAsync(url, _latestFrpcRelease.TagName, progress);
-            if (success) UpdateFrpcStatus();
-            await ShowMsg(success ? (isUpdate ? "更新成功" : "安装成功") : "操作失败");
+            var error = await _frpcInstallation.TryInstallLatestAsync(progress);
+            if (error == null) UpdateFrpcStatus();
+
+            await ShowMsg(error ?? (isUpdate ? "更新成功" : "安装成功"));
         }
         catch (Exception ex) { await ShowMsg($"错误: {ex.Message}"); }
         finally { SetFrpcActionState(false); }
@@ -227,7 +226,7 @@ public sealed partial class Settings : Page
     {
         if (await DialogManager.Instance.ShowConfirmAsync("确认", "确定卸载 frpc 吗？") == ContentDialogResult.Primary)
         {
-            _frpcManager.UninstallFrpc();
+            _frpcInstallation.Uninstall();
             UpdateFrpcStatus();
         }
     }

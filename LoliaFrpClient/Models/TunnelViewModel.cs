@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using LoliaFrpClient.Constants;
 using Microsoft.UI;
 using Microsoft.UI.Xaml.Media;
 
@@ -174,9 +175,9 @@ public class TunnelViewModel : INotifyPropertyChanged
         {
             return Status switch
             {
-                "active" => "运行中",
-                "inactive" => "未激活",
-                "disabled" => "已禁用",
+                TunnelStatus.Active => "运行中",
+                TunnelStatus.Inactive => "未激活",
+                TunnelStatus.Disabled => "已禁用",
                 _ => Status
             };
         }
@@ -191,9 +192,9 @@ public class TunnelViewModel : INotifyPropertyChanged
         {
             return Status switch
             {
-                "active" => new SolidColorBrush(Colors.Green),
-                "inactive" => new SolidColorBrush(Colors.Gray),
-                "disabled" => new SolidColorBrush(Colors.Red),
+                TunnelStatus.Active => new SolidColorBrush(Colors.Green),
+                TunnelStatus.Inactive => new SolidColorBrush(Colors.Gray),
+                TunnelStatus.Disabled => new SolidColorBrush(Colors.Red),
                 _ => new SolidColorBrush(Colors.Gray)
             };
         }
@@ -208,19 +209,14 @@ public class TunnelViewModel : INotifyPropertyChanged
         {
             return Type switch
             {
-                "tcp" => "TCP",
-                "udp" => "UDP",
-                "http" => "HTTP",
-                "https" => "HTTPS",
+                TunnelType.Tcp => "TCP",
+                TunnelType.Udp => "UDP",
+                TunnelType.Http => "HTTP",
+                TunnelType.Https => "HTTPS",
                 _ => Type.ToUpper()
             };
         }
     }
-
-    /// <summary>
-    ///     是否有备注
-    /// </summary>
-    public bool HasRemark => !string.IsNullOrWhiteSpace(Remark);
 
     /// <summary>
     ///     ID 显示文本

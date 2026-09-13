@@ -20,36 +20,7 @@ internal static class AuthErrorHelper
     {
         for (var current = exception; current != null; current = current.InnerException)
         {
-            if (HasUnauthorizedStatusCode(current))
-            {
-                return true;
-            }
-
-            if (current is ApiException && current.Message.Contains("401", StringComparison.Ordinal))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private static bool HasUnauthorizedStatusCode(Exception exception)
-    {
-        foreach (var propertyName in new[] { "ResponseStatusCode", "StatusCode" })
-        {
-            var property = exception.GetType().GetProperty(propertyName);
-            if (property?.GetValue(exception) is HttpStatusCode httpStatusCode)
-            {
-                return httpStatusCode == HttpStatusCode.Unauthorized;
-            }
-
-            if (property?.GetValue(exception) is int numericStatusCode)
-            {
-                return numericStatusCode == (int)HttpStatusCode.Unauthorized;
-            }
-
-            if (property?.GetValue(exception) is string stringStatusCode && stringStatusCode == "401")
+            if (current is ApiException apiException && apiException.ResponseStatusCode == (int)HttpStatusCode.Unauthorized)
             {
                 return true;
             }

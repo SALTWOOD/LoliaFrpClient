@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using LoliaFrpClient.Constants;
 using LoliaFrpClient.Core.User.Tunnel;
 using LoliaFrpClient.Models;
 using LoliaFrpClient.Services;
@@ -87,7 +88,7 @@ public sealed partial class CreateTunnelDialog : ContentDialog
         {
             var type = selectedItem.Tag?.ToString();
             // HTTP/HTTPS需要显示自定义域名
-            CustomDomainPanel.Visibility = type == "http" || type == "https"
+            CustomDomainPanel.Visibility = TunnelType.RequiresCustomDomain(type)
                 ? Visibility.Visible
                 : Visibility.Collapsed;
         }
@@ -150,7 +151,7 @@ public sealed partial class CreateTunnelDialog : ContentDialog
         if (TypeComboBox.SelectedItem is ComboBoxItem selectedItem)
         {
             var type = selectedItem.Tag?.ToString();
-            if ((type == "http" || type == "https") && string.IsNullOrWhiteSpace(CustomDomainTextBox.Text))
+            if (TunnelType.RequiresCustomDomain(type) && string.IsNullOrWhiteSpace(CustomDomainTextBox.Text))
             {
                 errorMessage = "HTTP/HTTPS隧道需要输入自定义域名";
                 return false;

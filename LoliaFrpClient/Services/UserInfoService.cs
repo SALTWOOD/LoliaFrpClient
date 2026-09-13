@@ -36,7 +36,6 @@ public sealed class UserInfoService
             Id = data?.Id ?? 0,
             Username = data?.Username ?? string.Empty,
             Email = data?.Email ?? string.Empty,
-            Avatar = data?.Avatar ?? string.Empty,
             Role = data?.Role ?? string.Empty,
             KycStatus = data?.KycStatus ?? string.Empty,
             CreatedAt = data?.CreatedAt ?? string.Empty,
@@ -44,9 +43,7 @@ public sealed class UserInfoService
             TrafficLimit = data?.TrafficLimit ?? 0,
             TrafficUsed = data?.TrafficUsed ?? 0,
             BandwidthLimit = data?.BandwidthLimit ?? 0,
-            HasKyc = data?.HasKyc ?? false,
-            IsBaned = data?.IsBaned ?? false,
-            TodayChecked = data?.TodayChecked ?? false
+            IsBaned = data?.IsBaned ?? false
         };
     }
 

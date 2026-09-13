@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using LoliaFrpClient.Constants;
 using Microsoft.UI;
 using Microsoft.UI.Xaml.Media;
 
@@ -96,7 +97,7 @@ public class NodeInfo : INotifyPropertyChanged
         }
     }
 
-    public bool Online => _status == "online";
+    public bool Online => _status == NodeStatus.Online;
 
     public string AgentVersion
     {
@@ -157,9 +158,9 @@ public class NodeInfo : INotifyPropertyChanged
         {
             return Status switch
             {
-                "online" => "在线",
-                "offline" => "离线",
-                "maintenance" => "维护中",
+                NodeStatus.Online => "在线",
+                NodeStatus.Offline => "离线",
+                NodeStatus.Maintenance => "维护中",
                 _ => Status
             };
         }
@@ -174,9 +175,9 @@ public class NodeInfo : INotifyPropertyChanged
         {
             return Status switch
             {
-                "online" => new SolidColorBrush(Colors.Green),
-                "offline" => new SolidColorBrush(Colors.Red),
-                "maintenance" => new SolidColorBrush(Colors.Orange),
+                NodeStatus.Online => new SolidColorBrush(Colors.Green),
+                NodeStatus.Offline => new SolidColorBrush(Colors.Red),
+                NodeStatus.Maintenance => new SolidColorBrush(Colors.Orange),
                 _ => new SolidColorBrush(Colors.Gray)
             };
         }
