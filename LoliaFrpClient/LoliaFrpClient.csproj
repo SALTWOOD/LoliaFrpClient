@@ -21,6 +21,9 @@
             <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
         </PackageReference>
         <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
-        <PackageReference Include="Microsoft.Kiota.Bundle" Version="1.22.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\LoliaFrpClient.Core\LoliaFrpClient.Core.csproj" />
     </ItemGroup>
 </Project>

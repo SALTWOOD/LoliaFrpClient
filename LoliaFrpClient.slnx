@@ -1,3 +1,5 @@
 <Solution>
+  <Project Path="LoliaFrpClient.Api/LoliaFrpClient.Api.csproj" />
+  <Project Path="LoliaFrpClient.Core/LoliaFrpClient.Core.csproj" />
   <Project Path="LoliaFrpClient/LoliaFrpClient.csproj" />
 </Solution>
