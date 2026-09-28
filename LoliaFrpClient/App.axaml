@@ -1,15 +1,24 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="LoliaFrpClient.App"
+             xmlns:sty="using:FluentAvalonia.Styling"
              xmlns:local="using:LoliaFrpClient"
+             x:Class="LoliaFrpClient.App"
              RequestedThemeVariant="Default">
-             <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
+    <!-- RequestedThemeVariant="Default" 表示跟随系统。 -->
 
     <Application.DataTemplates>
         <local:ViewLocator />
     </Application.DataTemplates>
 
     <Application.Styles>
-        <FluentTheme />
+        <!--
+          Fluent 2 外观由 FluentAvaloniaTheme 提供。它自带 WinUI 3 的整套资源令牌
+          (CardBackgroundFillColorDefaultBrush、TextFillColorPrimaryBrush、
+           SystemFillColorSuccessBrush 等),因此本项目不再引用 Avalonia.Themes.Fluent。
+        -->
+        <sty:FluentAvaloniaTheme PreferSystemTheme="True"
+                                 PreferUserAccentColor="True"/>
+
+        <StyleInclude Source="avares://LoliaFrpClient/Styles/Tokens.axaml"/>
     </Application.Styles>
 </Application>
