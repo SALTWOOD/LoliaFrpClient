@@ -1,1 +1,0 @@
-kiota generate -l CSharp -d ./openapi.json -o ./Core -n LoliaFrpClient.Core
