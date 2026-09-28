@@ -1,0 +1,98 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!--
+      应用级设计令牌与通用样式。
+
+      颜色只放「FluentAvalonia 没提供、且本应用有语义」的部分——隧道状态与间距。
+      基础色一律用 FluentAvaloniaTheme 提供的 WinUI 资源键,不在此重复定义,
+      这样亮/暗主题切换才能自动生效。
+    -->
+    <Styles.Resources>
+        <ResourceDictionary>
+            <!-- ── 隧道状态语义色 ──
+                 隧道在线与否是本应用最重要的信息,单独给一套令牌,
+                 不与普通强调色混用。 -->
+            <SolidColorBrush x:Key="TunnelOnlineBrush" Color="#22C55E"/>
+            <SolidColorBrush x:Key="TunnelOfflineBrush" Color="#8A8A8E"/>
+            <SolidColorBrush x:Key="TunnelErrorBrush" Color="#EF4444"/>
+            <SolidColorBrush x:Key="TunnelStartingBrush" Color="#F59E0B"/>
+
+            <!-- ── 间距刻度(4px 基准) ── -->
+            <x:Double x:Key="SpaceXs">4</x:Double>
+            <x:Double x:Key="SpaceSm">8</x:Double>
+            <x:Double x:Key="SpaceMd">12</x:Double>
+            <x:Double x:Key="SpaceLg">16</x:Double>
+            <x:Double x:Key="SpaceXl">24</x:Double>
+            <x:Double x:Key="Space2Xl">32</x:Double>
+
+            <!-- ── 圆角 ── -->
+            <CornerRadius x:Key="RadiusCard">8</CornerRadius>
+            <CornerRadius x:Key="RadiusControl">4</CornerRadius>
+
+            <!-- ── 常用的 Thickness ──
+                 SpaceXxx 是标量(x:Double),不能直接赋给 Margin/Padding,
+                 需要组合边距时用下面这两个,或直接写字面量。 -->
+            <Thickness x:Key="CardPadding">16</Thickness>
+            <Thickness x:Key="PagePadding">24</Thickness>
+        </ResourceDictionary>
+    </Styles.Resources>
+
+    <!-- 卡片:FluentAvalonia 3.x 未提供 Card 控件,用 Border 组合出 Fluent 2 的卡片外观 -->
+    <Style Selector="Border.card">
+        <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorDefaultBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource DividerStrokeColorDefaultBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius" Value="{DynamicResource RadiusCard}"/>
+        <Setter Property="Padding" Value="{DynamicResource CardPadding}"/>
+    </Style>
+
+    <!-- 页面标题 -->
+    <Style Selector="TextBlock.pageTitle">
+        <Setter Property="FontSize" Value="28"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+    </Style>
+
+    <!-- 区块标题 -->
+    <Style Selector="TextBlock.sectionTitle">
+        <Setter Property="FontSize" Value="16"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+    </Style>
+
+    <!-- 说明文字 -->
+    <Style Selector="TextBlock.caption">
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}"/>
+        <Setter Property="TextWrapping" Value="Wrap"/>
+    </Style>
+
+    <!-- 数值展示(统计卡里的主数字)。等宽以便数字跳动时不对齐抖动。 -->
+    <Style Selector="TextBlock.metric">
+        <Setter Property="FontSize" Value="26"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="FontFamily" Value="Cascadia Mono,Consolas,DejaVu Sans Mono,monospace"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+    </Style>
+
+    <!-- 隧道状态圆点。配合 XAML 上的 Classes.online / .offline / .starting / .error 绑定使用,
+         这样不必为状态→颜色写值转换器。 -->
+    <Style Selector="Ellipse.statusDot">
+        <Setter Property="Width" Value="8"/>
+        <Setter Property="Height" Value="8"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="Fill" Value="{DynamicResource TunnelOfflineBrush}"/>
+    </Style>
+    <Style Selector="Ellipse.statusDot.online">
+        <Setter Property="Fill" Value="{DynamicResource TunnelOnlineBrush}"/>
+    </Style>
+    <Style Selector="Ellipse.statusDot.offline">
+        <Setter Property="Fill" Value="{DynamicResource TunnelOfflineBrush}"/>
+    </Style>
+    <Style Selector="Ellipse.statusDot.starting">
+        <Setter Property="Fill" Value="{DynamicResource TunnelStartingBrush}"/>
+    </Style>
+    <Style Selector="Ellipse.statusDot.error">
+        <Setter Property="Fill" Value="{DynamicResource TunnelErrorBrush}"/>
+    </Style>
+</Styles>

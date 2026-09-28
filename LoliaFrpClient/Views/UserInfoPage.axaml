@@ -1,0 +1,96 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:LoliaFrpClient.ViewModels"
+             x:Class="LoliaFrpClient.Views.UserInfoPage"
+             x:DataType="vm:UserInfoViewModel">
+
+    <ScrollViewer Padding="{DynamicResource PagePadding}">
+        <StackPanel Spacing="{DynamicResource SpaceXl}">
+
+            <TextBlock Text="总览" Classes="pageTitle"/>
+
+            <!-- ── 用户卡片 ── -->
+            <Border Classes="card">
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                    <Border Grid.Column="0"
+                            Width="56" Height="56"
+                            CornerRadius="28"
+                            Background="{DynamicResource AccentFillColorDefaultBrush}">
+                        <TextBlock Text="{Binding AvatarInitial}"
+                                   Foreground="White"
+                                   FontSize="22"
+                                   FontWeight="SemiBold"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"/>
+                    </Border>
+
+                    <StackPanel Grid.Column="1"
+                                Margin="16,0,0,0"
+                                VerticalAlignment="Center"
+                                Spacing="{DynamicResource SpaceXs}">
+                        <TextBlock Text="{Binding UserName}" FontSize="18" FontWeight="SemiBold"/>
+                        <TextBlock Text="{Binding Email}" Classes="caption"/>
+                    </StackPanel>
+
+                    <!-- TODO: 接入 User.CheckInAsync() -->
+                    <Button Grid.Column="2"
+                            Content="每日签到"
+                            VerticalAlignment="Center"
+                            Classes="accent"/>
+                </Grid>
+            </Border>
+
+            <!-- ── 统计卡 ── -->
+            <ItemsControl ItemsSource="{Binding Metrics}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <UniformGrid Rows="1"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:MetricCard">
+                        <Border Classes="card" Margin="0,0,12,0">
+                            <StackPanel Spacing="{DynamicResource SpaceSm}">
+                                <TextBlock Text="{Binding Label}" Classes="caption"/>
+                                <TextBlock Text="{Binding Value}" Classes="metric"/>
+                                <TextBlock Text="{Binding Caption}" Classes="caption"/>
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <!-- ── 每日流量趋势 ── -->
+            <Border Classes="card">
+                <StackPanel Spacing="{DynamicResource SpaceLg}">
+                    <TextBlock Text="每日流量趋势" Classes="sectionTitle"/>
+
+                    <!-- 占位柱状图。接 Traffic.GetDailyAsync() 后替换为正式图表控件。 -->
+                    <ItemsControl ItemsSource="{Binding DailyTraffic}" Height="140">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Bottom"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:DailyTrafficPoint">
+                                <StackPanel Spacing="{DynamicResource SpaceXs}" VerticalAlignment="Bottom">
+                                    <TextBlock Text="{Binding Gigabytes}"
+                                               Classes="caption"
+                                               HorizontalAlignment="Center"/>
+                                    <Border Height="{Binding BarHeight}"
+                                            Width="32"
+                                            CornerRadius="4"
+                                            VerticalAlignment="Bottom"
+                                            Background="{DynamicResource AccentFillColorDefaultBrush}"/>
+                                    <TextBlock Text="{Binding Label}" Classes="caption" HorizontalAlignment="Center"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

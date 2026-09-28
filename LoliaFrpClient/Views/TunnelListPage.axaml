@@ -1,0 +1,82 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:LoliaFrpClient.ViewModels"
+             x:Class="LoliaFrpClient.Views.TunnelListPage"
+             x:DataType="vm:TunnelListViewModel">
+
+    <Grid RowDefinitions="Auto,Auto,*" Margin="{DynamicResource PagePadding}">
+
+        <!-- ── 标题 + 主操作 ── -->
+        <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,16">
+            <TextBlock Grid.Column="0" Text="隧道" Classes="pageTitle" VerticalAlignment="Center"/>
+            <!-- TODO: 接入 Tunnel 创建流程 -->
+            <Button Grid.Column="1" Content="新建隧道" VerticalAlignment="Center"
+                    Classes="accent"/>
+        </Grid>
+
+        <!-- ── 工具条 ── -->
+        <Grid Grid.Row="1" ColumnDefinitions="*,Auto" Margin="0,0,0,12">
+            <!-- TODO: 接入搜索过滤 -->
+            <TextBox Grid.Column="0"
+                     PlaceholderText="搜索隧道名称、节点或备注"
+                     MaxWidth="360"
+                     HorizontalAlignment="Left"/>
+            <ComboBox Grid.Column="1"
+                      ItemsSource="{Binding TypeFilters}"
+                      SelectedIndex="0"
+                      MinWidth="120"/>
+        </Grid>
+
+        <!-- ── 隧道列表 ── -->
+        <ScrollViewer Grid.Row="2">
+            <ItemsControl ItemsSource="{Binding Tunnels}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:TunnelEntry">
+                        <Border Classes="card" Margin="0,0,0,8">
+                            <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="12">
+
+                                <!-- 状态圆点:类名由 IsOnline / IsOffline / IsStarting / IsError 驱动,
+                                     配色在 Styles/Tokens.axaml 中定义。 -->
+                                <Ellipse Grid.Column="0"
+                                         Classes="statusDot"
+                                         Classes.online="{Binding IsOnline}"
+                                         Classes.offline="{Binding IsOffline}"
+                                         Classes.starting="{Binding IsStarting}"
+                                         Classes.error="{Binding IsError}"/>
+
+                                <StackPanel Grid.Column="1" Spacing="4">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold"/>
+                                        <Border Background="{DynamicResource ControlFillColorDefaultBrush}"
+                                                CornerRadius="4"
+                                                Padding="6,1">
+                                            <TextBlock Text="{Binding Type}" Classes="caption"/>
+                                        </Border>
+                                    </StackPanel>
+                                    <TextBlock Classes="caption">
+                                        <Run Text="{Binding Node}"/>
+                                        <Run Text=" · "/>
+                                        <Run Text="{Binding LocalEndpoint}"/>
+                                        <Run Text=" → "/>
+                                        <Run Text="{Binding RemoteEndpoint}"/>
+                                    </TextBlock>
+                                </StackPanel>
+
+                                <TextBlock Grid.Column="2"
+                                           Text="{Binding StatusText}"
+                                           Classes="caption"
+                                           VerticalAlignment="Center"/>
+
+                                <!-- TODO: 接入 Tunnel 启停 / 详情 / 删除 -->
+                                <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="4">
+                                    <Button Content="启动" Classes="subtle"/>
+                                    <Button Content="详情"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+    </Grid>
+</UserControl>
