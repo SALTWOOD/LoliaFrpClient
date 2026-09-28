@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <!--
+      LoliaFrpClient.Api —— Kiota 自动生成,请勿手工修改。
+      重新生成命令见 LoliaFrpClient.Core/README.md 中的「重新生成 SDK」一节。
+      任何手写内容都应在 LoliaFrpClient.Core 中完成。
+    -->
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <RootNamespace>LoliaFrpClient.Api</RootNamespace>
+        <AssemblyName>LoliaFrpClient.Api</AssemblyName>
+        <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Kiota.Bundle" Version="1.22.1"/>
+    </ItemGroup>
+
+</Project>
