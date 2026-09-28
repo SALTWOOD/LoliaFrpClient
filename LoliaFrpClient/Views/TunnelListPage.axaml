@@ -4,31 +4,57 @@
              x:Class="LoliaFrpClient.Views.TunnelListPage"
              x:DataType="vm:TunnelListViewModel">
 
-    <Grid RowDefinitions="Auto,Auto,*" Margin="{DynamicResource PagePadding}">
+    <Grid RowDefinitions="Auto,Auto,Auto,*" Margin="{DynamicResource PagePadding}">
 
         <!-- ── 标题 + 主操作 ── -->
         <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,16">
             <TextBlock Grid.Column="0" Text="隧道" Classes="pageTitle" VerticalAlignment="Center"/>
-            <!-- TODO: 接入 Tunnel 创建流程 -->
+            <!-- TODO: 接入 Tunnel 创建流程(需要一张填写节点/类型/本地端口的表单) -->
             <Button Grid.Column="1" Content="新建隧道" VerticalAlignment="Center"
                     Classes="accent"/>
         </Grid>
 
         <!-- ── 工具条 ── -->
         <Grid Grid.Row="1" ColumnDefinitions="*,Auto" Margin="0,0,0,12">
-            <!-- TODO: 接入搜索过滤 -->
             <TextBox Grid.Column="0"
+                     Text="{Binding SearchText}"
                      PlaceholderText="搜索隧道名称、节点或备注"
                      MaxWidth="360"
                      HorizontalAlignment="Left"/>
-            <ComboBox Grid.Column="1"
-                      ItemsSource="{Binding TypeFilters}"
-                      SelectedIndex="0"
-                      MinWidth="120"/>
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                <ComboBox ItemsSource="{Binding TypeFilters}"
+                          SelectedItem="{Binding SelectedTypeFilter}"
+                          MinWidth="120"/>
+                <ProgressBar IsIndeterminate="True"
+                             Width="80"
+                             VerticalAlignment="Center"
+                             IsVisible="{Binding IsLoading}"/>
+                <Button Content="刷新" Command="{Binding LoadCommand}"/>
+            </StackPanel>
         </Grid>
 
+        <!-- ── 错误提示 ── -->
+        <Border Grid.Row="2"
+                Classes="card"
+                Margin="0,0,0,12"
+                Padding="12"
+                BorderBrush="{DynamicResource TunnelErrorBrush}"
+                IsVisible="{Binding ErrorMessage, Converter={x:Static ObjectConverters.IsNotNull}}">
+            <TextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap"/>
+        </Border>
+
+        <!-- ── 空状态 ── -->
+        <StackPanel Grid.Row="3"
+                    Spacing="{DynamicResource SpaceXs}"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    IsVisible="{Binding IsEmpty}">
+            <TextBlock Text="没有隧道" Classes="sectionTitle" HorizontalAlignment="Center"/>
+            <TextBlock Text="还没有隧道,或当前筛选条件没有匹配项。" Classes="caption" HorizontalAlignment="Center"/>
+        </StackPanel>
+
         <!-- ── 隧道列表 ── -->
-        <ScrollViewer Grid.Row="2">
+        <ScrollViewer Grid.Row="3">
             <ItemsControl ItemsSource="{Binding Tunnels}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate x:DataType="vm:TunnelEntry">
@@ -53,13 +79,10 @@
                                             <TextBlock Text="{Binding Type}" Classes="caption"/>
                                         </Border>
                                     </StackPanel>
-                                    <TextBlock Classes="caption">
-                                        <Run Text="{Binding Node}"/>
-                                        <Run Text=" · "/>
-                                        <Run Text="{Binding LocalEndpoint}"/>
-                                        <Run Text=" → "/>
-                                        <Run Text="{Binding RemoteEndpoint}"/>
-                                    </TextBlock>
+                                    <TextBlock Text="{Binding EndpointSummary}" Classes="caption"/>
+                                    <TextBlock Text="{Binding Remark}"
+                                               Classes="caption"
+                                               IsVisible="{Binding Remark, Converter={x:Static ObjectConverters.IsNotNull}}"/>
                                 </StackPanel>
 
                                 <TextBlock Grid.Column="2"

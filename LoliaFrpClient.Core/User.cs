@@ -320,36 +320,23 @@ public sealed class User : ApiFacade
     }
 
     /// <summary>取隧道列表。</summary>
-    public async Task<ApiResult<IReadOnlyList<Tunnel>>> ListTunnelsAsync(CancellationToken cancellationToken = default)
-    {
-        var result = await ApiCall.RunAsync<TunnelGetResponse, TunnelGetResponse_data>(
-            c => Client.User.Tunnel.GetAsTunnelGetResponseAsync(cancellationToken: c),
-            r => (r.Code, r.Msg, r.Data),
-            cancellationToken).ConfigureAwait(false);
-
-        IReadOnlyList<Tunnel>? tunnels = result.IsSuccess
-            ? [.. (result.Data?.List ?? [])
-                .Select(item => item.Name)
-                .Where(name => !string.IsNullOrWhiteSpace(name))
-                .Select(name => new Tunnel(name!, Session))]
-            : null;
-
-        return result.With(tunnels);
-    }
+    /// <remarks>
+    ///     转交给 <see cref="Tunnel.ListAsync" />,让两条入口产出的实体完全一致
+    ///     (尤其是带上 <see cref="Tunnel.Summary" />)。
+    /// </remarks>
+    public Task<ApiResult<IReadOnlyList<Tunnel>>> ListTunnelsAsync(CancellationToken cancellationToken = default) =>
+        Tunnel.ListAsync(Session, cancellationToken);
 
     /// <summary>取单个隧道。</summary>
-    public async Task<ApiResult<Tunnel>> GetTunnelAsync(string name, CancellationToken cancellationToken = default)
-    {
-        var result = await ApiCall.RunAsync<Api.User.Tunnel.Item.WithTunnel_nameGetResponse, Api.User.Tunnel.Item.WithTunnel_nameGetResponse_data>(
-            c => Client.User.Tunnel[name].GetAsWithTunnel_nameGetResponseAsync(cancellationToken: c),
-            r => (r.Code, r.Msg, r.Data),
-            cancellationToken).ConfigureAwait(false);
-
-        return result.With(result.IsSuccess ? new Tunnel(result.Data?.Name ?? name, Session) : null);
-    }
+    public Task<ApiResult<Tunnel>> GetTunnelAsync(string name, CancellationToken cancellationToken = default) =>
+        Tunnel.GetAsync(name, Session, cancellationToken);
 
     /// <summary>获取一个绑定在本会话上的隧道引用,不发起请求。</summary>
-    public Tunnel Tunnel(string name) => new(name, Session);
+    /// <remarks>
+    ///     名字里必须带 Ref:若叫 <c>Tunnel</c>,它会在 <see cref="User" /> 内部遮蔽
+    ///     <see cref="Core.Tunnel" /> 类型,使 <c>Tunnel.ListAsync()</c> 这类静态调用无法解析。
+    /// </remarks>
+    public Tunnel TunnelRef(string name) => new(name, Session);
 
     #endregion
 

@@ -25,6 +25,16 @@ public sealed class Tunnel : ApiFacade
     /// <summary>隧道名称,同时是路径标识。</summary>
     public string Name { get; }
 
+    /// <summary>
+    ///     最近一次从服务端取到的隧道概要:类型、节点、端口、在线状态、备注都在这里。
+    /// </summary>
+    /// <remarks>
+    ///     只有 <see cref="ListAsync" /> 产出的实体会带上它。按名构造的引用、以及
+    ///     <see cref="GetAsync" /> / <see cref="GetDetailAsync" /> 的结果上都是 <c>null</c>——
+    ///     后两者返回的是另一个生成的 DTO 类型,字段相同但类型不同,不在此做转换。
+    /// </remarks>
+    public TunnelGetResponse_data_list? Summary { get; private init; }
+
     /// <summary>按名称取隧道。</summary>
     public static async Task<ApiResult<Tunnel>> GetAsync(
         string name,
@@ -56,9 +66,8 @@ public sealed class Tunnel : ApiFacade
 
         IReadOnlyList<Tunnel>? tunnels = result.IsSuccess
             ? [.. (result.Data?.List ?? [])
-                .Select(item => item.Name)
-                .Where(name => !string.IsNullOrWhiteSpace(name))
-                .Select(name => new Tunnel(name!, api))]
+                .Where(item => !string.IsNullOrWhiteSpace(item.Name))
+                .Select(item => new Tunnel(item.Name!, api) { Summary = item })]
             : null;
 
         return result.With(tunnels);
