@@ -23,10 +23,21 @@
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
-                    <!-- TODO: 接入 User.LoginAsync() 与 OAuth 回调 -->
+                    <!-- 登录走 OAuth 授权码 + PKCE:会打开系统浏览器,期间本窗口只等待回调。 -->
+                    <TextBlock Text="{Binding StatusMessage}"
+                               Classes="caption"
+                               IsVisible="{Binding StatusMessage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
                     <StackPanel Orientation="Horizontal" Spacing="8">
-                        <Button Content="登录" Classes="accent"/>
-                        <Button Content="登出"/>
+                        <Button Content="登录" Classes="accent"
+                                Command="{Binding SignInCommand}"
+                                IsVisible="{Binding !IsSignedIn}"/>
+                        <Button Content="登出"
+                                Command="{Binding SignOutCommand}"
+                                IsVisible="{Binding IsSignedIn}"/>
+                        <ProgressBar IsIndeterminate="True"
+                                     Width="140"
+                                     VerticalAlignment="Center"
+                                     IsVisible="{Binding IsBusy}"/>
                     </StackPanel>
                 </StackPanel>
             </ui:FASettingsExpander>

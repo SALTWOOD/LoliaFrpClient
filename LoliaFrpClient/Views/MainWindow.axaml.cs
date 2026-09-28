@@ -14,11 +14,11 @@ public partial class MainWindow : Window
         InitializeComponent();
     }
 
-    private void OnNavigationSelectionChanged(object? sender, FANavigationViewSelectionChangedEventArgs e)
+    private async void OnNavigationSelectionChanged(object? sender, FANavigationViewSelectionChangedEventArgs e)
     {
         if (DataContext is MainViewModel viewModel && e.SelectedItem is FANavigationViewItem item)
         {
-            viewModel.Navigate(item.Tag as string);
+            await viewModel.NavigateAsync(item.Tag as string);
         }
     }
 }
