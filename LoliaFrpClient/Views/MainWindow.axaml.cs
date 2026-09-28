@@ -1,3 +1,4 @@
+using System;
 using Avalonia.Controls;
 using FluentAvalonia.UI.Controls;
 using LoliaFrpClient.ViewModels;
@@ -12,6 +13,18 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+    }
+
+    /// <inheritdoc />
+    protected override async void OnOpened(EventArgs e)
+    {
+        base.OnOpened(e);
+
+        // 首屏不经过导航事件,补一次取数。
+        if (DataContext is MainViewModel viewModel)
+        {
+            await viewModel.RefreshAsync();
+        }
     }
 
     private async void OnNavigationSelectionChanged(object? sender, FANavigationViewSelectionChangedEventArgs e)

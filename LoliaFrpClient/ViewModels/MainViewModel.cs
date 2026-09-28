@@ -25,6 +25,15 @@ public partial class MainViewModel : ViewModelBase
         CurrentPage = _dashboard;
     }
 
+    /// <summary>
+    ///     让当前页取一次数。
+    /// </summary>
+    /// <remarks>
+    ///     首屏不经过 <see cref="NavigateAsync" />,得由窗口在显示后显式调一次,
+    ///     否则起始页永远停在构造函数给的空状态上。
+    /// </remarks>
+    public Task RefreshAsync() => CurrentPage.ActivateAsync();
+
     /// <summary>按导航项的 Tag 切换页面,并让新页面重新取数。</summary>
     public async Task NavigateAsync(string? tag)
     {
