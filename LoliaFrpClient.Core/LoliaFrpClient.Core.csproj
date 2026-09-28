@@ -12,4 +12,9 @@
         <ProjectReference Include="..\LoliaFrpClient.Api\LoliaFrpClient.Api.csproj"/>
     </ItemGroup>
 
+    <ItemGroup>
+        <!-- 保住生成错误类型上的 Msg 属性,供 ApiCall 反射读取;详见文件内注释。 -->
+        <TrimmerRootDescriptor Include="ILLink.Descriptors.xml"/>
+    </ItemGroup>
+
 </Project>

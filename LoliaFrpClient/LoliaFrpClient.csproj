@@ -4,6 +4,12 @@
         <TargetFramework>net10.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ApplicationManifest>app.manifest</ApplicationManifest>
+        <!--
+          默认使用编译绑定而非反射绑定。反射绑定在 NativeAOT / 裁剪下会触发 IL2026,
+          且失效方式是静默的(绑定不到就显示空白,不报错)。开启后每个绑定作用域都必须
+          声明 x:DataType,漏写会在编译期直接报错。
+        -->
+        <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
     </PropertyGroup>
 
     <ItemGroup>
@@ -25,5 +31,6 @@
 
     <ItemGroup>
       <ProjectReference Include="..\LoliaFrpClient.Core\LoliaFrpClient.Core.csproj" />
+      <ProjectReference Include="..\LoliaFrpClient.Api\LoliaFrpClient.Api.csproj" />
     </ItemGroup>
 </Project>

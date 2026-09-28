@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<linker>
+  <!--
+    ApiCall.ExtractMsg 通过反射读取生成错误类型上的 Msg 属性,以便把服务端的中文提示
+    原样交给调用方。这些类型由 Kiota 生成,没有公共接口可依赖,只能反射。
+
+    AOT / 裁剪下若不显式保住该属性,反射会返回 null,错误提示将退化成 ApiException 的
+    默认英文消息。此描述符即为此而存在。错误类型一律以 Error 结尾,故用通配符限定。
+  -->
+  <assembly fullname="LoliaFrpClient.Api">
+    <type fullname="LoliaFrpClient.Api.*.*Error">
+      <property name="Msg" />
+    </type>
+    <type fullname="LoliaFrpClient.Api.*.*.*Error">
+      <property name="Msg" />
+    </type>
+    <type fullname="LoliaFrpClient.Api.*.*.*.*Error">
+      <property name="Msg" />
+    </type>
+    <type fullname="LoliaFrpClient.Api.*.*.*.*.*Error">
+      <property name="Msg" />
+    </type>
+  </assembly>
+</linker>

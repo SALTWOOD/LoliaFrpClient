@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Microsoft.Kiota.Abstractions;
 using Microsoft.Kiota.Abstractions.Serialization;
@@ -141,6 +142,8 @@ public static class ApiCall
     /// <summary>
     ///     取出错误消息。生成的错误类型都带 <c>Msg</c> 属性但没有公共接口,故用反射并缓存访问器。
     /// </summary>
+    [UnconditionalSuppressMessage("Trimming", "IL2070",
+        Justification = "Msg 属性由 LoliaFrpClient.Core/ILLink.Descriptors.xml 显式保留,该文件与本方法是一对,改动其一需同步另一处。")]
     private static string ExtractMsg(ApiException ex)
     {
         var property = MsgProperties.GetOrAdd(ex.GetType(), static type => type.GetProperty("Msg"));

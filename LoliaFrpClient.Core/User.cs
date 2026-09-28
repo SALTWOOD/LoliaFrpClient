@@ -328,7 +328,10 @@ public sealed class User : ApiFacade
             cancellationToken).ConfigureAwait(false);
 
         IReadOnlyList<Tunnel>? tunnels = result.IsSuccess
-            ? [.. (result.Data?.List ?? []).Select(item => new Tunnel(item.Name, Session))]
+            ? [.. (result.Data?.List ?? [])
+                .Select(item => item.Name)
+                .Where(name => !string.IsNullOrWhiteSpace(name))
+                .Select(name => new Tunnel(name!, Session))]
             : null;
 
         return result.With(tunnels);
