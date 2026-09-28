@@ -55,6 +55,12 @@ public sealed class User : ApiFacade
     /// <summary>角色。仅 <see cref="MeAsync" /> 会填充。</summary>
     public string? Role { get; private init; }
 
+    /// <summary>
+    ///     是否处于签到冷却期(距上次签到不足 24 小时)。
+    ///     <para>仅 <see cref="MeAsync" /> 会填充。为 <c>true</c> 时签到必然返回 400,应据此禁用按钮。</para>
+    /// </summary>
+    public bool? TodayChecked { get; private init; }
+
     /// <summary>当前会话是否已持有凭证。</summary>
     public bool IsAuthenticated => Session.IsAuthenticated;
 
@@ -198,7 +204,8 @@ public sealed class User : ApiFacade
             Email = data.Email,
             Avatar = data.Avatar,
             KycStatus = data.KycStatus,
-            Role = data.Role
+            Role = data.Role,
+            TodayChecked = data.TodayChecked
         });
     }
 

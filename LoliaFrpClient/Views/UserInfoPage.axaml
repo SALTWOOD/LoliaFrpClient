@@ -30,13 +30,25 @@
                                 Spacing="{DynamicResource SpaceXs}">
                         <TextBlock Text="{Binding UserName}" FontSize="18" FontWeight="SemiBold"/>
                         <TextBlock Text="{Binding Email}" Classes="caption"/>
+                        <TextBlock Text="{Binding StatusMessage}"
+                                   Classes="caption"
+                                   IsVisible="{Binding StatusMessage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
                     </StackPanel>
 
-                    <!-- TODO: 接入 User.CheckInAsync() -->
-                    <Button Grid.Column="2"
-                            Content="每日签到"
-                            VerticalAlignment="Center"
-                            Classes="accent"/>
+                    <StackPanel Grid.Column="2"
+                                Orientation="Horizontal"
+                                Spacing="8"
+                                VerticalAlignment="Center">
+                        <ProgressBar IsIndeterminate="True"
+                                     Width="80"
+                                     VerticalAlignment="Center"
+                                     IsVisible="{Binding IsLoading}"/>
+                        <!-- 冷却期内服务端会返回 400,故直接禁用按钮,而不是让用户点了才知道。 -->
+                        <Button Content="{Binding CheckInLabel}"
+                                Command="{Binding CheckInCommand}"
+                                IsVisible="{Binding IsSignedIn}"
+                                Classes="accent"/>
+                    </StackPanel>
                 </Grid>
             </Border>
 
@@ -65,8 +77,14 @@
                 <StackPanel Spacing="{DynamicResource SpaceLg}">
                     <TextBlock Text="每日流量趋势" Classes="sectionTitle"/>
 
-                    <!-- 占位柱状图。接 Traffic.GetDailyAsync() 后替换为正式图表控件。 -->
-                    <ItemsControl ItemsSource="{Binding DailyTraffic}" Height="140">
+                    <TextBlock Text="暂无流量数据。"
+                               Classes="caption"
+                               IsVisible="{Binding !HasDailyTraffic}"/>
+
+                    <!-- 柱高已在 ViewModel 里按区间最大值归一化,这里只负责摆放。 -->
+                    <ItemsControl ItemsSource="{Binding DailyTraffic}"
+                                  Height="150"
+                                  IsVisible="{Binding HasDailyTraffic}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Bottom"/>
@@ -75,7 +93,7 @@
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="vm:DailyTrafficPoint">
                                 <StackPanel Spacing="{DynamicResource SpaceXs}" VerticalAlignment="Bottom">
-                                    <TextBlock Text="{Binding Gigabytes}"
+                                    <TextBlock Text="{Binding Amount}"
                                                Classes="caption"
                                                HorizontalAlignment="Center"/>
                                     <Border Height="{Binding BarHeight}"
