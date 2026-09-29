@@ -155,15 +155,25 @@ public sealed partial class UserInfoViewModel : ViewModelBase
             : [];
 
         var today = points.Count > 0 ? points[^1].TotalTraffic : null;
-        var yesterday = points.Count > 1 ? points[^2].TotalTraffic : null;
+
+        // 「可用流量」用 traffic_limit - traffic_used 现算,不用响应里的 traffic_remaining:
+        // 规格明确写着「当前实现等于 traffic_limit」,服务端还没真的算它。
+        var used = stats.Data?.TrafficUsed;
+        var limit = stats.Data?.TrafficLimit;
+        var available = used is { } usedBytes && limit is { } limitBytes
+            ? Math.Max(0, limitBytes - usedBytes)
+            : (long?)null;
 
         Metrics.Clear();
-        Metrics.Add(new MetricCard("已用流量", ByteSize.Format(stats.Data?.TrafficUsed), "账户累计"));
+        Metrics.Add(new MetricCard(
+            "可用流量",
+            ByteSize.Format(available),
+            limit is null ? string.Empty : $"共 {ByteSize.Format(limit)}"));
         Metrics.Add(new MetricCard(
             "隧道数量",
             tunnels is { IsSuccess: true, Data: { } list } ? list.Count.ToString(CultureInfo.InvariantCulture) : "—",
             "含已离线"));
-        Metrics.Add(new MetricCard("今日流量", ByteSize.Format(today), TrendCaption(today, yesterday)));
+        Metrics.Add(new MetricCard("今日流量", ByteSize.Format(today), string.Empty));
 
         BuildDailyChart(points);
 
@@ -219,30 +229,12 @@ public sealed partial class UserInfoViewModel : ViewModelBase
         CheckInLabel = "每日签到";
 
         Metrics.Clear();
-        Metrics.Add(new MetricCard("已用流量", "—", "账户累计"));
+        Metrics.Add(new MetricCard("可用流量", "—", string.Empty));
         Metrics.Add(new MetricCard("隧道数量", "—", "含已离线"));
-        Metrics.Add(new MetricCard("今日流量", "—", "较昨日 —"));
+        Metrics.Add(new MetricCard("今日流量", "—", string.Empty));
 
         DailyTraffic.Clear();
         HasDailyTraffic = false;
-    }
-
-    private static string TrendCaption(long? today, long? yesterday)
-    {
-        if (today is null)
-        {
-            return "暂无数据";
-        }
-
-        if (yesterday is null or 0)
-        {
-            return "较昨日 —";
-        }
-
-        var delta = (today.Value - yesterday.Value) / (double)yesterday.Value * 100;
-        return delta >= 0
-            ? $"较昨日 +{delta:0.#}%"
-            : $"较昨日 {delta:0.#}%";
     }
 
     /// <summary>把 RFC3339 日期压成 <c>MM-dd</c>。解析不了就原样显示。</summary>

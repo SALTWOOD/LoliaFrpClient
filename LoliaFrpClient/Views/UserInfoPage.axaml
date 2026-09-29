@@ -65,7 +65,8 @@
                             <StackPanel Spacing="{DynamicResource SpaceSm}">
                                 <TextBlock Text="{Binding Label}" Classes="caption"/>
                                 <TextBlock Text="{Binding Value}" Classes="metric"/>
-                                <TextBlock Text="{Binding Caption}" Classes="caption"/>
+                                <!-- 说明文字可以为空,但保留行高,否则三张卡的主数字会高低不齐。 -->
+                                <TextBlock Text="{Binding Caption}" Classes="caption" MinHeight="16"/>
                             </StackPanel>
                         </Border>
                     </DataTemplate>
