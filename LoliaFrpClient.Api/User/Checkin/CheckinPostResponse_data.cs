@@ -15,7 +15,7 @@ namespace LoliaFrpClient.Api.User.Checkin
         /// <summary>Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.</summary>
         public IDictionary<string, object> AdditionalData { get; set; }
         /// <summary>本次（或冷却期内上一次）签到获得的流量（字节）</summary>
-        public int? TrafficBytes { get; set; }
+        public long? TrafficBytes { get; set; }
         /// <summary>本次（或冷却期内上一次）签到获得的流量（GB）</summary>
         public int? TrafficGb { get; set; }
         /// <summary>
@@ -43,7 +43,7 @@ namespace LoliaFrpClient.Api.User.Checkin
         {
             return new Dictionary<string, Action<IParseNode>>
             {
-                { "traffic_bytes", n => { TrafficBytes = n.GetIntValue(); } },
+                { "traffic_bytes", n => { TrafficBytes = n.GetLongValue(); } },
                 { "traffic_gb", n => { TrafficGb = n.GetIntValue(); } },
             };
         }
@@ -54,7 +54,7 @@ namespace LoliaFrpClient.Api.User.Checkin
         public virtual void Serialize(ISerializationWriter writer)
         {
             if(ReferenceEquals(writer, null)) throw new ArgumentNullException(nameof(writer));
-            writer.WriteIntValue("traffic_bytes", TrafficBytes);
+            writer.WriteLongValue("traffic_bytes", TrafficBytes);
             writer.WriteIntValue("traffic_gb", TrafficGb);
             writer.WriteAdditionalData(AdditionalData);
         }

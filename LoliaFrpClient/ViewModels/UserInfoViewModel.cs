@@ -227,7 +227,7 @@ public sealed partial class UserInfoViewModel : ViewModelBase
         HasDailyTraffic = false;
     }
 
-    private static string TrendCaption(int? today, int? yesterday)
+    private static string TrendCaption(long? today, long? yesterday)
     {
         if (today is null)
         {

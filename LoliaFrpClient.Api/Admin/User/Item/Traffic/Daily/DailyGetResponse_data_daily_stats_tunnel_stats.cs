@@ -31,11 +31,11 @@ namespace LoliaFrpClient.Api.Admin.User.Item.Traffic.Daily
         public string Remark { get; set; }
 #endif
         /// <summary>入站流量（字节）</summary>
-        public int? TotalIn { get; set; }
+        public long? TotalIn { get; set; }
         /// <summary>出站流量（字节）</summary>
-        public int? TotalOut { get; set; }
+        public long? TotalOut { get; set; }
         /// <summary>总流量（字节）</summary>
-        public int? TotalTraffic { get; set; }
+        public long? TotalTraffic { get; set; }
         /// <summary>隧道名称</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
@@ -71,9 +71,9 @@ namespace LoliaFrpClient.Api.Admin.User.Item.Traffic.Daily
             {
                 { "node_id", n => { NodeId = n.GetStringValue(); } },
                 { "remark", n => { Remark = n.GetStringValue(); } },
-                { "total_in", n => { TotalIn = n.GetIntValue(); } },
-                { "total_out", n => { TotalOut = n.GetIntValue(); } },
-                { "total_traffic", n => { TotalTraffic = n.GetIntValue(); } },
+                { "total_in", n => { TotalIn = n.GetLongValue(); } },
+                { "total_out", n => { TotalOut = n.GetLongValue(); } },
+                { "total_traffic", n => { TotalTraffic = n.GetLongValue(); } },
                 { "tunnel_name", n => { TunnelName = n.GetStringValue(); } },
             };
         }
@@ -86,9 +86,9 @@ namespace LoliaFrpClient.Api.Admin.User.Item.Traffic.Daily
             if(ReferenceEquals(writer, null)) throw new ArgumentNullException(nameof(writer));
             writer.WriteStringValue("node_id", NodeId);
             writer.WriteStringValue("remark", Remark);
-            writer.WriteIntValue("total_in", TotalIn);
-            writer.WriteIntValue("total_out", TotalOut);
-            writer.WriteIntValue("total_traffic", TotalTraffic);
+            writer.WriteLongValue("total_in", TotalIn);
+            writer.WriteLongValue("total_out", TotalOut);
+            writer.WriteLongValue("total_traffic", TotalTraffic);
             writer.WriteStringValue("tunnel_name", TunnelName);
             writer.WriteAdditionalData(AdditionalData);
         }

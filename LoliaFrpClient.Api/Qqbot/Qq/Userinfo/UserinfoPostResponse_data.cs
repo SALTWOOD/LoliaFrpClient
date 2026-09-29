@@ -71,9 +71,9 @@ namespace LoliaFrpClient.Api.Qqbot.Qq.Userinfo
         /// <summary>是否处于签到冷却期（距上次签到不足 24 小时）</summary>
         public bool? TodayChecked { get; set; }
         /// <summary>流量额度（字节，累计值）</summary>
-        public int? TrafficLimit { get; set; }
+        public long? TrafficLimit { get; set; }
         /// <summary>已用流量（字节，累计值）</summary>
-        public int? TrafficUsed { get; set; }
+        public long? TrafficUsed { get; set; }
         /// <summary>用户名</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
@@ -120,8 +120,8 @@ namespace LoliaFrpClient.Api.Qqbot.Qq.Userinfo
                 { "max_tunnel_count", n => { MaxTunnelCount = n.GetIntValue(); } },
                 { "role", n => { Role = n.GetStringValue(); } },
                 { "today_checked", n => { TodayChecked = n.GetBoolValue(); } },
-                { "traffic_limit", n => { TrafficLimit = n.GetIntValue(); } },
-                { "traffic_used", n => { TrafficUsed = n.GetIntValue(); } },
+                { "traffic_limit", n => { TrafficLimit = n.GetLongValue(); } },
+                { "traffic_used", n => { TrafficUsed = n.GetLongValue(); } },
                 { "username", n => { Username = n.GetStringValue(); } },
             };
         }
@@ -145,8 +145,8 @@ namespace LoliaFrpClient.Api.Qqbot.Qq.Userinfo
             writer.WriteIntValue("max_tunnel_count", MaxTunnelCount);
             writer.WriteStringValue("role", Role);
             writer.WriteBoolValue("today_checked", TodayChecked);
-            writer.WriteIntValue("traffic_limit", TrafficLimit);
-            writer.WriteIntValue("traffic_used", TrafficUsed);
+            writer.WriteLongValue("traffic_limit", TrafficLimit);
+            writer.WriteLongValue("traffic_used", TrafficUsed);
             writer.WriteStringValue("username", Username);
             writer.WriteAdditionalData(AdditionalData);
         }

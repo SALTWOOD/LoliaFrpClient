@@ -143,11 +143,11 @@ namespace LoliaFrpClient.Api.Admin.Tunnels
         public string Status { get; set; }
 #endif
         /// <summary>累计总流量（字节）</summary>
-        public int? TotalTraffic { get; set; }
+        public long? TotalTraffic { get; set; }
         /// <summary>累计入站流量（字节）</summary>
-        public int? TrafficIn { get; set; }
+        public long? TrafficIn { get; set; }
         /// <summary>累计出站流量（字节）</summary>
-        public int? TrafficOut { get; set; }
+        public long? TrafficOut { get; set; }
         /// <summary>流量最后更新时间，无记录为 null</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
@@ -229,9 +229,9 @@ namespace LoliaFrpClient.Api.Admin.Tunnels
                 { "remark", n => { Remark = n.GetStringValue(); } },
                 { "remote_port", n => { RemotePort = n.GetIntValue(); } },
                 { "status", n => { Status = n.GetStringValue(); } },
-                { "total_traffic", n => { TotalTraffic = n.GetIntValue(); } },
-                { "traffic_in", n => { TrafficIn = n.GetIntValue(); } },
-                { "traffic_out", n => { TrafficOut = n.GetIntValue(); } },
+                { "total_traffic", n => { TotalTraffic = n.GetLongValue(); } },
+                { "traffic_in", n => { TrafficIn = n.GetLongValue(); } },
+                { "traffic_out", n => { TrafficOut = n.GetLongValue(); } },
                 { "traffic_updated_at", n => { TrafficUpdatedAt = n.GetStringValue(); } },
                 { "type", n => { Type = n.GetStringValue(); } },
                 { "updated_at", n => { UpdatedAt = n.GetStringValue(); } },
@@ -268,9 +268,9 @@ namespace LoliaFrpClient.Api.Admin.Tunnels
             writer.WriteStringValue("remark", Remark);
             writer.WriteIntValue("remote_port", RemotePort);
             writer.WriteStringValue("status", Status);
-            writer.WriteIntValue("total_traffic", TotalTraffic);
-            writer.WriteIntValue("traffic_in", TrafficIn);
-            writer.WriteIntValue("traffic_out", TrafficOut);
+            writer.WriteLongValue("total_traffic", TotalTraffic);
+            writer.WriteLongValue("traffic_in", TrafficIn);
+            writer.WriteLongValue("traffic_out", TrafficOut);
             writer.WriteStringValue("traffic_updated_at", TrafficUpdatedAt);
             writer.WriteStringValue("type", Type);
             writer.WriteStringValue("updated_at", UpdatedAt);

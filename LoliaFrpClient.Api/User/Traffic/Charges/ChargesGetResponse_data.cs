@@ -47,9 +47,9 @@ namespace LoliaFrpClient.Api.User.Traffic.Charges
         /// <summary>明细总条数（仅 page=1 返回）</summary>
         public int? Total { get; set; }
         /// <summary>实际扣费合计（字节，仅 page=1 返回）</summary>
-        public int? TotalCharged { get; set; }
+        public long? TotalCharged { get; set; }
         /// <summary>原始流量合计（字节，仅 page=1 返回）</summary>
-        public int? TotalTraffic { get; set; }
+        public long? TotalTraffic { get; set; }
         /// <summary>用户 ID（字符串形式）</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
@@ -90,8 +90,8 @@ namespace LoliaFrpClient.Api.User.Traffic.Charges
                 { "page", n => { Page = n.GetIntValue(); } },
                 { "start_time", n => { StartTime = n.GetStringValue(); } },
                 { "total", n => { Total = n.GetIntValue(); } },
-                { "total_charged", n => { TotalCharged = n.GetIntValue(); } },
-                { "total_traffic", n => { TotalTraffic = n.GetIntValue(); } },
+                { "total_charged", n => { TotalCharged = n.GetLongValue(); } },
+                { "total_traffic", n => { TotalTraffic = n.GetLongValue(); } },
                 { "user_id", n => { UserId = n.GetStringValue(); } },
             };
         }
@@ -109,8 +109,8 @@ namespace LoliaFrpClient.Api.User.Traffic.Charges
             writer.WriteIntValue("page", Page);
             writer.WriteStringValue("start_time", StartTime);
             writer.WriteIntValue("total", Total);
-            writer.WriteIntValue("total_charged", TotalCharged);
-            writer.WriteIntValue("total_traffic", TotalTraffic);
+            writer.WriteLongValue("total_charged", TotalCharged);
+            writer.WriteLongValue("total_traffic", TotalTraffic);
             writer.WriteStringValue("user_id", UserId);
             writer.WriteAdditionalData(AdditionalData);
         }

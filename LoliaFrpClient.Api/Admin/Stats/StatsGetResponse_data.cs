@@ -23,7 +23,7 @@ namespace LoliaFrpClient.Api.Admin.Stats
         /// <summary>节点总数</summary>
         public int? TotalNodeCount { get; set; }
         /// <summary>全站用户已用流量总和（字节）</summary>
-        public int? TotalTrafficUsed { get; set; }
+        public long? TotalTrafficUsed { get; set; }
         /// <summary>隧道总数（不含软删除）</summary>
         public int? TotalTunnelCount { get; set; }
         /// <summary>注册用户数</summary>
@@ -57,7 +57,7 @@ namespace LoliaFrpClient.Api.Admin.Stats
                 { "online_node_count", n => { OnlineNodeCount = n.GetIntValue(); } },
                 { "online_tunnel_count", n => { OnlineTunnelCount = n.GetIntValue(); } },
                 { "total_node_count", n => { TotalNodeCount = n.GetIntValue(); } },
-                { "total_traffic_used", n => { TotalTrafficUsed = n.GetIntValue(); } },
+                { "total_traffic_used", n => { TotalTrafficUsed = n.GetLongValue(); } },
                 { "total_tunnel_count", n => { TotalTunnelCount = n.GetIntValue(); } },
                 { "user_count", n => { UserCount = n.GetIntValue(); } },
             };
@@ -73,7 +73,7 @@ namespace LoliaFrpClient.Api.Admin.Stats
             writer.WriteIntValue("online_node_count", OnlineNodeCount);
             writer.WriteIntValue("online_tunnel_count", OnlineTunnelCount);
             writer.WriteIntValue("total_node_count", TotalNodeCount);
-            writer.WriteIntValue("total_traffic_used", TotalTrafficUsed);
+            writer.WriteLongValue("total_traffic_used", TotalTrafficUsed);
             writer.WriteIntValue("total_tunnel_count", TotalTunnelCount);
             writer.WriteIntValue("user_count", UserCount);
             writer.WriteAdditionalData(AdditionalData);

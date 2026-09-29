@@ -23,7 +23,7 @@ namespace LoliaFrpClient.Api.Qqbot.Qq.Checkin
         public string Qq { get; set; }
 #endif
         /// <summary>本次签到获得的流量（字节）；冷却期内失败时为上次签到获得的流量</summary>
-        public int? TrafficBytes { get; set; }
+        public long? TrafficBytes { get; set; }
         /// <summary>本次签到获得的流量（GB，0~300 随机）；冷却期内失败时为上次签到获得的流量</summary>
         public int? TrafficGb { get; set; }
         /// <summary>用户 ID</summary>
@@ -54,7 +54,7 @@ namespace LoliaFrpClient.Api.Qqbot.Qq.Checkin
             return new Dictionary<string, Action<IParseNode>>
             {
                 { "qq", n => { Qq = n.GetStringValue(); } },
-                { "traffic_bytes", n => { TrafficBytes = n.GetIntValue(); } },
+                { "traffic_bytes", n => { TrafficBytes = n.GetLongValue(); } },
                 { "traffic_gb", n => { TrafficGb = n.GetIntValue(); } },
                 { "user_id", n => { UserId = n.GetIntValue(); } },
             };
@@ -67,7 +67,7 @@ namespace LoliaFrpClient.Api.Qqbot.Qq.Checkin
         {
             if(ReferenceEquals(writer, null)) throw new ArgumentNullException(nameof(writer));
             writer.WriteStringValue("qq", Qq);
-            writer.WriteIntValue("traffic_bytes", TrafficBytes);
+            writer.WriteLongValue("traffic_bytes", TrafficBytes);
             writer.WriteIntValue("traffic_gb", TrafficGb);
             writer.WriteIntValue("user_id", UserId);
             writer.WriteAdditionalData(AdditionalData);

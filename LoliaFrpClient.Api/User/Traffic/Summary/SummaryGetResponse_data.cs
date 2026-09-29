@@ -17,11 +17,11 @@ namespace LoliaFrpClient.Api.User.Traffic.Summary
         /// <summary>实际统计天数</summary>
         public int? Days { get; set; }
         /// <summary>总入站流量（字节）</summary>
-        public int? TotalIn { get; set; }
+        public long? TotalIn { get; set; }
         /// <summary>总出站流量（字节）</summary>
-        public int? TotalOut { get; set; }
+        public long? TotalOut { get; set; }
         /// <summary>总流量（字节）</summary>
-        public int? TotalTraffic { get; set; }
+        public long? TotalTraffic { get; set; }
         /// <summary>统计期内有流量的隧道数量</summary>
         public int? TunnelCount { get; set; }
         /// <summary>用户 ID（字符串形式）</summary>
@@ -58,9 +58,9 @@ namespace LoliaFrpClient.Api.User.Traffic.Summary
             return new Dictionary<string, Action<IParseNode>>
             {
                 { "days", n => { Days = n.GetIntValue(); } },
-                { "total_in", n => { TotalIn = n.GetIntValue(); } },
-                { "total_out", n => { TotalOut = n.GetIntValue(); } },
-                { "total_traffic", n => { TotalTraffic = n.GetIntValue(); } },
+                { "total_in", n => { TotalIn = n.GetLongValue(); } },
+                { "total_out", n => { TotalOut = n.GetLongValue(); } },
+                { "total_traffic", n => { TotalTraffic = n.GetLongValue(); } },
                 { "tunnel_count", n => { TunnelCount = n.GetIntValue(); } },
                 { "user_id", n => { UserId = n.GetStringValue(); } },
             };
@@ -73,9 +73,9 @@ namespace LoliaFrpClient.Api.User.Traffic.Summary
         {
             if(ReferenceEquals(writer, null)) throw new ArgumentNullException(nameof(writer));
             writer.WriteIntValue("days", Days);
-            writer.WriteIntValue("total_in", TotalIn);
-            writer.WriteIntValue("total_out", TotalOut);
-            writer.WriteIntValue("total_traffic", TotalTraffic);
+            writer.WriteLongValue("total_in", TotalIn);
+            writer.WriteLongValue("total_out", TotalOut);
+            writer.WriteLongValue("total_traffic", TotalTraffic);
             writer.WriteIntValue("tunnel_count", TunnelCount);
             writer.WriteStringValue("user_id", UserId);
             writer.WriteAdditionalData(AdditionalData);

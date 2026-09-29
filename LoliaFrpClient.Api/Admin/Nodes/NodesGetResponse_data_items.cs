@@ -93,11 +93,11 @@ namespace LoliaFrpClient.Api.Admin.Nodes
         /// <summary>综合负载评分（%，带宽/CPU/内存/连接加权），节点未上报系统信息时为 null</summary>
         public double? Load { get; set; }
         /// <summary>可用内存（字节）</summary>
-        public int? MemoryAvailableBytes { get; set; }
+        public long? MemoryAvailableBytes { get; set; }
         /// <summary>内存总量（字节）</summary>
-        public int? MemoryTotalBytes { get; set; }
+        public long? MemoryTotalBytes { get; set; }
         /// <summary>已用内存（字节）</summary>
-        public int? MemoryUsedBytes { get; set; }
+        public long? MemoryUsedBytes { get; set; }
         /// <summary>内存使用率（%）</summary>
         public double? MemoryUsedPercent { get; set; }
         /// <summary>节点名称</summary>
@@ -111,13 +111,13 @@ namespace LoliaFrpClient.Api.Admin.Nodes
         /// <summary>是否需要实名认证</summary>
         public bool? NeedKyc { get; set; }
         /// <summary>累计接收字节</summary>
-        public int? NetworkRxBytes { get; set; }
+        public long? NetworkRxBytes { get; set; }
         /// <summary>接收速率（字节/秒）</summary>
         public double? NetworkRxRateBytesSec { get; set; }
         /// <summary>接收速率（Mbps）</summary>
         public double? NetworkRxRateMbps { get; set; }
         /// <summary>累计发送字节</summary>
-        public int? NetworkTxBytes { get; set; }
+        public long? NetworkTxBytes { get; set; }
         /// <summary>发送速率（字节/秒）</summary>
         public double? NetworkTxRateBytesSec { get; set; }
         /// <summary>发送速率（Mbps）</summary>
@@ -237,16 +237,16 @@ namespace LoliaFrpClient.Api.Admin.Nodes
                 { "ip_address", n => { IpAddress = n.GetStringValue(); } },
                 { "last_seen", n => { LastSeen = n.GetStringValue(); } },
                 { "load", n => { Load = n.GetDoubleValue(); } },
-                { "memory_available_bytes", n => { MemoryAvailableBytes = n.GetIntValue(); } },
-                { "memory_total_bytes", n => { MemoryTotalBytes = n.GetIntValue(); } },
-                { "memory_used_bytes", n => { MemoryUsedBytes = n.GetIntValue(); } },
+                { "memory_available_bytes", n => { MemoryAvailableBytes = n.GetLongValue(); } },
+                { "memory_total_bytes", n => { MemoryTotalBytes = n.GetLongValue(); } },
+                { "memory_used_bytes", n => { MemoryUsedBytes = n.GetLongValue(); } },
                 { "memory_used_percent", n => { MemoryUsedPercent = n.GetDoubleValue(); } },
                 { "name", n => { Name = n.GetStringValue(); } },
                 { "need_kyc", n => { NeedKyc = n.GetBoolValue(); } },
-                { "network_rx_bytes", n => { NetworkRxBytes = n.GetIntValue(); } },
+                { "network_rx_bytes", n => { NetworkRxBytes = n.GetLongValue(); } },
                 { "network_rx_rate_bytes_sec", n => { NetworkRxRateBytesSec = n.GetDoubleValue(); } },
                 { "network_rx_rate_mbps", n => { NetworkRxRateMbps = n.GetDoubleValue(); } },
-                { "network_tx_bytes", n => { NetworkTxBytes = n.GetIntValue(); } },
+                { "network_tx_bytes", n => { NetworkTxBytes = n.GetLongValue(); } },
                 { "network_tx_rate_bytes_sec", n => { NetworkTxRateBytesSec = n.GetDoubleValue(); } },
                 { "network_tx_rate_mbps", n => { NetworkTxRateMbps = n.GetDoubleValue(); } },
                 { "online_tunnel_count", n => { OnlineTunnelCount = n.GetIntValue(); } },
@@ -288,16 +288,16 @@ namespace LoliaFrpClient.Api.Admin.Nodes
             writer.WriteStringValue("ip_address", IpAddress);
             writer.WriteStringValue("last_seen", LastSeen);
             writer.WriteDoubleValue("load", Load);
-            writer.WriteIntValue("memory_available_bytes", MemoryAvailableBytes);
-            writer.WriteIntValue("memory_total_bytes", MemoryTotalBytes);
-            writer.WriteIntValue("memory_used_bytes", MemoryUsedBytes);
+            writer.WriteLongValue("memory_available_bytes", MemoryAvailableBytes);
+            writer.WriteLongValue("memory_total_bytes", MemoryTotalBytes);
+            writer.WriteLongValue("memory_used_bytes", MemoryUsedBytes);
             writer.WriteDoubleValue("memory_used_percent", MemoryUsedPercent);
             writer.WriteStringValue("name", Name);
             writer.WriteBoolValue("need_kyc", NeedKyc);
-            writer.WriteIntValue("network_rx_bytes", NetworkRxBytes);
+            writer.WriteLongValue("network_rx_bytes", NetworkRxBytes);
             writer.WriteDoubleValue("network_rx_rate_bytes_sec", NetworkRxRateBytesSec);
             writer.WriteDoubleValue("network_rx_rate_mbps", NetworkRxRateMbps);
-            writer.WriteIntValue("network_tx_bytes", NetworkTxBytes);
+            writer.WriteLongValue("network_tx_bytes", NetworkTxBytes);
             writer.WriteDoubleValue("network_tx_rate_bytes_sec", NetworkTxRateBytesSec);
             writer.WriteDoubleValue("network_tx_rate_mbps", NetworkTxRateMbps);
             writer.WriteIntValue("online_tunnel_count", OnlineTunnelCount);

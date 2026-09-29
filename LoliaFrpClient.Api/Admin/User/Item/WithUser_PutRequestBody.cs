@@ -39,7 +39,7 @@ namespace LoliaFrpClient.Api.Admin.User.Item
         /// <summary>角色</summary>
         public global::LoliaFrpClient.Api.Admin.User.Item.WithUser_PutRequestBody_role? Role { get; set; }
         /// <summary>剩余可用流量（字节），≥0；直接覆盖当前值</summary>
-        public int? TrafficLimit { get; set; }
+        public long? TrafficLimit { get; set; }
         /// <summary>用户名，3-64 字符，去除首尾空格后不能为空，不能与其他用户重复</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
@@ -79,7 +79,7 @@ namespace LoliaFrpClient.Api.Admin.User.Item
                 { "is_banned", n => { IsBanned = n.GetBoolValue(); } },
                 { "max_tunnel_count", n => { MaxTunnelCount = n.GetIntValue(); } },
                 { "role", n => { Role = n.GetEnumValue<global::LoliaFrpClient.Api.Admin.User.Item.WithUser_PutRequestBody_role>(); } },
-                { "traffic_limit", n => { TrafficLimit = n.GetIntValue(); } },
+                { "traffic_limit", n => { TrafficLimit = n.GetLongValue(); } },
                 { "username", n => { Username = n.GetStringValue(); } },
             };
         }
@@ -96,7 +96,7 @@ namespace LoliaFrpClient.Api.Admin.User.Item
             writer.WriteBoolValue("is_banned", IsBanned);
             writer.WriteIntValue("max_tunnel_count", MaxTunnelCount);
             writer.WriteEnumValue<global::LoliaFrpClient.Api.Admin.User.Item.WithUser_PutRequestBody_role>("role", Role);
-            writer.WriteIntValue("traffic_limit", TrafficLimit);
+            writer.WriteLongValue("traffic_limit", TrafficLimit);
             writer.WriteStringValue("username", Username);
             writer.WriteAdditionalData(AdditionalData);
         }

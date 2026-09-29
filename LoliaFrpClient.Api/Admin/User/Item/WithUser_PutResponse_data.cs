@@ -47,9 +47,9 @@ namespace LoliaFrpClient.Api.Admin.User.Item
         public string Role { get; set; }
 #endif
         /// <summary>剩余可用流量（字节），≤0 视为流量耗尽</summary>
-        public int? TrafficLimit { get; set; }
+        public long? TrafficLimit { get; set; }
         /// <summary>已用流量（字节）</summary>
-        public int? TrafficUsed { get; set; }
+        public long? TrafficUsed { get; set; }
         /// <summary>更新时间</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
@@ -98,8 +98,8 @@ namespace LoliaFrpClient.Api.Admin.User.Item
                 { "is_banned", n => { IsBanned = n.GetBoolValue(); } },
                 { "max_tunnel_count", n => { MaxTunnelCount = n.GetIntValue(); } },
                 { "role", n => { Role = n.GetStringValue(); } },
-                { "traffic_limit", n => { TrafficLimit = n.GetIntValue(); } },
-                { "traffic_used", n => { TrafficUsed = n.GetIntValue(); } },
+                { "traffic_limit", n => { TrafficLimit = n.GetLongValue(); } },
+                { "traffic_used", n => { TrafficUsed = n.GetLongValue(); } },
                 { "updated_at", n => { UpdatedAt = n.GetStringValue(); } },
                 { "username", n => { Username = n.GetStringValue(); } },
             };
@@ -118,8 +118,8 @@ namespace LoliaFrpClient.Api.Admin.User.Item
             writer.WriteBoolValue("is_banned", IsBanned);
             writer.WriteIntValue("max_tunnel_count", MaxTunnelCount);
             writer.WriteStringValue("role", Role);
-            writer.WriteIntValue("traffic_limit", TrafficLimit);
-            writer.WriteIntValue("traffic_used", TrafficUsed);
+            writer.WriteLongValue("traffic_limit", TrafficLimit);
+            writer.WriteLongValue("traffic_used", TrafficUsed);
             writer.WriteStringValue("updated_at", UpdatedAt);
             writer.WriteStringValue("username", Username);
             writer.WriteAdditionalData(AdditionalData);

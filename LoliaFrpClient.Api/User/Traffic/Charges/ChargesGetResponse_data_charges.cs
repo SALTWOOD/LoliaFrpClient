@@ -15,7 +15,7 @@ namespace LoliaFrpClient.Api.User.Traffic.Charges
         /// <summary>Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.</summary>
         public IDictionary<string, object> AdditionalData { get; set; }
         /// <summary>实际扣费量（字节）</summary>
-        public int? Charged { get; set; }
+        public long? Charged { get; set; }
         /// <summary>节点 ID（字符串）</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
@@ -49,13 +49,13 @@ namespace LoliaFrpClient.Api.User.Traffic.Charges
         public string Time { get; set; }
 #endif
         /// <summary>原始入站增量（字节）</summary>
-        public int? TrafficIn { get; set; }
+        public long? TrafficIn { get; set; }
         /// <summary>原始出站增量（字节）</summary>
-        public int? TrafficOut { get; set; }
+        public long? TrafficOut { get; set; }
         /// <summary>扣费时的节点流量倍率</summary>
         public double? TrafficRatio { get; set; }
         /// <summary>原始流量合计（字节）</summary>
-        public int? TrafficTotal { get; set; }
+        public long? TrafficTotal { get; set; }
         /// <summary>
         /// Instantiates a new <see cref="global::LoliaFrpClient.Api.User.Traffic.Charges.ChargesGetResponse_data_charges"/> and sets the default values.
         /// </summary>
@@ -81,15 +81,15 @@ namespace LoliaFrpClient.Api.User.Traffic.Charges
         {
             return new Dictionary<string, Action<IParseNode>>
             {
-                { "charged", n => { Charged = n.GetIntValue(); } },
+                { "charged", n => { Charged = n.GetLongValue(); } },
                 { "node_id", n => { NodeId = n.GetStringValue(); } },
                 { "node_name", n => { NodeName = n.GetStringValue(); } },
                 { "remark", n => { Remark = n.GetStringValue(); } },
                 { "time", n => { Time = n.GetStringValue(); } },
-                { "traffic_in", n => { TrafficIn = n.GetIntValue(); } },
-                { "traffic_out", n => { TrafficOut = n.GetIntValue(); } },
+                { "traffic_in", n => { TrafficIn = n.GetLongValue(); } },
+                { "traffic_out", n => { TrafficOut = n.GetLongValue(); } },
                 { "traffic_ratio", n => { TrafficRatio = n.GetDoubleValue(); } },
-                { "traffic_total", n => { TrafficTotal = n.GetIntValue(); } },
+                { "traffic_total", n => { TrafficTotal = n.GetLongValue(); } },
             };
         }
         /// <summary>
@@ -99,15 +99,15 @@ namespace LoliaFrpClient.Api.User.Traffic.Charges
         public virtual void Serialize(ISerializationWriter writer)
         {
             if(ReferenceEquals(writer, null)) throw new ArgumentNullException(nameof(writer));
-            writer.WriteIntValue("charged", Charged);
+            writer.WriteLongValue("charged", Charged);
             writer.WriteStringValue("node_id", NodeId);
             writer.WriteStringValue("node_name", NodeName);
             writer.WriteStringValue("remark", Remark);
             writer.WriteStringValue("time", Time);
-            writer.WriteIntValue("traffic_in", TrafficIn);
-            writer.WriteIntValue("traffic_out", TrafficOut);
+            writer.WriteLongValue("traffic_in", TrafficIn);
+            writer.WriteLongValue("traffic_out", TrafficOut);
             writer.WriteDoubleValue("traffic_ratio", TrafficRatio);
-            writer.WriteIntValue("traffic_total", TrafficTotal);
+            writer.WriteLongValue("traffic_total", TrafficTotal);
             writer.WriteAdditionalData(AdditionalData);
         }
     }

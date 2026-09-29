@@ -15,7 +15,7 @@ namespace LoliaFrpClient.Api.Home
         /// <summary>Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.</summary>
         public IDictionary<string, object> AdditionalData { get; set; }
         /// <summary>所有用户累计已使用流量（字节）</summary>
-        public int? TotalTrafficUsed { get; set; }
+        public long? TotalTrafficUsed { get; set; }
         /// <summary>平台隧道总数</summary>
         public int? TunnelCount { get; set; }
         /// <summary>平台用户总数</summary>
@@ -45,7 +45,7 @@ namespace LoliaFrpClient.Api.Home
         {
             return new Dictionary<string, Action<IParseNode>>
             {
-                { "total_traffic_used", n => { TotalTrafficUsed = n.GetIntValue(); } },
+                { "total_traffic_used", n => { TotalTrafficUsed = n.GetLongValue(); } },
                 { "tunnel_count", n => { TunnelCount = n.GetIntValue(); } },
                 { "user_count", n => { UserCount = n.GetIntValue(); } },
             };
@@ -57,7 +57,7 @@ namespace LoliaFrpClient.Api.Home
         public virtual void Serialize(ISerializationWriter writer)
         {
             if(ReferenceEquals(writer, null)) throw new ArgumentNullException(nameof(writer));
-            writer.WriteIntValue("total_traffic_used", TotalTrafficUsed);
+            writer.WriteLongValue("total_traffic_used", TotalTrafficUsed);
             writer.WriteIntValue("tunnel_count", TunnelCount);
             writer.WriteIntValue("user_count", UserCount);
             writer.WriteAdditionalData(AdditionalData);
