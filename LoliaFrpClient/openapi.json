@@ -1360,12 +1360,12 @@
                           "description": "头像 URL"
                         },
                         "traffic_limit": {
-                          "type": "integer",
-                          "description": "流量上限（字节）"
+                          "description": "流量上限（字节）",
+                          "$ref": "#/components/schemas/long"
                         },
                         "traffic_used": {
-                          "type": "integer",
-                          "description": "已使用流量（字节）"
+                          "description": "已使用流量（字节）",
+                          "$ref": "#/components/schemas/long"
                         },
                         "today_checked": {
                           "type": "boolean",
@@ -1601,8 +1601,8 @@
                           "description": "本次（或冷却期内上一次）签到获得的流量（GB）"
                         },
                         "traffic_bytes": {
-                          "type": "integer",
-                          "description": "本次（或冷却期内上一次）签到获得的流量（字节）"
+                          "description": "本次（或冷却期内上一次）签到获得的流量（字节）",
+                          "$ref": "#/components/schemas/long"
                         }
                       },
                       "required": [
@@ -2154,12 +2154,8 @@
                     "description": "是否封禁；设为 true 时会撤销用户全部 JWT 会话与 OAuth2 令牌"
                   },
                   "traffic_limit": {
-                    "type": [
-                      "integer",
-                      "null"
-                    ],
                     "description": "剩余可用流量（字节），≥0；直接覆盖当前值",
-                    "minimum": 0
+                    "$ref": "#/components/schemas/long"
                   }
                 }
               },
@@ -2229,12 +2225,12 @@
                           "description": "更新时间"
                         },
                         "traffic_limit": {
-                          "type": "integer",
-                          "description": "剩余可用流量（字节），≤0 视为流量耗尽"
+                          "description": "剩余可用流量（字节），≤0 视为流量耗尽",
+                          "$ref": "#/components/schemas/long"
                         },
                         "traffic_used": {
-                          "type": "integer",
-                          "description": "已用流量（字节）"
+                          "description": "已用流量（字节）",
+                          "$ref": "#/components/schemas/long"
                         }
                       }
                     }
@@ -2495,12 +2491,12 @@
                           "description": "更新时间"
                         },
                         "traffic_limit": {
-                          "type": "integer",
-                          "description": "剩余可用流量（字节），≤0 视为流量耗尽"
+                          "description": "剩余可用流量（字节），≤0 视为流量耗尽",
+                          "$ref": "#/components/schemas/long"
                         },
                         "traffic_used": {
-                          "type": "integer",
-                          "description": "已用流量（字节）"
+                          "description": "已用流量（字节）",
+                          "$ref": "#/components/schemas/long"
                         },
                         "active_sessions": {
                           "type": "integer",
@@ -2784,16 +2780,16 @@
                           "description": "用户名"
                         },
                         "traffic_limit": {
-                          "type": "integer",
-                          "description": "流量额度（字节）"
+                          "description": "流量额度（字节）",
+                          "$ref": "#/components/schemas/long"
                         },
                         "traffic_used": {
-                          "type": "integer",
-                          "description": "已用流量（字节）"
+                          "description": "已用流量（字节）",
+                          "$ref": "#/components/schemas/long"
                         },
                         "traffic_remaining": {
-                          "type": "integer",
-                          "description": "剩余流量（字节，当前实现等于 traffic_limit）"
+                          "description": "剩余流量（字节，当前实现等于 traffic_limit）",
+                          "$ref": "#/components/schemas/long"
                         }
                       }
                     }
@@ -2967,16 +2963,16 @@
                                       "description": "节点 ID（字符串）"
                                     },
                                     "total_in": {
-                                      "type": "integer",
-                                      "description": "入站流量（字节）"
+                                      "description": "入站流量（字节）",
+                                      "$ref": "#/components/schemas/long"
                                     },
                                     "total_out": {
-                                      "type": "integer",
-                                      "description": "出站流量（字节）"
+                                      "description": "出站流量（字节）",
+                                      "$ref": "#/components/schemas/long"
                                     },
                                     "total_traffic": {
-                                      "type": "integer",
-                                      "description": "总流量（字节）"
+                                      "description": "总流量（字节）",
+                                      "$ref": "#/components/schemas/long"
                                     },
                                     "remark": {
                                       "type": "string",
@@ -2986,16 +2982,16 @@
                                 }
                               },
                               "total_in": {
-                                "type": "integer",
-                                "description": "当日总入站流量（字节）"
+                                "description": "当日总入站流量（字节）",
+                                "$ref": "#/components/schemas/long"
                               },
                               "total_out": {
-                                "type": "integer",
-                                "description": "当日总出站流量（字节）"
+                                "description": "当日总出站流量（字节）",
+                                "$ref": "#/components/schemas/long"
                               },
                               "total_traffic": {
-                                "type": "integer",
-                                "description": "当日总流量（字节）"
+                                "description": "当日总流量（字节）",
+                                "$ref": "#/components/schemas/long"
                               }
                             }
                           }
@@ -3192,16 +3188,16 @@
                                 "description": "节点 ID（字符串）"
                               },
                               "total_in": {
-                                "type": "integer",
-                                "description": "入站流量（字节）"
+                                "description": "入站流量（字节）",
+                                "$ref": "#/components/schemas/long"
                               },
                               "total_out": {
-                                "type": "integer",
-                                "description": "出站流量（字节）"
+                                "description": "出站流量（字节）",
+                                "$ref": "#/components/schemas/long"
                               },
                               "total_traffic": {
-                                "type": "integer",
-                                "description": "总流量（字节）"
+                                "description": "总流量（字节）",
+                                "$ref": "#/components/schemas/long"
                               },
                               "max_connections": {
                                 "type": "integer",
@@ -3377,16 +3373,16 @@
                           "description": "实际统计天数"
                         },
                         "total_in": {
-                          "type": "integer",
-                          "description": "总入站流量（字节）"
+                          "description": "总入站流量（字节）",
+                          "$ref": "#/components/schemas/long"
                         },
                         "total_out": {
-                          "type": "integer",
-                          "description": "总出站流量（字节）"
+                          "description": "总出站流量（字节）",
+                          "$ref": "#/components/schemas/long"
                         },
                         "total_traffic": {
-                          "type": "integer",
-                          "description": "总流量（字节）"
+                          "description": "总流量（字节）",
+                          "$ref": "#/components/schemas/long"
                         },
                         "tunnel_count": {
                           "type": "integer",
@@ -3597,24 +3593,24 @@
                                 "description": "隧道备注"
                               },
                               "traffic_in": {
-                                "type": "integer",
-                                "description": "原始入站增量（字节）"
+                                "description": "原始入站增量（字节）",
+                                "$ref": "#/components/schemas/long"
                               },
                               "traffic_out": {
-                                "type": "integer",
-                                "description": "原始出站增量（字节）"
+                                "description": "原始出站增量（字节）",
+                                "$ref": "#/components/schemas/long"
                               },
                               "traffic_total": {
-                                "type": "integer",
-                                "description": "原始流量合计（字节）"
+                                "description": "原始流量合计（字节）",
+                                "$ref": "#/components/schemas/long"
                               },
                               "traffic_ratio": {
                                 "type": "number",
                                 "description": "扣费时的节点流量倍率"
                               },
                               "charged": {
-                                "type": "integer",
-                                "description": "实际扣费量（字节）"
+                                "description": "实际扣费量（字节）",
+                                "$ref": "#/components/schemas/long"
                               }
                             }
                           }
@@ -3624,12 +3620,12 @@
                           "description": "明细总条数（仅 page=1 返回）"
                         },
                         "total_traffic": {
-                          "type": "integer",
-                          "description": "原始流量合计（字节，仅 page=1 返回）"
+                          "description": "原始流量合计（字节，仅 page=1 返回）",
+                          "$ref": "#/components/schemas/long"
                         },
                         "total_charged": {
-                          "type": "integer",
-                          "description": "实际扣费合计（字节，仅 page=1 返回）"
+                          "description": "实际扣费合计（字节，仅 page=1 返回）",
+                          "$ref": "#/components/schemas/long"
                         }
                       }
                     }
@@ -3803,16 +3799,16 @@
                           "description": "节点名称"
                         },
                         "traffic_in": {
-                          "type": "integer",
-                          "description": "累计入站流量（字节）"
+                          "description": "累计入站流量（字节）",
+                          "$ref": "#/components/schemas/long"
                         },
                         "traffic_out": {
-                          "type": "integer",
-                          "description": "累计出站流量（字节）"
+                          "description": "累计出站流量（字节）",
+                          "$ref": "#/components/schemas/long"
                         },
                         "total_traffic": {
-                          "type": "integer",
-                          "description": "累计总流量（字节）"
+                          "description": "累计总流量（字节）",
+                          "$ref": "#/components/schemas/long"
                         },
                         "connections": {
                           "type": "integer",
@@ -7003,8 +6999,8 @@
                           "description": "平台隧道总数"
                         },
                         "total_traffic_used": {
-                          "type": "integer",
-                          "description": "所有用户累计已使用流量（字节）"
+                          "description": "所有用户累计已使用流量（字节）",
+                          "$ref": "#/components/schemas/long"
                         }
                       },
                       "required": [
@@ -9918,28 +9914,28 @@
                                 "description": "CPU 核数"
                               },
                               "memory_total_bytes": {
-                                "type": "integer",
-                                "description": "内存总量（字节）"
+                                "description": "内存总量（字节）",
+                                "$ref": "#/components/schemas/long"
                               },
                               "memory_available_bytes": {
-                                "type": "integer",
-                                "description": "可用内存（字节）"
+                                "description": "可用内存（字节）",
+                                "$ref": "#/components/schemas/long"
                               },
                               "memory_used_bytes": {
-                                "type": "integer",
-                                "description": "已用内存（字节）"
+                                "description": "已用内存（字节）",
+                                "$ref": "#/components/schemas/long"
                               },
                               "memory_used_percent": {
                                 "type": "number",
                                 "description": "内存使用率（%）"
                               },
                               "network_rx_bytes": {
-                                "type": "integer",
-                                "description": "累计接收字节"
+                                "description": "累计接收字节",
+                                "$ref": "#/components/schemas/long"
                               },
                               "network_tx_bytes": {
-                                "type": "integer",
-                                "description": "累计发送字节"
+                                "description": "累计发送字节",
+                                "$ref": "#/components/schemas/long"
                               },
                               "network_rx_rate_bytes_sec": {
                                 "type": "number",
@@ -12307,8 +12303,8 @@
                           "description": "注册用户数"
                         },
                         "total_traffic_used": {
-                          "type": "integer",
-                          "description": "全站用户已用流量总和（字节）"
+                          "description": "全站用户已用流量总和（字节）",
+                          "$ref": "#/components/schemas/long"
                         }
                       }
                     }
@@ -12631,16 +12627,16 @@
                                 "description": "软删除时间，未删除为 null"
                               },
                               "traffic_in": {
-                                "type": "integer",
-                                "description": "累计入站流量（字节）"
+                                "description": "累计入站流量（字节）",
+                                "$ref": "#/components/schemas/long"
                               },
                               "traffic_out": {
-                                "type": "integer",
-                                "description": "累计出站流量（字节）"
+                                "description": "累计出站流量（字节）",
+                                "$ref": "#/components/schemas/long"
                               },
                               "total_traffic": {
-                                "type": "integer",
-                                "description": "累计总流量（字节）"
+                                "description": "累计总流量（字节）",
+                                "$ref": "#/components/schemas/long"
                               },
                               "connections": {
                                 "type": "integer",
@@ -13644,16 +13640,16 @@
                           "description": "节点名称"
                         },
                         "traffic_in": {
-                          "type": "integer",
-                          "description": "累计入站流量（字节）"
+                          "description": "累计入站流量（字节）",
+                          "$ref": "#/components/schemas/long"
                         },
                         "traffic_out": {
-                          "type": "integer",
-                          "description": "累计出站流量（字节）"
+                          "description": "累计出站流量（字节）",
+                          "$ref": "#/components/schemas/long"
                         },
                         "total_traffic": {
-                          "type": "integer",
-                          "description": "累计总流量（字节）"
+                          "description": "累计总流量（字节）",
+                          "$ref": "#/components/schemas/long"
                         },
                         "connections": {
                           "type": "integer",
@@ -13924,16 +13920,16 @@
                                 "description": "节点ID（字符串）"
                               },
                               "total_in": {
-                                "type": "integer",
-                                "description": "入站流量（字节）"
+                                "description": "入站流量（字节）",
+                                "$ref": "#/components/schemas/long"
                               },
                               "total_out": {
-                                "type": "integer",
-                                "description": "出站流量（字节）"
+                                "description": "出站流量（字节）",
+                                "$ref": "#/components/schemas/long"
                               },
                               "total_traffic": {
-                                "type": "integer",
-                                "description": "总流量（字节）"
+                                "description": "总流量（字节）",
+                                "$ref": "#/components/schemas/long"
                               },
                               "remark": {
                                 "type": "string",
@@ -14183,16 +14179,16 @@
                                       "description": "节点ID（字符串）"
                                     },
                                     "total_in": {
-                                      "type": "integer",
-                                      "description": "入站流量（字节）"
+                                      "description": "入站流量（字节）",
+                                      "$ref": "#/components/schemas/long"
                                     },
                                     "total_out": {
-                                      "type": "integer",
-                                      "description": "出站流量（字节）"
+                                      "description": "出站流量（字节）",
+                                      "$ref": "#/components/schemas/long"
                                     },
                                     "total_traffic": {
-                                      "type": "integer",
-                                      "description": "总流量（字节）"
+                                      "description": "总流量（字节）",
+                                      "$ref": "#/components/schemas/long"
                                     },
                                     "remark": {
                                       "type": "string",
@@ -14202,16 +14198,16 @@
                                 }
                               },
                               "total_in": {
-                                "type": "integer",
-                                "description": "当日总入站（字节）"
+                                "description": "当日总入站（字节）",
+                                "$ref": "#/components/schemas/long"
                               },
                               "total_out": {
-                                "type": "integer",
-                                "description": "当日总出站（字节）"
+                                "description": "当日总出站（字节）",
+                                "$ref": "#/components/schemas/long"
                               },
                               "total_traffic": {
-                                "type": "integer",
-                                "description": "当日总流量（字节）"
+                                "description": "当日总流量（字节）",
+                                "$ref": "#/components/schemas/long"
                               }
                             }
                           }
@@ -17892,12 +17888,12 @@
                           "description": "头像 URL（未设置时为 Gravatar 地址）"
                         },
                         "traffic_limit": {
-                          "type": "integer",
-                          "description": "流量额度（字节，累计值）"
+                          "description": "流量额度（字节，累计值）",
+                          "$ref": "#/components/schemas/long"
                         },
                         "traffic_used": {
-                          "type": "integer",
-                          "description": "已用流量（字节，累计值）"
+                          "description": "已用流量（字节，累计值）",
+                          "$ref": "#/components/schemas/long"
                         },
                         "today_checked": {
                           "type": "boolean",
@@ -19874,28 +19870,28 @@
                                 "description": "CPU 核数"
                               },
                               "memory_total_bytes": {
-                                "type": "integer",
-                                "description": "内存总量（字节）"
+                                "description": "内存总量（字节）",
+                                "$ref": "#/components/schemas/long"
                               },
                               "memory_available_bytes": {
-                                "type": "integer",
-                                "description": "可用内存（字节）"
+                                "description": "可用内存（字节）",
+                                "$ref": "#/components/schemas/long"
                               },
                               "memory_used_bytes": {
-                                "type": "integer",
-                                "description": "已用内存（字节）"
+                                "description": "已用内存（字节）",
+                                "$ref": "#/components/schemas/long"
                               },
                               "memory_used_percent": {
                                 "type": "number",
                                 "description": "内存使用率（%）"
                               },
                               "network_rx_bytes": {
-                                "type": "integer",
-                                "description": "累计接收字节"
+                                "description": "累计接收字节",
+                                "$ref": "#/components/schemas/long"
                               },
                               "network_tx_bytes": {
-                                "type": "integer",
-                                "description": "累计发送字节"
+                                "description": "累计发送字节",
+                                "$ref": "#/components/schemas/long"
                               },
                               "network_rx_rate_bytes_sec": {
                                 "type": "number",
@@ -20630,8 +20626,8 @@
                           "description": "本次签到获得的流量（GB，0~300 随机）；冷却期内失败时为上次签到获得的流量"
                         },
                         "traffic_bytes": {
-                          "type": "integer",
-                          "description": "本次签到获得的流量（字节）；冷却期内失败时为上次签到获得的流量"
+                          "description": "本次签到获得的流量（字节）；冷却期内失败时为上次签到获得的流量",
+                          "$ref": "#/components/schemas/long"
                         },
                         "user_id": {
                           "type": "integer",
