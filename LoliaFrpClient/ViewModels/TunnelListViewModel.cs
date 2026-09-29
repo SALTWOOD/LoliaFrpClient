@@ -166,8 +166,24 @@ public sealed record TunnelEntry(
         _ => "已离线"
     };
 
+    /// <summary>
+    ///     主标题。
+    /// </summary>
+    /// <remarks>
+    ///     隧道名是服务端生成的 32 位随机十六进制串,当标题没人读得懂;
+    ///     所以有备注时用备注当标题,没备注才退回隧道名。
+    /// </remarks>
+    public string PrimaryLabel => HasRemark ? Remark! : Name;
+
+    /// <summary>
+    ///     副标题里的隧道名。仅在有备注时显示——否则主标题已经是它了,再显示一遍是重复。
+    /// </summary>
+    public string? SecondaryName => HasRemark ? Name : null;
+
     /// <summary>副标题行:节点 · 本地入口 → 远端入口。</summary>
     public string EndpointSummary => $"{Node} · {LocalEndpoint} → {RemoteEndpoint}";
+
+    private bool HasRemark => !string.IsNullOrWhiteSpace(Remark);
 
     // 以下四个布尔量专供 XAML 的 Classes.xxx 绑定使用,
     // 以便在不引入值转换器的前提下按状态切换圆点配色。

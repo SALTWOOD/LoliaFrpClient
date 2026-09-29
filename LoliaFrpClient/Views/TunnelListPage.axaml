@@ -72,17 +72,19 @@
 
                                 <StackPanel Grid.Column="1" Spacing="4">
                                     <StackPanel Orientation="Horizontal" Spacing="8">
-                                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold"/>
+                                        <TextBlock Text="{Binding PrimaryLabel}" FontWeight="SemiBold"/>
                                         <Border Background="{DynamicResource ControlFillColorDefaultBrush}"
                                                 CornerRadius="4"
                                                 Padding="6,1">
                                             <TextBlock Text="{Binding Type}" Classes="caption"/>
                                         </Border>
                                     </StackPanel>
-                                    <TextBlock Text="{Binding EndpointSummary}" Classes="caption"/>
-                                    <TextBlock Text="{Binding Remark}"
+                                    <!-- 隧道名(32 位随机十六进制)只在有备注时作为副标题出现,
+                                         没备注时它已经当主标题了。 -->
+                                    <TextBlock Text="{Binding SecondaryName}"
                                                Classes="caption"
-                                               IsVisible="{Binding Remark, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                                               IsVisible="{Binding SecondaryName, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                                    <TextBlock Text="{Binding EndpointSummary}" Classes="caption"/>
                                 </StackPanel>
 
                                 <TextBlock Grid.Column="2"
