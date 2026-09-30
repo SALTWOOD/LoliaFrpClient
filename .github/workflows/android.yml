@@ -41,11 +41,11 @@ jobs:
           - abi: arm64-v8a
             goarch: arm64
             cc: aarch64-linux-android21-clang
-            machine: b700   # ELF e_machine,小端存放
+            machine: "b700"   # ELF e_machine for AArch64, little-endian
           - abi: x86_64
             goarch: amd64
             cc: x86_64-linux-android21-clang
-            machine: 3e00
+            machine: "3e00"   # ELF e_machine for x86-64, little-endian
 
     steps:
       - name: Checkout frpc source
