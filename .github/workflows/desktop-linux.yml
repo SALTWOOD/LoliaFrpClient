@@ -1,6 +1,6 @@
 name: Desktop (Linux)
 
-# 与 desktop-windows.yml / android.yml 完全独立,三个 workflow 并行跑。
+# Independent of desktop-windows.yml and android.yml; all three run in parallel.
 
 on:
   push:
@@ -60,8 +60,8 @@ jobs:
           cp LoliaFrpClient/Assets/icon.png "$APP/loliafrp.png"
           cp LoliaFrpClient/Assets/icon.png "$APP/usr/share/icons/hicolor/256x256/apps/loliafrp.png"
 
-          # 用 printf 而不是 heredoc:YAML 块里的每一行都带缩进,
-          # heredoc 会把缩进原样写进 desktop 文件。
+          # printf rather than a heredoc: every line of a YAML block is indented,
+          # and a heredoc would write that indentation into the .desktop file.
           printf '%s\n' \
             '[Desktop Entry]' \
             'Type=Application' \
@@ -84,7 +84,7 @@ jobs:
             https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage
           chmod +x appimagetool
 
-          # --appimage-extract-and-run:CI 容器里没有 FUSE,直接跑 AppImage 会失败。
+          # --appimage-extract-and-run: CI containers have no FUSE, so running it directly fails.
           ARCH=x86_64 ./appimagetool --appimage-extract-and-run "$APP" \
             "LoliaFrpClient_${V}_linux-x64.AppImage"
 

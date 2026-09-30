@@ -1,7 +1,7 @@
 name: Desktop (Windows)
 
-# 与 desktop-linux.yml / android.yml 完全独立,三个 workflow 并行跑。
-# 发布说明只在 android.yml 里生成一次,避免三边互相覆盖。
+# Independent of desktop-linux.yml and android.yml; all three run in parallel.
+# Release notes are generated in android.yml only, so the three cannot overwrite them.
 
 on:
   push:
@@ -27,7 +27,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          # 项目是 net10.0,不是 8.0。
+          # The project targets net10.0, not 8.0.
           dotnet-version: 10.0.x
 
       - name: Resolve version
@@ -42,8 +42,8 @@ jobs:
           Write-Host "Log: version -> $display"
           "display=$display" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
-      # 入口项目是 LoliaFrpClient.Desktop:LoliaFrpClient 已经从 exe 改成共享库,
-      # 直接发布它只会得到一个 dll。
+      # The entry project is LoliaFrpClient.Desktop. LoliaFrpClient is a shared library
+      # now, so publishing it directly would only produce a dll.
       - name: Publish win-x64
         run: >
           dotnet publish LoliaFrpClient.Desktop/LoliaFrpClient.Desktop.csproj

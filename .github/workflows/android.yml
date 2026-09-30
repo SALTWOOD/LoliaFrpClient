@@ -1,10 +1,10 @@
 name: Android
 
-# 与 desktop-windows.yml / desktop-linux.yml 完全独立,三个 workflow 并行跑。
-# 发布说明在这里生成一次就够,另外两个只负责挂文件。
+# Independent of desktop-windows.yml and desktop-linux.yml; all three run in parallel.
+# Release notes are generated here only, so the other two cannot overwrite them.
 #
-# frpc 不从上游 release 下预编译产物,而是按 FRPC_REF 拉源码现编:
-# 这样内置哪个版本由这里决定,能跟上游任意 tag / 分支 / commit 走。
+# frpc is built from source at FRPC_REF instead of downloaded prebuilt from upstream,
+# so the bundled version is chosen here and can follow any tag, branch or commit.
 
 on:
   push:
@@ -15,7 +15,7 @@ on:
   workflow_dispatch:
     inputs:
       frpc_ref:
-        description: "lolia-frp 的 tag / 分支 / commit(决定内置 frpc 的版本)"
+        description: "lolia-frp tag / branch / commit (sets the bundled frpc version)"
         required: false
         default: "v0.71.1"
         type: string
@@ -24,12 +24,12 @@ permissions:
   contents: write
 
 env:
-  # 手动触发时可以覆盖成别的版本,例如 v0.70.0 或某个 commit。
+  # Override on manual runs, e.g. v0.70.0 or a commit.
   FRPC_REF: ${{ inputs.frpc_ref || 'v0.71.1' }}
   NDK_VERSION: r26c
 
 jobs:
-  # ── 从源码编译 frpc ──
+  # ── Build frpc from source ──
   frpc:
     name: frpc (${{ matrix.abi }})
     runs-on: ubuntu-latest
@@ -57,7 +57,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          # 跟着源码自己声明的版本走,上游升 Go 时这里不用改。
+          # Follows the version the source declares; nothing to edit when upstream bumps Go.
           go-version-file: go.mod
 
       - name: Cache Android NDK
@@ -77,21 +77,19 @@ jobs:
           unzip -q ndk.zip
           rm -f ndk.zip
 
-      # 必须用 GOOS=android + CGO + NDK,不能用 GOOS=linux + CGO_ENABLED=0。
+      # GOOS=android + CGO + NDK is required here. GOOS=linux + CGO_ENABLED=0 produces a
+      # static binary that runs but cannot resolve any hostname: Go's pure resolver reads
+      # /etc/resolv.conf, which does not exist on Android, so it falls back to [::1]:53 and
+      # fails. Measured on a real device: LookupHost("api.lolia.link") simply fails.
+      # The app starts frpc with only -t id:token, so frpc must reach api.lolia.link itself
+      # to fetch its config. No DNS means no tunnel.
+      # GOOS=android uses cgo, handing resolution to bionic's getaddrinfo (via netd).
+      # The price is the NDK; upstream pays it too.
       #
-      # 后者出来的是静态二进制,跑得起来、但**解析不了域名**:Go 的纯 Go 解析器要读
-      # /etc/resolv.conf,而 Android 上这个文件不存在,它会退到 [::1]:53 然后 connection refused。
-      # (实测过:同一台设备上 LookupHost("api.lolia.link") 直接失败。)
-      # 而 app 启动 frpc 时只传 -t id:token,服务器地址要靠 frpc 自己去 api.lolia.link 取,
-      # 所以没有域名解析 = 隧道连不上。
-      #
-      # GOOS=android 走 cgo,解析交给 bionic 的 getaddrinfo(它经 netd 说话),这才可用。
-      # 代价是必须配 NDK —— 上游也是这么做的。
-      #
-      # -checklinkname=0:Go 1.23+ 对 pion 依赖 wlynxg/anet 的 //go:linkname net.zoneCache
-      #   在 android 目标上会链接失败,上游 LDFLAGS 里也有这一条。
-      # noweb:浅克隆里没有 web/*/dist,不排掉会在 embed 处报 "pattern dist: no matching files"。
-      #   frpc 的本地 web 面板我们用不上,本应用有自己的界面。
+      # -checklinkname=0: Go 1.23+ fails to link wlynxg/anet's //go:linkname net.zoneCache
+      #   on android targets. Upstream carries the same flag.
+      # noweb: a shallow clone has no web/*/dist, and the embed then fails with
+      #   "pattern dist: no matching files". frpc's local web panel is unused here.
       - name: Build frpc
         env:
           CC: ${{ runner.temp }}/android-ndk-${{ env.NDK_VERSION }}/toolchains/llvm/prebuilt/linux-x86_64/bin/${{ matrix.cc }}
@@ -105,20 +103,20 @@ jobs:
 
           DEST=out/libfrpc.so
           MAGIC="$(od -An -tx1 -N4 "$DEST" | tr -d ' \n')"
-          [ "$MAGIC" = "7f454c46" ] || { echo "不是 ELF(magic=$MAGIC)"; exit 1; }
+          [ "$MAGIC" = "7f454c46" ] || { echo "not an ELF file (magic=$MAGIC)"; exit 1; }
 
-          # 架构核对:GOARCH 写错时会编出一个能打包、要到真机上才以 exec format error 暴露的包。
+          # Arch check: a wrong GOARCH still packages fine and only fails on device.
           MACHINE="$(od -An -tx1 -j18 -N2 "$DEST" | tr -d ' \n')"
           [ "$MACHINE" = "${{ matrix.machine }}" ] \
-            || { echo "架构不符:e_machine=0x$MACHINE,应为 0x${{ matrix.machine }}"; exit 1; }
+            || { echo "wrong arch: e_machine=0x$MACHINE, expected 0x${{ matrix.machine }}"; exit 1; }
 
-          # 必须是动态链接到 Android 的 linker。静态二进制(即错用了 GOOS=linux)能通过上面两项检查,
-          # 却会在设备上解析不了任何域名 —— 这道检查就是为了拦住那个错误。
+          # Must link against Android's linker. A static binary (i.e. GOOS=linux by mistake)
+          # passes both checks above yet resolves no hostname on device; this catches that.
           grep -qa "/system/bin/linker" "$DEST" \
-            || { echo "不是 Android 目标:找不到 /system/bin/linker64 解释器。"; \
-                 echo "多半是误用了 GOOS=linux,那样编出来的是静态二进制,在设备上解析不了域名。"; exit 1; }
+            || { echo "not an Android target: no /system/bin/linker64 interpreter found."; \
+                 echo "most likely GOOS=linux, whose static binary cannot resolve DNS on device."; exit 1; }
 
-          echo "frpc ${{ matrix.abi }}:$(stat -c%s "$DEST") 字节"
+          echo "frpc ${{ matrix.abi }}: $(stat -c%s "$DEST") bytes"
           file "$DEST" || true
 
       - name: Upload frpc
@@ -128,7 +126,7 @@ jobs:
           path: out/libfrpc.so
           retention-days: 1
 
-  # ── 打包 APK ──
+  # ── Package the APKs ──
   apk:
     name: Build APKs
     needs: frpc
@@ -141,9 +139,10 @@ jobs:
       - name: Download frpc
         uses: actions/download-artifact@v4
         with:
-          # 每个 ABI 一个 artifact,下载后各自落在以 artifact 名命名的子目录里,
-          # 下面再摆成 lib/<abi>/libfrpc.so —— SDK 自带的 AutoImport.props 会自动 glob
-          # 这个目录,不要再写 AndroidNativeLibrary(重复项会让 ABI 推断取到错的那条)。
+          # One artifact per ABI, each landing in a subdirectory named after it.
+          # Moved below into lib/<abi>/libfrpc.so, which the SDK's own AutoImport.props
+          # globs automatically. Do not add AndroidNativeLibrary: duplicate entries make
+          # the ABI inference pick the wrong one.
           pattern: frpc-*
           path: frpc-libs
 
@@ -153,7 +152,7 @@ jobs:
           for abi in arm64-v8a x86_64; do
             mkdir -p "LoliaFrpClient.Android/lib/$abi"
             mv "frpc-libs/frpc-$abi/libfrpc.so" "LoliaFrpClient.Android/lib/$abi/libfrpc.so"
-            echo "$abi: $(stat -c%s "LoliaFrpClient.Android/lib/$abi/libfrpc.so") 字节"
+            echo "$abi: $(stat -c%s "LoliaFrpClient.Android/lib/$abi/libfrpc.so") bytes"
           done
           rm -rf frpc-libs
 
@@ -166,7 +165,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          # .NET Android 要求的 JDK 17(21 也能跑,但 17 是官方支持版本)。
+          # .NET Android requires JDK 17 (21 works, but 17 is the supported one).
           java-version: '17'
 
       - name: Install Android workload
@@ -197,7 +196,8 @@ jobs:
           -p:AndroidSdkDirectory="$ANDROID_SDK_ROOT"
           -p:JavaSdkDirectory="$JAVA_HOME"
 
-      # 预览包:给模拟器看界面、跑隧道用,真机几乎没有 x86_64。
+      # Preview build: lets an emulator show the UI and run tunnels. Real x86_64 phones
+      # are essentially nonexistent, and upstream ships no x86_64 frpc.
       - name: Build APK (x86_64, emulator preview)
         run: >
           dotnet build LoliaFrpClient.Android/LoliaFrpClient.Android.csproj
@@ -211,7 +211,8 @@ jobs:
           A="${{ steps.v.outputs.app }}"
           F="${{ steps.v.outputs.frpc }}"
           BIN=LoliaFrpClient.Android/bin/Release/net10.0-android
-          # 文件名带上内置 frpc 的版本:同一个 app 版本可以出多个 frpc 版本。
+          # The filename carries the bundled frpc version, so one app version can ship
+          # against several frpc versions.
           cp "$BIN/android-arm64/com.loliafrp.client-Signed.apk" \
              "LoliaFrpClient_${A}_android-arm64_frpc-${F}.apk"
           cp "$BIN/android-x64/com.loliafrp.client-Signed.apk" \
