@@ -1,10 +1,16 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:sty="using:FluentAvalonia.Styling"
+             xmlns:conv="using:LoliaFrpClient.Converters"
              xmlns:local="using:LoliaFrpClient"
              x:Class="LoliaFrpClient.App"
              RequestedThemeVariant="Default">
     <!-- RequestedThemeVariant="Default" 表示跟随系统。 -->
+
+    <Application.Resources>
+        <!-- 窄屏/宽屏二选一,用法见 CompactValueConverter 的注释。 -->
+        <conv:CompactValueConverter x:Key="CompactValue" />
+    </Application.Resources>
 
     <Application.DataTemplates>
         <local:ViewLocator />
@@ -17,8 +23,8 @@
            SystemFillColorSuccessBrush 等),因此本项目不再引用 Avalonia.Themes.Fluent。
         -->
         <sty:FluentAvaloniaTheme PreferSystemTheme="True"
-                                 PreferUserAccentColor="True"/>
+                                 PreferUserAccentColor="True" />
 
-        <StyleInclude Source="avares://LoliaFrpClient/Styles/Tokens.axaml"/>
+        <StyleInclude Source="avares://LoliaFrpClient/Styles/Tokens.axaml" />
     </Application.Styles>
 </Application>

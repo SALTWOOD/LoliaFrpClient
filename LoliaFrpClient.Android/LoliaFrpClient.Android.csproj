@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net10.0-android</TargetFramework>
+        <Nullable>enable</Nullable>
+        <SupportedOSPlatformVersion>24</SupportedOSPlatformVersion>
+        <ApplicationId>com.loliafrp.client</ApplicationId>
+        <ApplicationVersion>1</ApplicationVersion>
+        <ApplicationDisplayVersion>0.1.0</ApplicationDisplayVersion>
+        <!-- apk 而不是 aab:这是自己装到真机上测的,不走商店。 -->
+        <AndroidPackageFormat>apk</AndroidPackageFormat>
+        <!--
+          frpc 是以 libfrpc.so 的名字打进 APK 的,必须让安装器把它解压到 native lib 目录。
+          Android 10 (API 29) 起禁止执行应用可写目录里的文件,而 native lib 目录是可执行的,
+          所以这是不 root 也能跑 frpc 的唯一办法。若为 false,它会留在 APK 里不可执行。
+        -->
+        <AndroidExtractNativeLibs>true</AndroidExtractNativeLibs>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Avalonia.Android" Version="12.1.3"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\LoliaFrpClient\LoliaFrpClient.csproj"/>
+    </ItemGroup>
+
+    <!--
+      内置的 frpc 放在 lib/<abi>/libfrpc.so,由 Android SDK 自带的 AutoImport.props 自动收录
+      (它已经对 lib/**/*.so 做了 glob)。这里不要再写一条 AndroidNativeLibrary:
+      重复项会让 ABI 推断取到错的那一条,x86_64 会被整个丢掉,arm64 能过纯属侥幸。
+
+      上游只发 android_arm 和 android_arm64,没有 x86 系列,所以模拟器上跑不了隧道。
+    -->
+</Project>

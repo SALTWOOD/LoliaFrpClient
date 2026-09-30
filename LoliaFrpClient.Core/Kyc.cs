@@ -4,12 +4,8 @@ using LoliaFrpClient.Api.User.Kyc.Status;
 
 namespace LoliaFrpClient.Core;
 
-/// <summary>
-///     实名认证。操作对象是当前登录用户自己的认证状态,没有独立身份,故只提供静态方法。
-/// </summary>
 public static class Kyc
 {
-    /// <summary>取实名认证状态。</summary>
     public static Task<ApiResult<StatusGetResponse_data>> GetStatusAsync(
         ApiSession? session = null,
         CancellationToken cancellationToken = default)
@@ -22,7 +18,6 @@ public static class Kyc
             cancellationToken);
     }
 
-    /// <summary>查询当前用户的认证结果。</summary>
     public static Task<ApiResult<QueryGetResponse_data>> QueryAsync(
         ApiSession? session = null,
         CancellationToken cancellationToken = default)
@@ -35,7 +30,6 @@ public static class Kyc
             cancellationToken);
     }
 
-    /// <summary>按订单号查询认证结果。</summary>
     public static Task<ApiResult<QueryPostResponse_data>> QueryByOrderAsync(
         string orderNo,
         ApiSession? session = null,
@@ -51,7 +45,6 @@ public static class Kyc
             cancellationToken);
     }
 
-    /// <summary>提交实名认证。</summary>
     public static Task<ApiResult<InitPostResponse_data>> InitAsync(
         InitPostRequestBody request,
         ApiSession? session = null,

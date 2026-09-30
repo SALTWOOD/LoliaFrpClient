@@ -8,28 +8,39 @@
 
         <!-- ── 标题 + 主操作 ── -->
         <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,16">
-            <TextBlock Grid.Column="0" Text="隧道" Classes="pageTitle" VerticalAlignment="Center"/>
-            <!-- TODO: 接入 Tunnel 创建流程(需要一张填写节点/类型/本地端口的表单) -->
+            <TextBlock Grid.Column="0" Text="隧道" Classes="pageTitle" VerticalAlignment="Center" />
             <Button Grid.Column="1" Content="新建隧道" VerticalAlignment="Center"
-                    Classes="accent"/>
+                    Classes="accent"
+                    Command="{Binding CreateTunnelCommand}" />
         </Grid>
 
         <!-- ── 工具条 ── -->
-        <Grid Grid.Row="1" ColumnDefinitions="*,Auto" Margin="0,0,0,12">
-            <TextBox Grid.Column="0"
+        <!--
+          窄屏放不下「搜索框 + 筛选 + 刷新」一行:光筛选和刷新就占掉 264dp,
+          留给搜索框的不足 60dp。所以窄屏折成两行,搜索框独占第一行。
+        -->
+        <Grid Grid.Row="1" ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto"
+              RowSpacing="8" Margin="0,0,0,12">
+            <TextBox Grid.Row="0"
+                     Grid.Column="0"
+                     Grid.ColumnSpan="{Binding IsCompact, Converter={StaticResource CompactValue}, ConverterParameter='1|2'}"
                      Text="{Binding SearchText}"
                      PlaceholderText="搜索隧道名称、节点或备注"
                      MaxWidth="360"
-                     HorizontalAlignment="Left"/>
-            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                     HorizontalAlignment="Left" />
+            <StackPanel
+                Grid.Row="{Binding IsCompact, Converter={StaticResource CompactValue}, ConverterParameter='0|1'}"
+                Grid.Column="{Binding IsCompact, Converter={StaticResource CompactValue}, ConverterParameter='1|0'}"
+                Grid.ColumnSpan="{Binding IsCompact, Converter={StaticResource CompactValue}, ConverterParameter='1|2'}"
+                Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
                 <ComboBox ItemsSource="{Binding TypeFilters}"
                           SelectedItem="{Binding SelectedTypeFilter}"
-                          MinWidth="120"/>
+                          MinWidth="120" />
                 <ProgressBar IsIndeterminate="True"
                              Width="80"
                              VerticalAlignment="Center"
-                             IsVisible="{Binding IsLoading}"/>
-                <Button Content="刷新" Command="{Binding LoadCommand}"/>
+                             IsVisible="{Binding IsLoading}" />
+                <Button Content="刷新" Command="{Binding LoadCommand}" />
             </StackPanel>
         </Grid>
 
@@ -40,7 +51,7 @@
                 Padding="12"
                 BorderBrush="{DynamicResource TunnelErrorBrush}"
                 IsVisible="{Binding ErrorMessage, Converter={x:Static ObjectConverters.IsNotNull}}">
-            <TextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap"/>
+            <TextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" />
         </Border>
 
         <!-- ── 空状态 ── -->
@@ -49,8 +60,8 @@
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     IsVisible="{Binding IsEmpty}">
-            <TextBlock Text="没有隧道" Classes="sectionTitle" HorizontalAlignment="Center"/>
-            <TextBlock Text="还没有隧道,或当前筛选条件没有匹配项。" Classes="caption" HorizontalAlignment="Center"/>
+            <TextBlock Text="没有隧道" Classes="sectionTitle" HorizontalAlignment="Center" />
+            <TextBlock Text="还没有隧道,或当前筛选条件没有匹配项。" Classes="caption" HorizontalAlignment="Center" />
         </StackPanel>
 
         <!-- ── 隧道列表 ── -->
@@ -68,35 +79,35 @@
                                          Classes.online="{Binding IsOnline}"
                                          Classes.offline="{Binding IsOffline}"
                                          Classes.starting="{Binding IsStarting}"
-                                         Classes.error="{Binding IsError}"/>
+                                         Classes.error="{Binding IsError}" />
 
                                 <StackPanel Grid.Column="1" Spacing="4">
                                     <StackPanel Orientation="Horizontal" Spacing="8">
-                                        <TextBlock Text="{Binding PrimaryLabel}" FontWeight="SemiBold"/>
+                                        <TextBlock Text="{Binding PrimaryLabel}" FontWeight="SemiBold" />
                                         <Border Background="{DynamicResource ControlFillColorDefaultBrush}"
                                                 CornerRadius="4"
                                                 Padding="6,1">
-                                            <TextBlock Text="{Binding Type}" Classes="caption"/>
+                                            <TextBlock Text="{Binding Type}" Classes="caption" />
                                         </Border>
                                     </StackPanel>
                                     <!-- 隧道名(32 位随机十六进制)只在有备注时作为副标题出现,
                                          没备注时它已经当主标题了。 -->
                                     <TextBlock Text="{Binding SecondaryName}"
                                                Classes="caption"
-                                               IsVisible="{Binding SecondaryName, Converter={x:Static ObjectConverters.IsNotNull}}"/>
-                                    <TextBlock Text="{Binding EndpointSummary}" Classes="caption"/>
+                                               IsVisible="{Binding SecondaryName, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                                    <TextBlock Text="{Binding EndpointSummary}" Classes="caption" />
                                 </StackPanel>
 
                                 <TextBlock Grid.Column="2"
                                            Text="{Binding StatusText}"
                                            Classes="caption"
-                                           VerticalAlignment="Center"/>
+                                           VerticalAlignment="Center" />
 
-                                <!-- TODO: 接入 Tunnel 启停 / 详情 / 删除 -->
-                                <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="4">
-                                    <Button Content="启动" Classes="subtle"/>
-                                    <Button Content="详情"/>
-                                </StackPanel>
+                                <Button Grid.Column="3"
+                                        Content="详情"
+                                        VerticalAlignment="Center"
+                                        CommandParameter="{Binding}"
+                                        Command="{Binding $parent[ItemsControl].((vm:TunnelListViewModel)DataContext).ShowDetailCommand}" />
                             </Grid>
                         </Border>
                     </DataTemplate>

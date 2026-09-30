@@ -1,0 +1,87 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:LoliaFrpClient.ViewModels"
+             x:Class="LoliaFrpClient.Views.MobileShellView"
+             x:DataType="vm:MainViewModel">
+
+    <UserControl.Styles>
+        <!--
+          底栏按钮自身不带任何底色:栏体已经有背景了,再叠一层 Fluent 的默认 Button 填充
+          会变成一个个灰方块。悬停/按下的反馈交给主题模板,所以只压 rest 态的 Background。
+        -->
+        <Style Selector="Button.navTab">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="CornerRadius" Value="0" />
+            <Setter Property="Padding" Value="0,8" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+        </Style>
+
+        <Style Selector="Button.navTab Path">
+            <Setter Property="Fill" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+        </Style>
+
+        <Style Selector="Button.navTab TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+        </Style>
+
+        <Style Selector="Button.navTab.selected Path">
+            <Setter Property="Fill" Value="{DynamicResource AccentFillColorDefaultBrush}" />
+        </Style>
+
+        <Style Selector="Button.navTab.selected TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource AccentFillColorDefaultBrush}" />
+        </Style>
+    </UserControl.Styles>
+
+    <Grid RowDefinitions="*,Auto">
+        <TransitioningContentControl Grid.Row="0" Content="{Binding CurrentPage}">
+            <TransitioningContentControl.PageTransition>
+                <CrossFade Duration="0:0:0.15" />
+            </TransitioningContentControl.PageTransition>
+        </TransitioningContentControl>
+
+        <!--
+          导航由左侧栏改为底栏:手机竖屏只有 360dp 左右宽,220dp 的侧栏要吃掉三分之二。
+          Bottom padding 由 code-behind 补成平台的安全区内边距,否则会被手势条盖住。
+        -->
+        <Border x:Name="NavBar"
+                Grid.Row="1"
+                BorderThickness="0,1,0,0"
+                BorderBrush="{DynamicResource DividerStrokeColorDefaultBrush}"
+                Background="{DynamicResource SolidBackgroundFillColorSecondaryBrush}">
+            <ItemsControl ItemsSource="{Binding NavItems}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <UniformGrid Rows="1" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:NavItem">
+                        <Button Classes="navTab"
+                                Classes.selected="{Binding IsSelected}"
+                                CommandParameter="{Binding Tag}"
+                                Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).NavigateCommand}">
+                            <StackPanel Spacing="2">
+                                <!--
+                                  图标先放进固定 24x24 的 Canvas 再由 Viewbox 缩放。直接给 Path 加
+                                  Stretch 会把每个图按各自的外接框拉满,云朵那种小图会被放大到和
+                                  四宫格一样大,一组图标看着就不齐了。
+                                -->
+                                <Viewbox Width="22" Height="22" HorizontalAlignment="Center">
+                                    <Canvas Width="24" Height="24">
+                                        <Path Data="{Binding Icon}" />
+                                    </Canvas>
+                                </Viewbox>
+                                <TextBlock Text="{Binding Title}"
+                                           FontSize="11"
+                                           HorizontalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </Border>
+    </Grid>
+</UserControl>

@@ -73,13 +73,10 @@ public static class OAuthLogin
                 var detail = string.IsNullOrEmpty(callback.ErrorDescription)
                     ? callback.Error
                     : $"{callback.Error}:{callback.ErrorDescription}";
-                return Failure($"授权未通过({detail})。", ApiFailureKind.Business);
+                return Failure($"授权未通过({detail})。", ApiFailureKind.BadRequest);
             }
 
-            if (string.IsNullOrEmpty(callback.Code))
-            {
-                return Failure("回调地址上没有授权码。", ApiFailureKind.Business);
-            }
+            if (string.IsNullOrEmpty(callback.Code)) return Failure("回调地址上没有授权码。", ApiFailureKind.BadRequest);
 
             OAuthTokenResponse token;
             try
@@ -90,7 +87,7 @@ public static class OAuthLogin
             catch (InvalidOperationException ex)
             {
                 // state 校验失败或没先发起授权。重试即可,不是服务端故障。
-                return Failure(ex.Message, ApiFailureKind.Business);
+                return Failure(ex.Message, ApiFailureKind.BadRequest);
             }
             catch (Exception ex)
             {
@@ -102,10 +99,7 @@ public static class OAuthLogin
             api.Tokens.Origin = TokenOrigin.OAuth2;
 
             var me = await User.MeAsync(api, cancellationToken).ConfigureAwait(false);
-            if (me.IsSuccess)
-            {
-                return me;
-            }
+            if (me.IsSuccess) return me;
 
             // 令牌已经到手,登录本身是成功的;资料没取到不该让调用方以为没登上。
             return new ApiResult<User>
@@ -118,11 +112,14 @@ public static class OAuthLogin
         }
     }
 
-    private static ApiResult<User> Failure(string msg, ApiFailureKind kind) => new()
+    private static ApiResult<User> Failure(string msg, ApiFailureKind kind)
     {
-        IsSuccess = false,
-        Code = 0,
-        Msg = msg,
-        Failure = kind
-    };
+        return new ApiResult<User>
+        {
+            IsSuccess = false,
+            Code = 0,
+            Msg = msg,
+            Failure = kind
+        };
+    }
 }

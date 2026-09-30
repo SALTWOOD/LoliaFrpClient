@@ -12,10 +12,18 @@
             <!-- ── 隧道状态语义色 ──
                  隧道在线与否是本应用最重要的信息,单独给一套令牌,
                  不与普通强调色混用。 -->
-            <SolidColorBrush x:Key="TunnelOnlineBrush" Color="#22C55E"/>
-            <SolidColorBrush x:Key="TunnelOfflineBrush" Color="#8A8A8E"/>
-            <SolidColorBrush x:Key="TunnelErrorBrush" Color="#EF4444"/>
-            <SolidColorBrush x:Key="TunnelStartingBrush" Color="#F59E0B"/>
+            <SolidColorBrush x:Key="TunnelOnlineBrush" Color="#22C55E" />
+            <SolidColorBrush x:Key="TunnelOfflineBrush" Color="#8A8A8E" />
+            <SolidColorBrush x:Key="TunnelErrorBrush" Color="#EF4444" />
+            <SolidColorBrush x:Key="TunnelStartingBrush" Color="#F59E0B" />
+            <!-- Online but not owned by this client. Not green on purpose: green reads as
+                 actionable, and this state permits neither start nor stop. -->
+            <SolidColorBrush x:Key="TunnelRemoteBrush" Color="#3B82F6" />
+
+            <!-- ── 品牌 ──
+                 取自 AppIcon_Full_Color.png 的粉色。品牌粉在深浅两种背景上都够清晰,
+                 所以写死而不挂主题画刷;字标那半则跟随主题前景色(见 MainWindow 的 PaneHeader)。 -->
+            <SolidColorBrush x:Key="BrandGlyphBrush" Color="#FF81AC" />
 
             <!-- ── 间距刻度(4px 基准) ── -->
             <x:Double x:Key="SpaceXs">4</x:Double>
@@ -39,60 +47,63 @@
 
     <!-- 卡片:FluentAvalonia 3.x 未提供 Card 控件,用 Border 组合出 Fluent 2 的卡片外观 -->
     <Style Selector="Border.card">
-        <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorDefaultBrush}"/>
-        <Setter Property="BorderBrush" Value="{DynamicResource DividerStrokeColorDefaultBrush}"/>
-        <Setter Property="BorderThickness" Value="1"/>
-        <Setter Property="CornerRadius" Value="{DynamicResource RadiusCard}"/>
-        <Setter Property="Padding" Value="{DynamicResource CardPadding}"/>
+        <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorDefaultBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource DividerStrokeColorDefaultBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="{DynamicResource RadiusCard}" />
+        <Setter Property="Padding" Value="{DynamicResource CardPadding}" />
     </Style>
 
     <!-- 页面标题 -->
     <Style Selector="TextBlock.pageTitle">
-        <Setter Property="FontSize" Value="28"/>
-        <Setter Property="FontWeight" Value="SemiBold"/>
-        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+        <Setter Property="FontSize" Value="28" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
     </Style>
 
     <!-- 区块标题 -->
     <Style Selector="TextBlock.sectionTitle">
-        <Setter Property="FontSize" Value="16"/>
-        <Setter Property="FontWeight" Value="SemiBold"/>
-        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+        <Setter Property="FontSize" Value="16" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
     </Style>
 
     <!-- 说明文字 -->
     <Style Selector="TextBlock.caption">
-        <Setter Property="FontSize" Value="12"/>
-        <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}"/>
-        <Setter Property="TextWrapping" Value="Wrap"/>
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+        <Setter Property="TextWrapping" Value="Wrap" />
     </Style>
 
     <!-- 数值展示(统计卡里的主数字)。等宽以便数字跳动时不对齐抖动。 -->
     <Style Selector="TextBlock.metric">
-        <Setter Property="FontSize" Value="26"/>
-        <Setter Property="FontWeight" Value="SemiBold"/>
-        <Setter Property="FontFamily" Value="Cascadia Mono,Consolas,DejaVu Sans Mono,monospace"/>
-        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+        <Setter Property="FontSize" Value="26" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="FontFamily" Value="Cascadia Mono,Consolas,DejaVu Sans Mono,monospace" />
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
     </Style>
 
     <!-- 隧道状态圆点。配合 XAML 上的 Classes.online / .offline / .starting / .error 绑定使用,
          这样不必为状态→颜色写值转换器。 -->
     <Style Selector="Ellipse.statusDot">
-        <Setter Property="Width" Value="8"/>
-        <Setter Property="Height" Value="8"/>
-        <Setter Property="VerticalAlignment" Value="Center"/>
-        <Setter Property="Fill" Value="{DynamicResource TunnelOfflineBrush}"/>
+        <Setter Property="Width" Value="8" />
+        <Setter Property="Height" Value="8" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="Fill" Value="{DynamicResource TunnelOfflineBrush}" />
     </Style>
     <Style Selector="Ellipse.statusDot.online">
-        <Setter Property="Fill" Value="{DynamicResource TunnelOnlineBrush}"/>
+        <Setter Property="Fill" Value="{DynamicResource TunnelOnlineBrush}" />
     </Style>
     <Style Selector="Ellipse.statusDot.offline">
-        <Setter Property="Fill" Value="{DynamicResource TunnelOfflineBrush}"/>
+        <Setter Property="Fill" Value="{DynamicResource TunnelOfflineBrush}" />
     </Style>
     <Style Selector="Ellipse.statusDot.starting">
-        <Setter Property="Fill" Value="{DynamicResource TunnelStartingBrush}"/>
+        <Setter Property="Fill" Value="{DynamicResource TunnelStartingBrush}" />
     </Style>
     <Style Selector="Ellipse.statusDot.error">
-        <Setter Property="Fill" Value="{DynamicResource TunnelErrorBrush}"/>
+        <Setter Property="Fill" Value="{DynamicResource TunnelErrorBrush}" />
+    </Style>
+    <Style Selector="Ellipse.statusDot.remote">
+        <Setter Property="Fill" Value="{DynamicResource TunnelRemoteBrush}" />
     </Style>
 </Styles>

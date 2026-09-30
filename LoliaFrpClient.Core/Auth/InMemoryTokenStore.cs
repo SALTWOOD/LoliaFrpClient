@@ -1,8 +1,5 @@
 namespace LoliaFrpClient.Core;
 
-/// <summary>
-///     纯内存的凭证存储。用于测试,或宿主应用自行管理持久化时使用。
-/// </summary>
 public sealed class InMemoryTokenStore : ITokenStore
 {
     private readonly object _gate = new();
@@ -10,7 +7,6 @@ public sealed class InMemoryTokenStore : ITokenStore
     private TokenOrigin _origin;
     private string? _refreshToken;
 
-    /// <inheritdoc />
     public string? AccessToken
     {
         get
@@ -29,7 +25,6 @@ public sealed class InMemoryTokenStore : ITokenStore
         }
     }
 
-    /// <inheritdoc />
     public string? RefreshToken
     {
         get
@@ -48,7 +43,6 @@ public sealed class InMemoryTokenStore : ITokenStore
         }
     }
 
-    /// <inheritdoc />
     public TokenOrigin Origin
     {
         get
@@ -67,7 +61,6 @@ public sealed class InMemoryTokenStore : ITokenStore
         }
     }
 
-    /// <inheritdoc />
     public void Clear()
     {
         lock (_gate)

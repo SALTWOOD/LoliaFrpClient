@@ -21,17 +21,12 @@ public partial class MainWindow : Window
         base.OnOpened(e);
 
         // 首屏不经过导航事件,补一次取数。
-        if (DataContext is MainViewModel viewModel)
-        {
-            await viewModel.RefreshAsync();
-        }
+        if (DataContext is MainViewModel viewModel) await viewModel.RefreshAsync();
     }
 
     private async void OnNavigationSelectionChanged(object? sender, FANavigationViewSelectionChangedEventArgs e)
     {
         if (DataContext is MainViewModel viewModel && e.SelectedItem is FANavigationViewItem item)
-        {
             await viewModel.NavigateAsync(item.Tag as string);
-        }
     }
 }

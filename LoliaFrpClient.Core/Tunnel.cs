@@ -1,41 +1,25 @@
 using LoliaFrpClient.Api.User.Tunnel;
 using LoliaFrpClient.Api.User.Tunnel.Item;
+using LoliaFrpClient.Core.Frpc;
 
 namespace LoliaFrpClient.Core;
 
-/// <summary>
-///     隧道实体。由 <see cref="User" /> 的创建/列表方法产出,也可用 <see cref="GetAsync" /> 直接取。
-///     <para>身份是隧道名——服务端用 <c>/user/tunnel/{tunnel_name}</c> 作为路径,所以名字即主键。</para>
-/// </summary>
 public sealed class Tunnel : ApiFacade
 {
-    /// <summary>用当前会话创建一个指向指定隧道的引用。</summary>
-    /// <param name="name">隧道名称。</param>
     public Tunnel(string name) : this(name, ApiSession.Current)
     {
     }
 
-    /// <summary>用指定会话创建一个指向指定隧道的引用。</summary>
     public Tunnel(string name, ApiSession session) : base(session)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         Name = name;
     }
 
-    /// <summary>隧道名称,同时是路径标识。</summary>
     public string Name { get; }
 
-    /// <summary>
-    ///     最近一次从服务端取到的隧道概要:类型、节点、端口、在线状态、备注都在这里。
-    /// </summary>
-    /// <remarks>
-    ///     只有 <see cref="ListAsync" /> 产出的实体会带上它。按名构造的引用、以及
-    ///     <see cref="GetAsync" /> / <see cref="GetDetailAsync" /> 的结果上都是 <c>null</c>——
-    ///     后两者返回的是另一个生成的 DTO 类型,字段相同但类型不同,不在此做转换。
-    /// </remarks>
     public TunnelGetResponse_data_list? Summary { get; private init; }
 
-    /// <summary>按名称取隧道。</summary>
     public static async Task<ApiResult<Tunnel>> GetAsync(
         string name,
         ApiSession? session = null,
@@ -52,7 +36,6 @@ public sealed class Tunnel : ApiFacade
         return result.With(result.IsSuccess ? new Tunnel(result.Data?.Name ?? name, api) : null);
     }
 
-    /// <summary>取当前用户的隧道列表。</summary>
     public static async Task<ApiResult<IReadOnlyList<Tunnel>>> ListAsync(
         ApiSession? session = null,
         CancellationToken cancellationToken = default)
@@ -65,34 +48,146 @@ public sealed class Tunnel : ApiFacade
             cancellationToken).ConfigureAwait(false);
 
         IReadOnlyList<Tunnel>? tunnels = result.IsSuccess
-            ? [.. (result.Data?.List ?? [])
+            ?
+            [
+                .. (result.Data?.List ?? [])
                 .Where(item => !string.IsNullOrWhiteSpace(item.Name))
-                .Select(item => new Tunnel(item.Name!, api) { Summary = item })]
+                .Select(item => new Tunnel(item.Name!, api) { Summary = item })
+            ]
             : null;
 
         return result.With(tunnels);
     }
 
-    /// <summary>修改本隧道。</summary>
     public Task<ApiResult<WithTunnel_namePutResponse_data>> UpdateAsync(
         WithTunnel_namePutRequestBody changes,
-        CancellationToken cancellationToken = default) =>
-        ApiCall.RunAsync<WithTunnel_namePutResponse, WithTunnel_namePutResponse_data>(
+        CancellationToken cancellationToken = default)
+    {
+        return ApiCall.RunAsync<WithTunnel_namePutResponse, WithTunnel_namePutResponse_data>(
             c => Client.User.Tunnel[Name].PutAsWithTunnel_namePutResponseAsync(changes, cancellationToken: c),
             r => (r.Code, r.Msg, r.Data),
             cancellationToken);
+    }
 
-    /// <summary>删除本隧道。</summary>
-    public Task<ApiResult> DeleteAsync(CancellationToken cancellationToken = default) =>
-        ApiCall.RunAsync<WithTunnel_nameDeleteResponse>(
+    public Task<ApiResult> DeleteAsync(CancellationToken cancellationToken = default)
+    {
+        return ApiCall.RunAsync<WithTunnel_nameDeleteResponse>(
             c => Client.User.Tunnel[Name].DeleteAsWithTunnel_nameDeleteResponseAsync(cancellationToken: c),
             r => (r.Code, r.Msg),
             cancellationToken);
+    }
 
-    /// <summary>取本隧道的详情快照。</summary>
-    public Task<ApiResult<WithTunnel_nameGetResponse_data>> GetDetailAsync(CancellationToken cancellationToken = default) =>
-        ApiCall.RunAsync<WithTunnel_nameGetResponse, WithTunnel_nameGetResponse_data>(
+    public Task<ApiResult<WithTunnel_nameGetResponse_data>> GetDetailAsync(
+        CancellationToken cancellationToken = default)
+    {
+        return ApiCall.RunAsync<WithTunnel_nameGetResponse, WithTunnel_nameGetResponse_data>(
             c => Client.User.Tunnel[Name].GetAsWithTunnel_nameGetResponseAsync(cancellationToken: c),
             r => (r.Code, r.Msg, r.Data),
             cancellationToken);
+    }
+
+    // Mapped out of the generated DTO so callers never have to reference the Api project.
+    public async Task<ApiResult<TunnelDetail>> GetDetailInfoAsync(CancellationToken cancellationToken = default)
+    {
+        var detail = await GetDetailAsync(cancellationToken).ConfigureAwait(false);
+        if (!detail.IsSuccess || detail.Data is not { } data) return detail.With<TunnelDetail>(null);
+
+        return detail.With(new TunnelDetail
+        {
+            Id = data.Id ?? 0,
+            Name = data.Name ?? Name,
+            Remark = data.Remark,
+            Type = data.Type,
+            NodeName = data.NodeName,
+            NodeAddress = data.NodeAddress,
+            LocalIp = data.LocalIp,
+            LocalPort = data.LocalPort,
+            RemotePort = data.RemotePort,
+            CustomDomain = data.CustomDomain,
+            Status = data.Status,
+            CreatedAt = data.CreatedAt,
+            BandwidthLimit = data.BandwidthLimit,
+            ClientVersion = data.ClientVersion,
+            Token = data.TunnelToken
+        });
+    }
+
+    public static async Task<ApiResult<Tunnel>> CreateAsync(
+        CreateTunnelSpec spec,
+        ApiSession? session = null,
+        CancellationToken cancellationToken = default)
+    {
+        var api = session ?? ApiSession.Current;
+
+        var result = await ApiCall.RunAsync<TunnelPostResponse, TunnelPostResponse_data>(
+            c => api.Client.User.Tunnel.PostAsTunnelPostResponseAsync(
+                new TunnelPostRequestBody
+                {
+                    NodeId = spec.NodeId,
+                    Type = ParseType(spec.Type),
+                    LocalIp = spec.LocalIp,
+                    LocalPort = spec.LocalPort,
+                    RemotePort = spec.RemotePort,
+                    CustomDomain = spec.CustomDomain,
+                    Remark = spec.Remark
+                },
+                cancellationToken: c),
+            r => (r.Code, r.Msg, r.Data),
+            cancellationToken).ConfigureAwait(false);
+
+        // A returned name is proof the tunnel exists, so creation is not reported as failed
+        // purely because the envelope's code was unexpected.
+        var name = result.Data?.Name;
+        if (string.IsNullOrWhiteSpace(name)) return result.With<Tunnel>(null);
+
+        var tunnel = new Tunnel(name, api);
+
+        return result.IsSuccess
+            ? result.With(tunnel)
+            : new ApiResult<Tunnel> { IsSuccess = true, Code = result.Code, Msg = result.Msg, Data = tunnel };
+    }
+
+    // The generated body takes an enum; the facade keeps strings so callers stay DTO-free.
+    private static TunnelPostRequestBody_type ParseType(string type)
+    {
+        return type.ToLowerInvariant() switch
+        {
+            "udp" => TunnelPostRequestBody_type.Udp,
+            "http" => TunnelPostRequestBody_type.Http,
+            "https" => TunnelPostRequestBody_type.Https,
+            _ => TunnelPostRequestBody_type.Tcp
+        };
+    }
+
+    public Task<ApiResult> UpdateRemarkAsync(string? remark, CancellationToken cancellationToken = default)
+    {
+        return ApiCall.RunAsync<WithTunnel_namePutResponse>(
+            c => Client.User.Tunnel[Name].PutAsWithTunnel_namePutResponseAsync(
+                new WithTunnel_namePutRequestBody { Remark = remark },
+                cancellationToken: c),
+            r => (r.Code, r.Msg),
+            cancellationToken);
+    }
+
+    public async Task<ApiResult<FrpcLaunchCredential>> GetLaunchCredentialAsync(
+        CancellationToken cancellationToken = default)
+    {
+        var detail = await GetDetailAsync(cancellationToken).ConfigureAwait(false);
+        if (!detail.IsSuccess) return detail.With<FrpcLaunchCredential>(null);
+
+        var token = detail.Data?.TunnelToken;
+        if (string.IsNullOrWhiteSpace(token))
+            return new ApiResult<FrpcLaunchCredential>
+            {
+                Code = detail.Code,
+                Msg = "服务端未返回隧道 token",
+                Failure = ApiFailureKind.Server
+            };
+
+        return detail.With(new FrpcLaunchCredential
+        {
+            TunnelId = detail.Data?.Id ?? 0,
+            Token = token
+        });
+    }
 }

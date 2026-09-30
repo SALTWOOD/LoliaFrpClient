@@ -1,0 +1,35 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:LoliaFrpClient.ViewModels"
+        x:Class="LoliaFrpClient.Views.DownloadFrpcWindow"
+        x:DataType="vm:DownloadFrpcViewModel"
+        Title="安装 / 更新 frpc"
+        Width="480"
+        SizeToContent="Height"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner">
+
+    <StackPanel Margin="24" Spacing="16">
+        <TextBlock Text="frpc 核心" Classes="sectionTitle" />
+
+        <TextBlock Text="{Binding StatusText}"
+                   Classes="caption"
+                   TextWrapping="Wrap"
+                   MinHeight="36" />
+
+        <ProgressBar Minimum="0"
+                     Maximum="100"
+                     Value="{Binding ProgressValue}"
+                     IsIndeterminate="{Binding IsIndeterminate}" />
+
+        <Grid ColumnDefinitions="*,Auto">
+            <TextBlock Grid.Column="0" Text="{Binding ProgressText}" Classes="caption" />
+            <TextBlock Grid.Column="1" Text="{Binding SpeedText}" Classes="caption" />
+        </Grid>
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+            <Button Content="取消" Command="{Binding CancelCommand}" IsEnabled="{Binding CanCancel}" />
+            <Button Content="关闭" Command="{Binding CloseCommand}" IsEnabled="{Binding CanClose}" />
+        </StackPanel>
+    </StackPanel>
+</Window>

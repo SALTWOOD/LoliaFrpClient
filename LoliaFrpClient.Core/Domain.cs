@@ -3,17 +3,8 @@ using DomainVerify = LoliaFrpClient.Api.User.Domain.Verify;
 
 namespace LoliaFrpClient.Core;
 
-/// <summary>
-///     自定义域名。
-///     <para>
-///         这里没有做成实体类,因为列表响应里的域名项没有暴露 <c>domain_id</c>
-///         (见 <c>DomainGetResponse_data_domains</c> 的字段),无法从返回值构造出一个带身份的实体。
-///         删除操作因此需要调用方自行传入 ID。等 spec 补上该字段后再改成实体。
-///     </para>
-/// </summary>
 public static class Domain
 {
-    /// <summary>取域名列表。</summary>
     public static Task<ApiResult<DomainGetResponse_data>> ListAsync(
         ApiSession? session = null,
         CancellationToken cancellationToken = default)
@@ -26,7 +17,6 @@ public static class Domain
             cancellationToken);
     }
 
-    /// <summary>添加域名。</summary>
     public static Task<ApiResult<DomainPostResponse_data>> AddAsync(
         string domain,
         string? remark = null,
@@ -43,7 +33,6 @@ public static class Domain
             cancellationToken);
     }
 
-    /// <summary>验证域名归属。</summary>
     public static Task<ApiResult<DomainVerify.VerifyPostResponse_data>> VerifyAsync(
         string domain,
         ApiSession? session = null,
@@ -59,10 +48,6 @@ public static class Domain
             cancellationToken);
     }
 
-    /// <summary>删除域名。</summary>
-    /// <param name="domainId">域名 ID。列表响应不提供此字段,需由调用方从别处取得。</param>
-    /// <param name="session">目标会话。</param>
-    /// <param name="cancellationToken">取消标记。</param>
     public static Task<ApiResult> DeleteAsync(
         int domainId,
         ApiSession? session = null,

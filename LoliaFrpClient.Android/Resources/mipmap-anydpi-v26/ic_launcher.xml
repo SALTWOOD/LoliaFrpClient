@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 前景是单色图形 + 品牌粉,背景纯白,与 AppIcon_Full_Color 同观感。
+     前景由 scripts/build-icons.ps1 从 AppIcon_Black.svg 渲染而来。 -->
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background android:drawable="@color/ic_launcher_background"/>
+    <foreground android:drawable="@mipmap/ic_launcher_foreground"/>
+</adaptive-icon>

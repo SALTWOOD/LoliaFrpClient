@@ -3,68 +3,77 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading.Tasks;
+using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LoliaFrpClient.Api.User.Traffic.Daily;
 using LoliaFrpClient.Core;
+using LoliaFrpClient.Services;
 
 namespace LoliaFrpClient.ViewModels;
 
-/// <summary>
-///     总览页。用户卡片来自 <c>User.MeAsync()</c>,统计卡来自 <c>Traffic.GetStatsAsync()</c>,
-///     趋势图来自 <c>Traffic.GetDailyAsync()</c>,隧道数量来自 <c>Tunnel.ListAsync()</c>。
-/// </summary>
-public sealed partial class UserInfoViewModel : ViewModelBase
+// Overview page. Profile from User.MeAsync, metrics from Traffic.GetStatsAsync,
+// chart from Traffic.GetDailyAsync, tunnel count from Tunnel.ListAsync.
+public sealed partial class UserInfoViewModel : ViewModelBase, IDisposable
 {
-    /// <summary>柱状图的可用高度(像素)。</summary>
+    // Bar chart height, in pixels.
     private const double MaxBarHeight = 100;
 
     private const string SignedOutHint = "尚未登录,请前往「设置」使用 OAuth 登录";
 
-    /// <summary>顶部三个统计卡。</summary>
+    // The three metric cards at the top.
     public ObservableCollection<MetricCard> Metrics { get; } = [];
 
-    /// <summary>每日流量趋势。</summary>
+    // Daily traffic trend.
     public ObservableCollection<DailyTrafficPoint> DailyTraffic { get; } = [];
 
-    [ObservableProperty]
-    public partial string UserName { get; set; } = "未登录";
+    private readonly AvatarLoader _avatarLoader = new();
 
-    [ObservableProperty]
-    public partial string Email { get; set; } = SignedOutHint;
+    [ObservableProperty] public partial string UserName { get; set; } = "未登录";
 
-    /// <summary>头像占位字符。真实头像接好后改为图片。</summary>
-    [ObservableProperty]
-    public partial string AvatarInitial { get; set; } = "L";
+    [ObservableProperty] public partial string Email { get; set; } = SignedOutHint;
 
-    [ObservableProperty]
-    public partial bool IsSignedIn { get; set; }
+    // Fallback initial, shown when the avatar cannot be loaded.
+    [ObservableProperty] public partial string AvatarInitial { get; set; } = "L";
 
+    // Null when unavailable; the view falls back to AvatarInitial.
     [ObservableProperty]
-    public partial bool IsLoading { get; set; }
+    [NotifyPropertyChangedFor(nameof(HasAvatar))]
+    public partial Bitmap? AvatarImage { get; set; }
 
-    /// <summary>操作结果或取数失败的提示。为空时不显示。</summary>
-    [ObservableProperty]
-    public partial string? StatusMessage { get; set; }
+    public bool HasAvatar => AvatarImage is not null;
 
-    /// <summary>趋势图是否有数据。没有时显示占位文案而不是一个空标题。</summary>
-    [ObservableProperty]
-    public partial bool HasDailyTraffic { get; set; }
+    // Metric card columns; one column on narrow screens.
+    // IsCompact is set once at startup, so no change notification is needed.
+    public int MetricColumns => IsCompact ? 1 : 3;
 
-    /// <summary>当前是否可签到。冷却期内服务端会返回 400,不如直接禁用按钮。</summary>
+    [ObservableProperty] public partial bool IsSignedIn { get; set; }
+
+    [ObservableProperty] public partial bool IsLoading { get; set; }
+
+    // Result or fetch-failure message. Hidden when null.
+    [ObservableProperty] public partial string? StatusMessage { get; set; }
+
+    // Shows placeholder text instead of an empty chart title.
+    [ObservableProperty] public partial bool HasDailyTraffic { get; set; }
+
+    // The server answers 400 during cooldown, so disable instead.
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(CheckInCommand))]
     public partial bool CanCheckIn { get; set; }
 
-    /// <summary>签到按钮文案。冷却期内改成「今日已签到」。</summary>
-    [ObservableProperty]
-    public partial string CheckInLabel { get; set; } = "每日签到";
+    [ObservableProperty] public partial string CheckInLabel { get; set; } = "每日签到";
 
     /// <inheritdoc />
-    public override Task ActivateAsync() => LoadAsync();
+    public override Task ActivateAsync()
+    {
+        return LoadAsync();
+    }
 
-    /// <summary>签到。<c>CheckInAsync</c> 成功后流量额度会变,因此重新取一遍数据。</summary>
+    // Reloads afterwards: a successful check-in changes the quota.
     [RelayCommand(CanExecute = nameof(CanCheckIn))]
     private async Task CheckInAsync()
     {
@@ -87,7 +96,7 @@ public sealed partial class UserInfoViewModel : ViewModelBase
             IsLoading = false;
         }
 
-        // LoadAsync 会先清空提示,所以结果消息放在它之后写。
+        // Written after LoadAsync, which clears the message first.
         await LoadAsync();
         StatusMessage = message;
     }
@@ -133,6 +142,7 @@ public sealed partial class UserInfoViewModel : ViewModelBase
         UserName = user.Username ?? "已登录";
         Email = user.Email ?? "—";
         AvatarInitial = InitialOf(user.Username ?? user.Email);
+        AvatarImage = await _avatarLoader.LoadAsync(ResolveAvatarUrl(user)).ConfigureAwait(true);
 
         var cooling = user.TodayChecked == true;
         CanCheckIn = !cooling;
@@ -156,8 +166,8 @@ public sealed partial class UserInfoViewModel : ViewModelBase
 
         var today = points.Count > 0 ? points[^1].TotalTraffic : null;
 
-        // 「可用流量」用 traffic_limit - traffic_used 现算,不用响应里的 traffic_remaining:
-        // 规格明确写着「当前实现等于 traffic_limit」,服务端还没真的算它。
+        // Available = limit - used, rather than the response's traffic_remaining:
+        // the spec says that field currently just mirrors traffic_limit.
         var used = stats.Data?.TrafficUsed;
         var limit = stats.Data?.TrafficLimit;
         var available = used is { } usedBytes && limit is { } limitBytes
@@ -167,40 +177,28 @@ public sealed partial class UserInfoViewModel : ViewModelBase
         Metrics.Clear();
         Metrics.Add(new MetricCard(
             "可用流量",
-            ByteSize.Format(available),
-            limit is null ? string.Empty : $"共 {ByteSize.Format(limit)}"));
+            ByteSize.Format(available, 3),
+            limit is null ? string.Empty : $"共 {ByteSize.Format(limit, 3)}"));
         Metrics.Add(new MetricCard(
             "隧道数量",
             tunnels is { IsSuccess: true, Data: { } list } ? list.Count.ToString(CultureInfo.InvariantCulture) : "—",
-            "含已离线"));
-        Metrics.Add(new MetricCard("今日流量", ByteSize.Format(today), string.Empty));
+            string.Empty));
+        Metrics.Add(new MetricCard("今日流量", ByteSize.Format(today, 3), string.Empty));
 
         BuildDailyChart(points);
 
-        // 逐个报出失败原因:三个接口各自可能失败,只显示第一个会让人以为其余的也没数据。
+        // Report every failure; showing only the first hides the other two.
         var failures = new List<string>(3);
-        if (!stats.IsSuccess)
-        {
-            failures.Add($"流量统计:{stats.Msg}");
-        }
+        if (!stats.IsSuccess) failures.Add($"流量统计:{stats.Msg}");
 
-        if (!daily.IsSuccess)
-        {
-            failures.Add($"每日趋势:{daily.Msg}");
-        }
+        if (!daily.IsSuccess) failures.Add($"每日趋势:{daily.Msg}");
 
-        if (!tunnels.IsSuccess)
-        {
-            failures.Add($"隧道列表:{tunnels.Msg}");
-        }
+        if (!tunnels.IsSuccess) failures.Add($"隧道列表:{tunnels.Msg}");
 
-        if (failures.Count > 0)
-        {
-            StatusMessage = string.Join(";", failures);
-        }
+        if (failures.Count > 0) StatusMessage = string.Join(";", failures);
     }
 
-    /// <summary>把每日流量画成柱状图。柱高按区间最大值归一化,否则数值差异看不出来。</summary>
+    // Bars are normalized to the range maximum, else differences vanish.
     private void BuildDailyChart(IReadOnlyList<DailyGetResponse_data_daily_stats> points)
     {
         DailyTraffic.Clear();
@@ -211,7 +209,7 @@ public sealed partial class UserInfoViewModel : ViewModelBase
         {
             var bytes = point.TotalTraffic ?? 0;
 
-            // 有流量就给个最小高度:否则「极少」和「没有」在图上都是零高,分不出来。
+            // A tiny non-zero bar, so "a little" is not drawn the same as "none".
             var height = max > 0 && bytes > 0 ? Math.Max(2, bytes / (double)max * MaxBarHeight) : 0;
 
             DailyTraffic.Add(new DailyTrafficPoint(DateLabel(point.Date), ByteSize.Format(bytes), height));
@@ -225,6 +223,7 @@ public sealed partial class UserInfoViewModel : ViewModelBase
         UserName = "未登录";
         Email = SignedOutHint;
         AvatarInitial = "L";
+        AvatarImage = null;
         CanCheckIn = false;
         CheckInLabel = "每日签到";
 
@@ -237,27 +236,44 @@ public sealed partial class UserInfoViewModel : ViewModelBase
         HasDailyTraffic = false;
     }
 
-    /// <summary>把 RFC3339 日期压成 <c>MM-dd</c>。解析不了就原样显示。</summary>
-    private static string DateLabel(string? date) =>
-        DateTimeOffset.TryParse(date, CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsed)
+    // RFC3339 to MM-dd; unparseable input is shown as-is.
+    private static string DateLabel(string? date)
+    {
+        return DateTimeOffset.TryParse(date, CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsed)
             ? parsed.ToString("MM-dd", CultureInfo.InvariantCulture)
             : date ?? "—";
+    }
 
     private static string InitialOf(string? name)
     {
         var trimmed = name?.Trim();
         return string.IsNullOrEmpty(trimmed) ? "L" : char.ToUpperInvariant(trimmed[0]).ToString();
     }
+
+    // Usually present: the server substitutes a Gravatar URL when the user has not set one.
+    private static string? ResolveAvatarUrl(User user)
+    {
+        return string.IsNullOrWhiteSpace(user.Avatar) ? WeAvatarUrl(user.Email) : user.Avatar;
+    }
+
+    // weavatar mirrors Gravatar's scheme: MD5 of the trimmed, lowercased email.
+    private static string? WeAvatarUrl(string? email)
+    {
+        var normalized = email?.Trim().ToLowerInvariant();
+        if (string.IsNullOrEmpty(normalized)) return null;
+
+        var hash = Convert.ToHexString(MD5.HashData(Encoding.UTF8.GetBytes(normalized))).ToLowerInvariant();
+        return $"https://weavatar.com/avatar/{hash}";
+    }
+
+    public void Dispose()
+    {
+        _avatarLoader.Dispose();
+    }
 }
 
-/// <summary>统计卡数据。</summary>
-/// <param name="Label">指标名。</param>
-/// <param name="Value">主数值,已格式化。</param>
-/// <param name="Caption">补充说明。</param>
+// One metric card: label, formatted value, optional caption.
 public sealed record MetricCard(string Label, string Value, string Caption);
 
-/// <summary>每日流量数据点。</summary>
-/// <param name="Label">横轴标签,形如 <c>09-28</c>。</param>
-/// <param name="Amount">柱顶数值,已格式化为 B/KB/MB/GB。</param>
-/// <param name="BarHeight">柱高(像素),已按该区间最大值归一化。</param>
+// One bar on the daily traffic chart.
 public sealed record DailyTrafficPoint(string Label, string Amount, double BarHeight);

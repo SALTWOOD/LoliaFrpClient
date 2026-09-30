@@ -42,18 +42,19 @@ public static class ApiCall
         {
             var response = await call(cancellationToken).ConfigureAwait(false);
             if (response is null)
-            {
                 return new ApiResult<T>
                 {
                     Code = 500,
                     Msg = "服务端返回了空响应",
                     Failure = ApiFailureKind.Server
                 };
-            }
 
             var (code, msg, data) = project(response);
-            if (code is null or 200)
-            {
+
+            // Any 2xx counts: the envelope's code mirrors the HTTP status, and creation
+            // endpoints answer 201 rather than 200. 4xx/5xx codes in the body still mean failure,
+            // which is the case this check exists for.
+            if (code is null or >= 200 and < 300)
                 return new ApiResult<T>
                 {
                     IsSuccess = true,
@@ -61,7 +62,6 @@ public static class ApiCall
                     Msg = msg ?? string.Empty,
                     Data = data
                 };
-            }
 
             // HTTP 200 但业务码非 200:服务端用响应体而非状态码表达失败。
             return new ApiResult<T>
@@ -128,16 +128,19 @@ public static class ApiCall
     }
 
     /// <summary>把 HTTP 状态码归类。所有端点的 errorMapping 结构一致,因此可以统一处理。</summary>
-    private static ApiFailureKind Classify(int status) => status switch
+    private static ApiFailureKind Classify(int status)
     {
-        400 => ApiFailureKind.Business,
-        401 => ApiFailureKind.Unauthorized,
-        403 => ApiFailureKind.Forbidden,
-        404 => ApiFailureKind.NotFound,
-        >= 500 => ApiFailureKind.Server,
-        0 => ApiFailureKind.Network,
-        _ => ApiFailureKind.Unknown
-    };
+        return status switch
+        {
+            400 => ApiFailureKind.BadRequest,
+            401 => ApiFailureKind.Unauthorized,
+            403 => ApiFailureKind.Forbidden,
+            404 => ApiFailureKind.NotFound,
+            >= 500 => ApiFailureKind.Server,
+            0 => ApiFailureKind.Network,
+            _ => ApiFailureKind.Unknown
+        };
+    }
 
     /// <summary>
     ///     取出错误消息。生成的错误类型都带 <c>Msg</c> 属性但没有公共接口,故用反射并缓存访问器。
@@ -147,10 +150,7 @@ public static class ApiCall
     private static string ExtractMsg(ApiException ex)
     {
         var property = MsgProperties.GetOrAdd(ex.GetType(), static type => type.GetProperty("Msg"));
-        if (property?.GetValue(ex) is string msg && !string.IsNullOrWhiteSpace(msg))
-        {
-            return msg;
-        }
+        if (property?.GetValue(ex) is string msg && !string.IsNullOrWhiteSpace(msg)) return msg;
 
         return ex.Message;
     }
@@ -163,9 +163,7 @@ public static class ApiCall
     {
         if (ex is IAdditionalDataHolder holder &&
             holder.AdditionalData.TryGetValue("data", out var raw))
-        {
             return raw;
-        }
 
         return null;
     }

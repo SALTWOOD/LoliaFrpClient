@@ -15,17 +15,13 @@ internal static class ByteSize
     private static readonly string[] Units = ["B", "KB", "MB", "GB", "TB", "PB"];
 
     /// <summary>格式化字节数。<c>null</c> 或负数返回破折号。</summary>
-    public static string Format(long? bytes)
+    /// <param name="bytes">字节数。</param>
+    /// <param name="maxDecimals">小数位上限。默认 1 位。</param>
+    public static string Format(long? bytes, int maxDecimals = 1)
     {
-        if (bytes is not { } value || value < 0)
-        {
-            return "—";
-        }
+        if (bytes is not { } value || value < 0) return "—";
 
-        if (value == 0)
-        {
-            return "0 B";
-        }
+        if (value == 0) return "0 B";
 
         var unit = 0;
         double size = value;
@@ -36,8 +32,9 @@ internal static class ByteSize
         }
 
         // 到了三位数,小数位只是噪声;字节本身也没有小数。
-        return unit == 0 || size >= 100
-            ? $"{size:0} {Units[unit]}"
-            : $"{size:0.#} {Units[unit]}";
+        var decimals = unit == 0 || size >= 100 ? 0 : Math.Max(0, maxDecimals);
+        var format = decimals == 0 ? "0" : "0." + new string('#', decimals);
+
+        return $"{size.ToString(format)} {Units[unit]}";
     }
 }

@@ -1,0 +1,253 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:LoliaFrpClient.ViewModels"
+             x:Class="LoliaFrpClient.Views.NodesPage"
+             x:DataType="vm:NodesPageViewModel">
+
+    <Grid RowDefinitions="Auto,*" Margin="{DynamicResource PagePadding}">
+
+        <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,16">
+            <TextBlock Grid.Column="0" Text="节点" Classes="pageTitle" VerticalAlignment="Center" />
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                <ProgressBar IsIndeterminate="True" Width="80" VerticalAlignment="Center"
+                             IsVisible="{Binding IsLoading}" />
+                <Button Content="刷新" Command="{Binding LoadCommand}" />
+            </StackPanel>
+        </Grid>
+
+        <Grid Grid.Row="1" ColumnSpacing="16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <!-- 窄屏把右列宽度归零,表单改叠到列表上方;见下面 FormVisible 与 Column 绑定。 -->
+                <ColumnDefinition
+                    Width="{Binding IsCompact, Converter={StaticResource CompactValue}, ConverterParameter='380|0'}" />
+            </Grid.ColumnDefinitions>
+
+            <!-- ── 节点列表 ── -->
+            <Border Grid.Column="0"
+                    Grid.ColumnSpan="{Binding IsCompact, Converter={StaticResource CompactValue}, ConverterParameter='1|2'}"
+                    IsVisible="{Binding ListVisible}"
+                    Classes="card"
+                    Padding="0">
+                <Grid RowDefinitions="Auto,*,Auto">
+                    <TextBlock Grid.Row="0" Text="可用节点" Classes="sectionTitle" Margin="16,14,16,8" />
+
+                    <ScrollViewer Grid.Row="1">
+                        <ListBox ItemsSource="{Binding Nodes}"
+                                 SelectedItem="{Binding SelectedNode}"
+                                 Background="Transparent"
+                                 BorderThickness="0"
+                                 Padding="12,0,8,12">
+                            <!-- ListBoxItem brings its own padding and margin, which would stack on
+                                 top of the per-item border below and leave the rows touching. -->
+                            <ListBox.Styles>
+                                <Style Selector="ListBoxItem">
+                                    <Setter Property="Padding" Value="0" />
+                                    <Setter Property="Margin" Value="0,0,0,8" />
+                                    <Setter Property="CornerRadius" Value="8" />
+                                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                </Style>
+                            </ListBox.Styles>
+                            <ListBox.ItemTemplate>
+                                <DataTemplate x:DataType="vm:NodeRow">
+                                    <Border BorderThickness="1"
+                                            BorderBrush="{DynamicResource DividerStrokeColorDefaultBrush}"
+                                            CornerRadius="8"
+                                            Padding="12,10">
+                                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+
+                                            <Ellipse Grid.Column="0"
+                                                     Classes="statusDot"
+                                                     Classes.online="{Binding IsOnline}"
+                                                     Classes.offline="{Binding IsOffline}"
+                                                     VerticalAlignment="Top"
+                                                     Margin="0,6,0,0" />
+
+                                            <StackPanel Grid.Column="1" Spacing="3">
+                                                <!-- WrapPanel:一排徽标在 360dp 上放不下,必须能折行。 -->
+                                                <WrapPanel Orientation="Horizontal" ItemSpacing="6" LineSpacing="4">
+                                                    <TextBlock Text="{Binding Name}" FontWeight="SemiBold"
+                                                               VerticalAlignment="Center"
+                                                               TextTrimming="CharacterEllipsis" />
+                                                    <Border Background="{DynamicResource ControlFillColorDefaultBrush}"
+                                                            CornerRadius="4" Padding="6,1">
+                                                        <TextBlock Text="{Binding RegionText}" Classes="caption" />
+                                                    </Border>
+                                                    <Border Background="{DynamicResource ControlFillColorDefaultBrush}"
+                                                            CornerRadius="4" Padding="6,1"
+                                                            IsVisible="{Binding HighTraffic}">
+                                                        <TextBlock Text="大流量" Classes="caption" />
+                                                    </Border>
+                                                    <Border Background="{DynamicResource ControlFillColorDefaultBrush}"
+                                                            CornerRadius="4" Padding="6,1"
+                                                            IsVisible="{Binding NeedKyc}">
+                                                        <TextBlock Text="需实名" Classes="caption" />
+                                                    </Border>
+                                                    <Border Background="{DynamicResource ControlFillColorDefaultBrush}"
+                                                            CornerRadius="4" Padding="6,1"
+                                                            IsVisible="{Binding HasTrafficRatio}">
+                                                        <TextBlock Text="{Binding TrafficRatioText}" Classes="caption" />
+                                                    </Border>
+                                                </WrapPanel>
+
+                                                <TextBlock Text="{Binding SummaryText}" Classes="caption" />
+
+                                                <!-- Wraps rather than truncating: these remarks carry
+                                                     real information (routes, policy, status URLs) and
+                                                     a one-liner cuts them off at narrow widths. The
+                                                     per-item border keeps uneven heights readable. -->
+                                                <TextBlock Text="{Binding RemarkText}"
+                                                           Classes="caption"
+                                                           IsVisible="{Binding HasRemark}" />
+
+                                                <TextBlock Text="{Binding SponsorText}" Classes="caption"
+                                                           IsVisible="{Binding HasSponsor}" />
+                                            </StackPanel>
+
+                                            <!-- Load is a weighted composite (bandwidth 50%, CPU 20%,
+                                                 memory 10%, connections 20%) and is absent when the node
+                                                 reports no system info. The value sits beside the bar:
+                                                 typical loads are 1-5%, so a lone bar is a nearly empty
+                                                 track that reads as a divider rather than a gauge. -->
+                                            <!--
+                                              列宽必须容得下「进度条 + 间距 6 + 百分比(MinWidth 40)」,
+                                              否则百分比会被裁掉(之前窄屏给 88,实际要 122)。
+                                              窄屏同时把条子缩短,免得整列挤掉左侧节点信息。
+                                            -->
+                                            <StackPanel Grid.Column="2"
+                                                        Width="{Binding $parent[UserControl].((vm:NodesPageViewModel)DataContext).IsCompact, Converter={StaticResource CompactValue}, ConverterParameter='132|104'}"
+                                                        Spacing="4"
+                                                        VerticalAlignment="Top">
+                                                <TextBlock Text="{Binding StatusText}"
+                                                           Classes="caption"
+                                                           HorizontalAlignment="Right" />
+                                                <StackPanel Orientation="Horizontal"
+                                                            Spacing="6"
+                                                            HorizontalAlignment="Right"
+                                                            IsVisible="{Binding HasLoad}">
+                                                    <!-- MinWidth must be reset: the Fluent theme gives
+                                                         ProgressBar a 200px default, which overrides
+                                                         Width and makes the bar span the whole row. -->
+                                                    <ProgressBar Minimum="0"
+                                                                 Maximum="100"
+                                                                 MinWidth="0"
+                                                                 Width="{Binding $parent[UserControl].((vm:NodesPageViewModel)DataContext).IsCompact, Converter={StaticResource CompactValue}, ConverterParameter='76|56'}"
+                                                                 Height="8"
+                                                                 VerticalAlignment="Center"
+                                                                 Value="{Binding LoadPercent}" />
+                                                    <TextBlock Text="{Binding LoadText}"
+                                                               Classes="caption"
+                                                               MinWidth="40"
+                                                               VerticalAlignment="Center" />
+                                                </StackPanel>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </ScrollViewer>
+
+                    <TextBlock Grid.Row="2"
+                               Margin="16,8,16,14"
+                               Classes="caption"
+                               TextWrapping="Wrap"
+                               Foreground="{DynamicResource SystemFillColorCriticalBrush}"
+                               Text="{Binding ErrorMessage}"
+                               IsVisible="{Binding HasError}" />
+                </Grid>
+            </Border>
+
+            <!-- ── 新建隧道 ── -->
+            <Border
+                Grid.Column="{Binding IsCompact, Converter={StaticResource CompactValue}, ConverterParameter='1|0'}"
+                Grid.ColumnSpan="{Binding IsCompact, Converter={StaticResource CompactValue}, ConverterParameter='1|2'}"
+                IsVisible="{Binding FormVisible}"
+                Classes="card">
+                <ScrollViewer>
+                    <StackPanel Spacing="{DynamicResource SpaceMd}">
+                        <!--
+                          窄屏下创建是独立子页(点节点进来),左上角给一个返回。
+                          宽屏两栏并列、表单常驻,不需要返回。
+                        -->
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <Button Command="{Binding GoBackCommand}"
+                                    IsVisible="{Binding IsCompact}"
+                                    Background="Transparent"
+                                    BorderThickness="0"
+                                    Padding="4">
+                                <Viewbox Width="20" Height="20">
+                                    <Canvas Width="24" Height="24">
+                                        <Path Data="M15.41 7.41 L14 6 L8 12 L14 18 L15.41 16.59 L10.83 12 Z"
+                                              Fill="{DynamicResource TextFillColorPrimaryBrush}" />
+                                    </Canvas>
+                                </Viewbox>
+                            </Button>
+                            <TextBlock Text="新建隧道" Classes="sectionTitle" VerticalAlignment="Center" />
+                        </StackPanel>
+
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="节点" Classes="caption" />
+                            <TextBlock Text="{Binding SelectedNodeText}" TextWrapping="Wrap" />
+                        </StackPanel>
+
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="类型" Classes="caption" />
+                            <ComboBox ItemsSource="{Binding Types}"
+                                      SelectedItem="{Binding SelectedType}"
+                                      HorizontalAlignment="Stretch" />
+                        </StackPanel>
+
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="本地 IP" Classes="caption" />
+                            <TextBox Text="{Binding LocalIp}" PlaceholderText="127.0.0.1" />
+                        </StackPanel>
+
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="本地端口" Classes="caption" />
+                            <TextBox Text="{Binding LocalPortText}" PlaceholderText="1-65535" />
+                        </StackPanel>
+
+                        <StackPanel Spacing="4" IsVisible="{Binding UsesRemotePort}">
+                            <TextBlock Text="远程端口(留空自动分配)" Classes="caption" />
+                            <TextBox Text="{Binding RemotePortText}" PlaceholderText="1-65535" />
+                        </StackPanel>
+
+                        <StackPanel Spacing="4" IsVisible="{Binding UsesCustomDomain}">
+                            <TextBlock Text="自定义域名" Classes="caption" />
+                            <TextBox Text="{Binding CustomDomain}" PlaceholderText="例如 example.com" />
+                        </StackPanel>
+
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="备注" Classes="caption" />
+                            <TextBox Text="{Binding Remark}" PlaceholderText="可留空" />
+                        </StackPanel>
+
+                        <TextBlock Classes="caption"
+                                   TextWrapping="Wrap"
+                                   Foreground="{DynamicResource SystemFillColorCautionBrush}"
+                                   Text="{Binding NodeWarning}"
+                                   IsVisible="{Binding HasNodeWarning}" />
+
+                        <TextBlock Classes="caption"
+                                   TextWrapping="Wrap"
+                                   Foreground="{DynamicResource SystemFillColorCriticalBrush}"
+                                   Text="{Binding ErrorMessage}"
+                                   IsVisible="{Binding HasError}" />
+
+                        <TextBlock Classes="caption"
+                                   TextWrapping="Wrap"
+                                   Text="{Binding StatusMessage}"
+                                   IsVisible="{Binding HasStatus}" />
+
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <Button Content="创建隧道" Classes="accent" Command="{Binding CreateCommand}" />
+                            <ProgressBar IsIndeterminate="True" Width="80" VerticalAlignment="Center"
+                                         IsVisible="{Binding IsCreating}" />
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

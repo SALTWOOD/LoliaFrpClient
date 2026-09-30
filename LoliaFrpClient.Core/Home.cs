@@ -2,10 +2,8 @@ using LoliaFrpClient.Api.Home;
 
 namespace LoliaFrpClient.Core;
 
-/// <summary>主页统计。无需登录。</summary>
 public static class Home
 {
-    /// <summary>取主页统计。</summary>
     public static Task<ApiResult<HomeGetResponse_data>> GetAsync(
         ApiSession? session = null,
         CancellationToken cancellationToken = default)

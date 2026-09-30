@@ -1,10 +1,12 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:ui="using:FluentAvalonia.UI.Controls"
+        xmlns:branding="using:LoliaFrpClient.Branding"
         xmlns:vm="using:LoliaFrpClient.ViewModels"
         x:Class="LoliaFrpClient.Views.MainWindow"
         x:DataType="vm:MainViewModel"
         Title="LoliaFrp"
+        Icon="/Assets/icon.png"
         Width="1160" Height="760"
         MinWidth="880" MinHeight="600">
 
@@ -22,40 +24,49 @@
                          SelectionChanged="OnNavigationSelectionChanged">
 
         <ui:FANavigationView.PaneHeader>
-            <StackPanel Orientation="Horizontal" Spacing="10" Margin="6,10,0,10">
-                <Border Width="28" Height="28" CornerRadius="6"
-                        Background="{DynamicResource AccentFillColorDefaultBrush}">
-                    <TextBlock Text="L"
-                               Foreground="White"
-                               FontWeight="SemiBold"
-                               HorizontalAlignment="Center"
-                               VerticalAlignment="Center"/>
-                </Border>
-                <TextBlock Text="LoliaFrp"
-                           FontWeight="SemiBold"
-                           VerticalAlignment="Center"/>
-            </StackPanel>
+            <!--
+              品牌标。原 SVG 两条路径都是纯黑,深色主题下等于看不见,所以拆成 Geometry 挂画刷:
+              图形用品牌粉(与 launcher 图标同色),字标跟随主题前景色。
+              放进 Viewbox + 217x61 的 Canvas,缩放时图形与字标的相对位置不会走样。
+            -->
+            <Viewbox Height="30" Margin="12,12,0,12" HorizontalAlignment="Left">
+                <Canvas Width="217" Height="61">
+                    <Path Data="{x:Static branding:BrandLogo.Glyph}"
+                          Fill="{DynamicResource BrandGlyphBrush}" />
+                    <Path Data="{x:Static branding:BrandLogo.Wordmark}"
+                          Fill="{DynamicResource TextFillColorPrimaryBrush}" />
+                </Canvas>
+            </Viewbox>
         </ui:FANavigationView.PaneHeader>
 
         <ui:FANavigationView.MenuItems>
             <ui:FANavigationViewItem Content="总览" Tag="dashboard">
                 <ui:FANavigationViewItem.IconSource>
                     <!-- 四宫格 -->
-                    <ui:FAPathIconSource Data="M3 3 H10 V10 H3 Z M14 3 H21 V10 H14 Z M3 14 H10 V21 H3 Z M14 14 H21 V21 H14 Z"/>
+                    <ui:FAPathIconSource
+                        Data="M3 3 H10 V10 H3 Z M14 3 H21 V10 H14 Z M3 14 H10 V21 H3 Z M14 14 H21 V21 H14 Z" />
                 </ui:FANavigationViewItem.IconSource>
             </ui:FANavigationViewItem>
 
             <ui:FANavigationViewItem Content="隧道" Tag="tunnels">
                 <ui:FANavigationViewItem.IconSource>
                     <!-- 拱形隧道 -->
-                    <ui:FAPathIconSource Data="M3 21 V12 A9 9 0 0 1 21 12 V21 H15 V12 A3 3 0 0 0 9 12 V21 Z"/>
+                    <ui:FAPathIconSource Data="M3 21 V12 A9 9 0 0 1 21 12 V21 H15 V12 A3 3 0 0 0 9 12 V21 Z" />
+                </ui:FANavigationViewItem.IconSource>
+            </ui:FANavigationViewItem>
+
+            <ui:FANavigationViewItem Content="节点" Tag="nodes">
+                <ui:FANavigationViewItem.IconSource>
+                    <!-- 云朵:节点即服务端 -->
+                    <ui:FAPathIconSource
+                        Data="M6.5 19 A4.5 4.5 0 0 1 6.5 10 A5.5 5.5 0 0 1 17 9.5 A4.25 4.25 0 0 1 17.5 19 Z" />
                 </ui:FANavigationViewItem.IconSource>
             </ui:FANavigationViewItem>
 
             <ui:FANavigationViewItem Content="Frpc 管理" Tag="frpc">
                 <ui:FANavigationViewItem.IconSource>
                     <!-- 三层堆叠,表示进程 -->
-                    <ui:FAPathIconSource Data="M3 4 H21 V8 H3 Z M3 10 H21 V14 H3 Z M3 16 H21 V20 H3 Z"/>
+                    <ui:FAPathIconSource Data="M3 4 H21 V8 H3 Z M3 10 H21 V14 H3 Z M3 16 H21 V20 H3 Z" />
                 </ui:FANavigationViewItem.IconSource>
             </ui:FANavigationViewItem>
         </ui:FANavigationView.MenuItems>
@@ -64,14 +75,15 @@
             <ui:FANavigationViewItem Content="设置" Tag="settings">
                 <ui:FANavigationViewItem.IconSource>
                     <!-- 圆环 + 四齿 -->
-                    <ui:FAPathIconSource Data="M12 3 A9 9 0 1 0 12 21 A9 9 0 1 0 12 3 Z M12 7.5 A4.5 4.5 0 1 1 12 16.5 A4.5 4.5 0 1 1 12 7.5 Z M11 1 H13 V3 H11 Z M11 21 H13 V23 H11 Z M1 11 H3 V13 H1 Z M21 11 H23 V13 H21 Z"/>
+                    <ui:FAPathIconSource
+                        Data="M12 3 A9 9 0 1 0 12 21 A9 9 0 1 0 12 3 Z M12 7.5 A4.5 4.5 0 1 1 12 16.5 A4.5 4.5 0 1 1 12 7.5 Z M11 1 H13 V3 H11 Z M11 21 H13 V23 H11 Z M1 11 H3 V13 H1 Z M21 11 H23 V13 H21 Z" />
                 </ui:FANavigationViewItem.IconSource>
             </ui:FANavigationViewItem>
         </ui:FANavigationView.FooterMenuItems>
 
         <TransitioningContentControl Content="{Binding CurrentPage}">
             <TransitioningContentControl.PageTransition>
-                <CrossFade Duration="0:0:0.15"/>
+                <CrossFade Duration="0:0:0.15" />
             </TransitioningContentControl.PageTransition>
         </TransitioningContentControl>
     </ui:FANavigationView>

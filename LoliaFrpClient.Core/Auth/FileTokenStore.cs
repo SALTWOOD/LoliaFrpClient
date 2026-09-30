@@ -3,14 +3,6 @@ using System.Text.Json.Serialization;
 
 namespace LoliaFrpClient.Core;
 
-/// <summary>
-///     基于本地 JSON 文件的凭证存储。默认落在
-///     <c>%LOCALAPPDATA%\LoliaFrpClient\tokens.json</c>。
-/// </summary>
-/// <remarks>
-///     令牌以明文写入磁盘。若后续需要更高安全性,应改为 DPAPI 加密后存储,
-///     或由宿主应用提供自己的 <see cref="ITokenStore" /> 实现。
-/// </remarks>
 public sealed class FileTokenStore : ITokenStore
 {
     private readonly object _gate = new();
@@ -19,13 +11,10 @@ public sealed class FileTokenStore : ITokenStore
     private TokenOrigin _origin;
     private string? _refreshToken;
 
-    /// <summary>使用默认路径创建存储。</summary>
     public FileTokenStore() : this(DefaultPath())
     {
     }
 
-    /// <summary>使用指定文件路径创建存储。</summary>
-    /// <param name="path">凭证文件路径。所在目录会被自动创建。</param>
     public FileTokenStore(string path)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(path);
@@ -33,7 +22,6 @@ public sealed class FileTokenStore : ITokenStore
         Load();
     }
 
-    /// <inheritdoc />
     public string? AccessToken
     {
         get
@@ -53,7 +41,6 @@ public sealed class FileTokenStore : ITokenStore
         }
     }
 
-    /// <inheritdoc />
     public string? RefreshToken
     {
         get
@@ -73,7 +60,6 @@ public sealed class FileTokenStore : ITokenStore
         }
     }
 
-    /// <inheritdoc />
     public TokenOrigin Origin
     {
         get
@@ -93,7 +79,6 @@ public sealed class FileTokenStore : ITokenStore
         }
     }
 
-    /// <inheritdoc />
     public void Clear()
     {
         lock (_gate)
@@ -105,7 +90,6 @@ public sealed class FileTokenStore : ITokenStore
         }
     }
 
-    /// <summary>令牌文件的默认位置。</summary>
     public static string DefaultPath()
     {
         var dir = Path.Combine(
@@ -118,16 +102,11 @@ public sealed class FileTokenStore : ITokenStore
     {
         try
         {
-            if (!File.Exists(_path))
-            {
-                return;
-            }
+            if (!File.Exists(_path)) return;
 
-            var snapshot = JsonSerializer.Deserialize(File.ReadAllText(_path), TokenStoreJsonContext.Default.TokenSnapshot);
-            if (snapshot is null)
-            {
-                return;
-            }
+            var snapshot =
+                JsonSerializer.Deserialize(File.ReadAllText(_path), TokenStoreJsonContext.Default.TokenSnapshot);
+            if (snapshot is null) return;
 
             _accessToken = snapshot.AccessToken;
             _refreshToken = snapshot.RefreshToken;
@@ -135,7 +114,6 @@ public sealed class FileTokenStore : ITokenStore
         }
         catch (Exception ex) when (ex is IOException or JsonException or UnauthorizedAccessException)
         {
-            // 凭证文件损坏或不可读时按未登录处理,不阻断启动。
             _accessToken = null;
             _refreshToken = null;
             _origin = TokenOrigin.None;
@@ -147,10 +125,7 @@ public sealed class FileTokenStore : ITokenStore
         try
         {
             var dir = Path.GetDirectoryName(_path);
-            if (!string.IsNullOrEmpty(dir))
-            {
-                Directory.CreateDirectory(dir);
-            }
+            if (!string.IsNullOrEmpty(dir)) Directory.CreateDirectory(dir);
 
             var snapshot = new TokenSnapshot
             {
@@ -163,7 +138,6 @@ public sealed class FileTokenStore : ITokenStore
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            // 落盘失败不应让内存中的会话失效;下次写入会重试。
         }
     }
 

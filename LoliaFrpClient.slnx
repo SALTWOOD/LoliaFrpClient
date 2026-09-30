@@ -1,5 +1,7 @@
 <Solution>
-  <Project Path="LoliaFrpClient.Api/LoliaFrpClient.Api.csproj" />
-  <Project Path="LoliaFrpClient.Core/LoliaFrpClient.Core.csproj" />
-  <Project Path="LoliaFrpClient/LoliaFrpClient.csproj" />
+    <Project Path="LoliaFrpClient.Api/LoliaFrpClient.Api.csproj"/>
+    <Project Path="LoliaFrpClient.Core/LoliaFrpClient.Core.csproj"/>
+    <Project Path="LoliaFrpClient/LoliaFrpClient.csproj"/>
+    <Project Path="LoliaFrpClient.Desktop/LoliaFrpClient.Desktop.csproj"/>
+    <Project Path="LoliaFrpClient.Android/LoliaFrpClient.Android.csproj"/>
 </Solution>

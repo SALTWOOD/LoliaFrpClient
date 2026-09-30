@@ -31,21 +31,24 @@ public class ApiResult
     public bool IsUnauthorized => Failure == ApiFailureKind.Unauthorized;
 
     /// <summary>是否为业务态失败(参数不合法、冷却期内重复操作等)。这类失败重试无意义。</summary>
-    public bool IsBusinessFailure => Failure == ApiFailureKind.Business;
+    public bool IsBusinessFailure => Failure == ApiFailureKind.BadRequest;
 
     /// <summary>
     ///     换一个载荷类型,保留全部状态。
     ///     <para>门面方法用它把原始 DTO 换成绑定会话的实体对象,例如 <c>ApiResult&lt;Tunnel&gt;</c>。</para>
     /// </summary>
-    public ApiResult<TOther> With<TOther>(TOther? data) => new()
+    public ApiResult<TOther> With<TOther>(TOther? data)
     {
-        IsSuccess = IsSuccess,
-        Code = Code,
-        Msg = Msg,
-        Failure = Failure,
-        ErrorData = ErrorData,
-        Data = data
-    };
+        return new ApiResult<TOther>
+        {
+            IsSuccess = IsSuccess,
+            Code = Code,
+            Msg = Msg,
+            Failure = Failure,
+            ErrorData = ErrorData,
+            Data = data
+        };
+    }
 }
 
 /// <summary>
@@ -58,13 +61,16 @@ public sealed class ApiResult<T> : ApiResult
     public T? Data { get; init; }
 
     /// <summary>把载荷映射为另一种类型,保留全部状态。</summary>
-    public ApiResult<TOther> Map<TOther>(Func<T, TOther?> selector) => new()
+    public ApiResult<TOther> Map<TOther>(Func<T, TOther?> selector)
     {
-        IsSuccess = IsSuccess,
-        Code = Code,
-        Msg = Msg,
-        Failure = Failure,
-        ErrorData = ErrorData,
-        Data = IsSuccess && Data is not null ? selector(Data) : default
-    };
+        return new ApiResult<TOther>
+        {
+            IsSuccess = IsSuccess,
+            Code = Code,
+            Msg = Msg,
+            Failure = Failure,
+            ErrorData = ErrorData,
+            Data = IsSuccess && Data is not null ? selector(Data) : default
+        };
+    }
 }

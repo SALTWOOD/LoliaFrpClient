@@ -7,47 +7,88 @@
     <ScrollViewer Padding="{DynamicResource PagePadding}">
         <StackPanel Spacing="{DynamicResource SpaceXl}">
 
-            <TextBlock Text="总览" Classes="pageTitle"/>
+            <TextBlock Text="总览" Classes="pageTitle" />
 
             <!-- ── 用户卡片 ── -->
             <Border Classes="card">
-                <Grid ColumnDefinitions="Auto,*,Auto">
-                    <Border Grid.Column="0"
+                <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto">
+                    <Border Grid.Row="0"
+                            Grid.Column="0"
                             Width="56" Height="56"
                             CornerRadius="28"
                             Background="{DynamicResource AccentFillColorDefaultBrush}">
-                        <TextBlock Text="{Binding AvatarInitial}"
-                                   Foreground="White"
-                                   FontSize="22"
-                                   FontWeight="SemiBold"
-                                   HorizontalAlignment="Center"
-                                   VerticalAlignment="Center"/>
+                        <Grid>
+                            <TextBlock Text="{Binding AvatarInitial}"
+                                       Foreground="White"
+                                       FontSize="22"
+                                       FontWeight="SemiBold"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"
+                                       IsVisible="{Binding !HasAvatar}" />
+
+                            <!-- Clipped with an ellipse rather than relying on Border corner
+                                 clipping, so the crop is a true circle whatever the source is. -->
+                            <Image Source="{Binding AvatarImage}"
+                                   Width="56" Height="56"
+                                   Stretch="UniformToFill"
+                                   IsVisible="{Binding HasAvatar}">
+                                <Image.Clip>
+                                    <EllipseGeometry Rect="0,0,56,56" />
+                                </Image.Clip>
+                            </Image>
+                        </Grid>
                     </Border>
 
-                    <StackPanel Grid.Column="1"
+                    <StackPanel Grid.Row="0"
+                                Grid.Column="1"
                                 Margin="16,0,0,0"
                                 VerticalAlignment="Center"
                                 Spacing="{DynamicResource SpaceXs}">
-                        <TextBlock Text="{Binding UserName}" FontSize="18" FontWeight="SemiBold"/>
-                        <TextBlock Text="{Binding Email}" Classes="caption"/>
+                        <TextBlock Text="{Binding UserName}" FontSize="18" FontWeight="SemiBold" />
+                        <TextBlock Text="{Binding Email}" Classes="caption" />
                         <TextBlock Text="{Binding StatusMessage}"
                                    Classes="caption"
-                                   IsVisible="{Binding StatusMessage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                                   IsVisible="{Binding StatusMessage, Converter={x:Static ObjectConverters.IsNotNull}}" />
                     </StackPanel>
 
-                    <StackPanel Grid.Column="2"
+                    <!--
+                      宽屏时签到按钮挂在右侧。窄屏放不下:头像 56 + 间距 16 + 按钮约 90,
+                      在 360dp 上留给名字和邮箱的只剩 80dp 左右,邮箱必然被截断,
+                      所以窄屏把它挪到第二行整行显示。
+                    -->
+                    <StackPanel Grid.Row="0"
+                                Grid.Column="2"
                                 Orientation="Horizontal"
                                 Spacing="8"
-                                VerticalAlignment="Center">
+                                VerticalAlignment="Center"
+                                IsVisible="{Binding !IsCompact}">
                         <ProgressBar IsIndeterminate="True"
                                      Width="80"
                                      VerticalAlignment="Center"
-                                     IsVisible="{Binding IsLoading}"/>
+                                     IsVisible="{Binding IsLoading}" />
                         <!-- 冷却期内服务端会返回 400,故直接禁用按钮,而不是让用户点了才知道。 -->
                         <Button Content="{Binding CheckInLabel}"
                                 Command="{Binding CheckInCommand}"
                                 IsVisible="{Binding IsSignedIn}"
-                                Classes="accent"/>
+                                Classes="accent" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Row="1"
+                                Grid.Column="0"
+                                Grid.ColumnSpan="3"
+                                Margin="0,12,0,0"
+                                Orientation="Horizontal"
+                                Spacing="8"
+                                HorizontalAlignment="Right"
+                                IsVisible="{Binding IsCompact}">
+                        <ProgressBar IsIndeterminate="True"
+                                     Width="80"
+                                     VerticalAlignment="Center"
+                                     IsVisible="{Binding IsLoading}" />
+                        <Button Content="{Binding CheckInLabel}"
+                                Command="{Binding CheckInCommand}"
+                                IsVisible="{Binding IsSignedIn}"
+                                Classes="accent" />
                     </StackPanel>
                 </Grid>
             </Border>
@@ -56,17 +97,18 @@
             <ItemsControl ItemsSource="{Binding Metrics}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <UniformGrid Rows="1"/>
+                        <UniformGrid Rows="1"
+                                     Columns="{Binding $parent[ItemsControl].((vm:UserInfoViewModel)DataContext).MetricColumns}" />
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate x:DataType="vm:MetricCard">
                         <Border Classes="card" Margin="0,0,12,0">
                             <StackPanel Spacing="{DynamicResource SpaceSm}">
-                                <TextBlock Text="{Binding Label}" Classes="caption"/>
-                                <TextBlock Text="{Binding Value}" Classes="metric"/>
+                                <TextBlock Text="{Binding Label}" Classes="caption" />
+                                <TextBlock Text="{Binding Value}" Classes="metric" />
                                 <!-- 说明文字可以为空,但保留行高,否则三张卡的主数字会高低不齐。 -->
-                                <TextBlock Text="{Binding Caption}" Classes="caption" MinHeight="16"/>
+                                <TextBlock Text="{Binding Caption}" Classes="caption" MinHeight="16" />
                             </StackPanel>
                         </Border>
                     </DataTemplate>
@@ -76,37 +118,44 @@
             <!-- ── 每日流量趋势 ── -->
             <Border Classes="card">
                 <StackPanel Spacing="{DynamicResource SpaceLg}">
-                    <TextBlock Text="每日流量趋势" Classes="sectionTitle"/>
+                    <TextBlock Text="每日流量趋势" Classes="sectionTitle" />
 
                     <TextBlock Text="暂无流量数据。"
                                Classes="caption"
-                               IsVisible="{Binding !HasDailyTraffic}"/>
+                               IsVisible="{Binding !HasDailyTraffic}" />
 
-                    <!-- 柱高已在 ViewModel 里按区间最大值归一化,这里只负责摆放。 -->
-                    <ItemsControl ItemsSource="{Binding DailyTraffic}"
-                                  Height="150"
+                    <!--
+                      柱高已在 ViewModel 里按区间最大值归一化,这里只负责摆放。
+                      外面套一层横向 ScrollViewer:柱子是固定宽度的,超过 7 天就会宽过手机屏幕。
+                    -->
+                    <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                                  VerticalScrollBarVisibility="Disabled"
                                   IsVisible="{Binding HasDailyTraffic}">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Bottom"/>
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate x:DataType="vm:DailyTrafficPoint">
-                                <StackPanel Spacing="{DynamicResource SpaceXs}" VerticalAlignment="Bottom">
-                                    <TextBlock Text="{Binding Amount}"
-                                               Classes="caption"
-                                               HorizontalAlignment="Center"/>
-                                    <Border Height="{Binding BarHeight}"
-                                            Width="32"
-                                            CornerRadius="4"
-                                            VerticalAlignment="Bottom"
-                                            Background="{DynamicResource AccentFillColorDefaultBrush}"/>
-                                    <TextBlock Text="{Binding Label}" Classes="caption" HorizontalAlignment="Center"/>
-                                </StackPanel>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
+                        <ItemsControl ItemsSource="{Binding DailyTraffic}"
+                                      Height="150">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Bottom" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:DailyTrafficPoint">
+                                    <StackPanel Spacing="{DynamicResource SpaceXs}" VerticalAlignment="Bottom">
+                                        <TextBlock Text="{Binding Amount}"
+                                                   Classes="caption"
+                                                   HorizontalAlignment="Center" />
+                                        <Border Height="{Binding BarHeight}"
+                                                Width="32"
+                                                CornerRadius="4"
+                                                VerticalAlignment="Bottom"
+                                                Background="{DynamicResource AccentFillColorDefaultBrush}" />
+                                        <TextBlock Text="{Binding Label}" Classes="caption"
+                                                   HorizontalAlignment="Center" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
                 </StackPanel>
             </Border>
 

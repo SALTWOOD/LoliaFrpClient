@@ -1,0 +1,78 @@
+name: Desktop (Windows)
+
+# 与 desktop-linux.yml / android.yml 完全独立,三个 workflow 并行跑。
+# 发布说明只在 android.yml 里生成一次,避免三边互相覆盖。
+
+on:
+  push:
+    branches: [ "master" ]
+    tags: [ "v*" ]
+  pull_request:
+    branches: [ "master" ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          # 项目是 net10.0,不是 8.0。
+          dotnet-version: 10.0.x
+
+      - name: Resolve version
+        id: v
+        shell: pwsh
+        run: |
+          if ("${{ github.ref_type }}" -eq "tag") {
+            $display = "${{ github.ref_name }}"
+          } else {
+            $display = "dev-" + "${{ github.sha }}".Substring(0, 7)
+          }
+          Write-Host "Log: version -> $display"
+          "display=$display" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
+      # 入口项目是 LoliaFrpClient.Desktop:LoliaFrpClient 已经从 exe 改成共享库,
+      # 直接发布它只会得到一个 dll。
+      - name: Publish win-x64
+        run: >
+          dotnet publish LoliaFrpClient.Desktop/LoliaFrpClient.Desktop.csproj
+          -c Release -r win-x64 --self-contained true
+          -o publish/win-x64
+
+      - name: Publish win-arm64
+        run: >
+          dotnet publish LoliaFrpClient.Desktop/LoliaFrpClient.Desktop.csproj
+          -c Release -r win-arm64 --self-contained true
+          -o publish/win-arm64
+
+      - name: Package ZIPs
+        shell: pwsh
+        run: |
+          $v = "${{ steps.v.outputs.display }}"
+          Compress-Archive -Path publish/win-x64/*   -DestinationPath "LoliaFrpClient_${v}_win-x64.zip"
+          Compress-Archive -Path publish/win-arm64/* -DestinationPath "LoliaFrpClient_${v}_win-arm64.zip"
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: LoliaFrpClient-${{ steps.v.outputs.display }}-windows
+          path: ./*.zip
+          retention-days: 7
+
+      - name: Attach to release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          files: ./*.zip

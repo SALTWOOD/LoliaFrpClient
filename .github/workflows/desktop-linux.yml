@@ -1,0 +1,107 @@
+name: Desktop (Linux)
+
+# 与 desktop-windows.yml / android.yml 完全独立,三个 workflow 并行跑。
+
+on:
+  push:
+    branches: [ "master" ]
+    tags: [ "v*" ]
+  pull_request:
+    branches: [ "master" ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Resolve version
+        id: v
+        run: |
+          if [ "${{ github.ref_type }}" = "tag" ]; then
+            echo "display=${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "display=dev-$(echo "${{ github.sha }}" | cut -c1-7)" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Publish linux-x64
+        run: >
+          dotnet publish LoliaFrpClient.Desktop/LoliaFrpClient.Desktop.csproj
+          -c Release -r linux-x64 --self-contained true
+          -o publish/linux-x64
+
+      - name: Package tar.gz
+        run: |
+          set -euo pipefail
+          V="${{ steps.v.outputs.display }}"
+          chmod +x publish/linux-x64/LoliaFrpClient.Desktop
+          tar -C publish/linux-x64 -czf "LoliaFrpClient_${V}_linux-x64.tar.gz" .
+
+      - name: Package AppImage
+        run: |
+          set -euo pipefail
+          V="${{ steps.v.outputs.display }}"
+          APP=AppDir
+          rm -rf "$APP"
+          mkdir -p "$APP/usr/bin" "$APP/usr/share/icons/hicolor/256x256/apps"
+
+          cp -r publish/linux-x64/. "$APP/usr/bin/"
+          cp LoliaFrpClient/Assets/icon.png "$APP/loliafrp.png"
+          cp LoliaFrpClient/Assets/icon.png "$APP/usr/share/icons/hicolor/256x256/apps/loliafrp.png"
+
+          # 用 printf 而不是 heredoc:YAML 块里的每一行都带缩进,
+          # heredoc 会把缩进原样写进 desktop 文件。
+          printf '%s\n' \
+            '[Desktop Entry]' \
+            'Type=Application' \
+            'Name=LoliaFrp' \
+            'Comment=Lolia FRP client' \
+            'Exec=LoliaFrpClient.Desktop' \
+            'Icon=loliafrp' \
+            'Categories=Network;Utility;' \
+            'Terminal=false' \
+            > "$APP/loliafrp.desktop"
+
+          printf '%s\n' \
+            '#!/bin/sh' \
+            'HERE="$(dirname "$(readlink -f "$0")")"' \
+            'exec "$HERE/usr/bin/LoliaFrpClient.Desktop" "$@"' \
+            > "$APP/AppRun"
+          chmod +x "$APP/AppRun"
+
+          curl -fsSL -o appimagetool \
+            https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage
+          chmod +x appimagetool
+
+          # --appimage-extract-and-run:CI 容器里没有 FUSE,直接跑 AppImage 会失败。
+          ARCH=x86_64 ./appimagetool --appimage-extract-and-run "$APP" \
+            "LoliaFrpClient_${V}_linux-x64.AppImage"
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: LoliaFrpClient-${{ steps.v.outputs.display }}-linux
+          path: |
+            ./*.tar.gz
+            ./*.AppImage
+          retention-days: 7
+
+      - name: Attach to release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          files: |
+            ./*.tar.gz
+            ./*.AppImage

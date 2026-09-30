@@ -4,90 +4,233 @@
              x:Class="LoliaFrpClient.Views.FrpcManagerPage"
              x:DataType="vm:FrpcManagerViewModel">
 
-    <Grid RowDefinitions="Auto,*" Margin="{DynamicResource PagePadding}">
+    <!--
+      页边距不套在整页上,而是分给「表头」和「滚动区」两段。
+      套在整页上时,ScrollViewer 会被内缩一圈,而卡片正好铺满那一圈,
+      于是滚动条就压在卡片右边缘上;分给两段之后 ScrollViewer 占满整宽,
+      滚动条落在右侧留白里。
 
-        <!-- ── 标题 + frpc 核心状态 ── -->
-        <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,16">
-            <TextBlock Grid.Column="0" Text="Frpc 管理" Classes="pageTitle" VerticalAlignment="Center"/>
-            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+      这里把 24 写死而不是用 PagePadding:该令牌是四边等值的,
+      表达不了「内容顶部不加留白(表头的下边距已经给过 16)」。
+      改动 PagePadding 时要一并改这两处。
+    -->
+    <Grid RowDefinitions="Auto,*">
+
+        <!--
+          窄屏折成两行:右侧「核心版本 + 安装/更新」合起来宽过 360dp,
+          会把 Auto 列撑开、把 * 列(标题)压到 0,两段文字直接叠在一起。
+        -->
+        <Grid Grid.Row="0" ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto"
+              RowSpacing="8" Margin="24,24,24,16">
+            <TextBlock Grid.Row="0"
+                       Grid.Column="0"
+                       Grid.ColumnSpan="{Binding IsCompact, Converter={StaticResource CompactValue}, ConverterParameter='1|2'}"
+                       Text="Frpc 管理" Classes="pageTitle" VerticalAlignment="Center" />
+            <StackPanel
+                Grid.Row="{Binding IsCompact, Converter={StaticResource CompactValue}, ConverterParameter='0|1'}"
+                Grid.Column="{Binding IsCompact, Converter={StaticResource CompactValue}, ConverterParameter='1|0'}"
+                Grid.ColumnSpan="{Binding IsCompact, Converter={StaticResource CompactValue}, ConverterParameter='1|2'}"
+                Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
                 <TextBlock Classes="caption" VerticalAlignment="Center">
-                    <Run Text="核心版本"/>
-                    <Run Text=" · "/>
-                    <Run Text="{Binding FrpcVersion}"/>
+                    <Run Text="核心版本" />
+                    <Run Text=" · " />
+                    <Run Text="{Binding FrpcVersionText}" />
                 </TextBlock>
-                <!-- TODO: 接入 frpc 下载 / 安装 / 更新 -->
-                <Button Content="安装 / 更新"/>
+                <Button Content="安装 / 更新" Command="{Binding InstallFrpcCommand}"
+                        IsVisible="{Binding CanInstallFrpc}" />
             </StackPanel>
         </Grid>
 
-        <Grid Grid.Row="1" ColumnDefinitions="260,*" ColumnSpacing="16">
+        <!--
+          窄屏整页纵向滚动。
+          隧道列表是这一页的主体,而 360x640 里「隧道 + 控制 + 日志」三块放不下:
+          之前固定给下面留了 300dp,结果列表只剩一行半、第二行还被卡片边缘切掉。
+          改成整页滚动后,列表按内容自然撑开,下面的控制与日志往下滚就能看到。
 
-            <!-- ── 左:进程列表 ── -->
-            <Border Grid.Column="0" Classes="card" Padding="0">
-                <Grid RowDefinitions="Auto,*">
-                    <TextBlock Grid.Row="0" Text="进程" Classes="sectionTitle" Margin="16,14,16,8"/>
-                    <ScrollViewer Grid.Row="1">
-                        <ItemsControl ItemsSource="{Binding Processes}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate x:DataType="vm:FrpcProcessEntry">
-                                    <Border Padding="16,10" Background="Transparent">
-                                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
-                                            <Ellipse Grid.Column="0"
-                                                     Classes="statusDot"
-                                                     Classes.online="{Binding IsOnline}"
-                                                     Classes.offline="{Binding IsOffline}"
-                                                     Classes.starting="{Binding IsStarting}"
-                                                     Classes.error="{Binding IsError}"/>
-                                            <StackPanel Grid.Column="1" Spacing="2">
-                                                <TextBlock Text="{Binding Tunnel}" FontWeight="SemiBold"/>
-                                                <TextBlock Text="{Binding StatusText}" Classes="caption"/>
-                                            </StackPanel>
-                                            <TextBlock Grid.Column="2"
-                                                       Text="{Binding RemotePort}"
-                                                       Classes="caption"
-                                                       VerticalAlignment="Center"/>
-                                        </Grid>
-                                    </Border>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </ScrollViewer>
-                </Grid>
-            </Border>
+          宽屏把纵向滚动设为 Disabled —— 这会把内容约束在视口内而不是无限高,
+          于是下面的 * 行照旧生效,桌面端排布与改动前一致。
+        -->
+        <ScrollViewer Grid.Row="1"
+                      Padding="24,0,24,24"
+                      VerticalScrollBarVisibility="{Binding IsCompact, Converter={StaticResource CompactValue}, ConverterParameter='Disabled|Auto'}"
+                      HorizontalScrollBarVisibility="Disabled">
+            <!-- RowSpacing 只在窄屏起作用(宽屏两块都在第 0 行);漏了它两张卡会贴在一起。 -->
+            <Grid RowDefinitions="*,Auto" ColumnSpacing="16" RowSpacing="16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition
+                        Width="{Binding IsCompact, Converter={StaticResource CompactValue}, ConverterParameter='320|0'}" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
 
-            <!-- ── 右:控制 + 日志 ── -->
-            <Grid Grid.Column="1" RowDefinitions="Auto,*" RowSpacing="16">
+                <Border Grid.Column="0"
+                        Grid.ColumnSpan="{Binding IsCompact, Converter={StaticResource CompactValue}, ConverterParameter='1|2'}"
+                        Classes="card"
+                        Padding="0">
+                    <Grid RowDefinitions="Auto,*,Auto">
+                        <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="16,14,16,8">
+                            <TextBlock Grid.Column="0" Text="隧道" Classes="sectionTitle" VerticalAlignment="Center" />
+                            <Button Grid.Column="1" Content="刷新" Command="{Binding LoadCommand}" />
+                        </Grid>
 
-                <Border Grid.Row="0" Classes="card">
-                    <StackPanel Spacing="{DynamicResource SpaceMd}">
-                        <TextBlock Text="控制" Classes="sectionTitle"/>
-                        <StackPanel Orientation="Horizontal" Spacing="8">
-                            <!-- TODO: 接入 FrpcManager 的启停 -->
-                            <Button Content="启动全部"/>
-                            <Button Content="停止全部"/>
-                            <Button Content="重启"/>
-                        </StackPanel>
-                    </StackPanel>
-                </Border>
-
-                <Border Grid.Row="1" Classes="card">
-                    <Grid RowDefinitions="Auto,*" RowSpacing="{DynamicResource SpaceMd}">
-                        <TextBlock Grid.Row="0" Text="日志" Classes="sectionTitle"/>
                         <ScrollViewer Grid.Row="1">
-                            <ItemsControl ItemsSource="{Binding LogLines}">
+                            <ItemsControl ItemsSource="{Binding Tunnels}">
                                 <ItemsControl.ItemTemplate>
-                                    <DataTemplate x:DataType="x:String">
-                                        <TextBlock Text="{Binding}"
-                                                   FontFamily="Cascadia Mono,Consolas,DejaVu Sans Mono,monospace"
-                                                   FontSize="12"
-                                                   TextWrapping="NoWrap"/>
+                                    <DataTemplate x:DataType="vm:FrpcTunnelRow">
+                                        <Border Padding="16,10">
+                                            <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="10">
+
+                                                <Ellipse Grid.Column="0"
+                                                         Classes="statusDot"
+                                                         Classes.online="{Binding IsOnline}"
+                                                         Classes.offline="{Binding IsOffline}"
+                                                         Classes.starting="{Binding IsStarting}"
+                                                         Classes.error="{Binding IsError}"
+                                                         Classes.remote="{Binding IsRemote}" />
+
+                                                <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding DisplayName}"
+                                                               FontWeight="SemiBold"
+                                                               TextTrimming="CharacterEllipsis" />
+                                                    <TextBlock Text="{Binding StatusText}" Classes="caption" />
+                                                </StackPanel>
+
+                                                <TextBlock Grid.Column="2"
+                                                           Text="{Binding RemotePortText}"
+                                                           Classes="caption"
+                                                           VerticalAlignment="Center" />
+
+                                                <!-- Enabled state comes from the ViewModel; see Recompute. Tunnels
+                                                     reported online by the server but not held locally must offer
+                                                     neither button - starting one would kick its current user. -->
+                                                <StackPanel Grid.Column="3"
+                                                            Orientation="Horizontal"
+                                                            Spacing="4"
+                                                            VerticalAlignment="Center">
+                                                    <Button Content="启动"
+                                                            IsEnabled="{Binding CanStart}"
+                                                            ToolTip.Tip="{Binding Hint}"
+                                                            CommandParameter="{Binding}"
+                                                            Command="{Binding $parent[ItemsControl].((vm:FrpcManagerViewModel)DataContext).StartCommand}" />
+                                                    <Button Content="停止"
+                                                            IsEnabled="{Binding CanStop}"
+                                                            ToolTip.Tip="{Binding Hint}"
+                                                            CommandParameter="{Binding}"
+                                                            Command="{Binding $parent[ItemsControl].((vm:FrpcManagerViewModel)DataContext).StopCommand}" />
+                                                </StackPanel>
+                                            </Grid>
+                                        </Border>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
                         </ScrollViewer>
+
+                        <TextBlock Grid.Row="1"
+                                   Margin="16"
+                                   Classes="caption"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   Text="没有可管理的隧道。"
+                                   IsVisible="{Binding IsEmpty}" />
+
+                        <TextBlock Grid.Row="2"
+                                   Margin="16,8,16,14"
+                                   Classes="caption"
+                                   TextWrapping="Wrap"
+                                   Foreground="{DynamicResource SystemFillColorCriticalBrush}"
+                                   Text="{Binding ErrorMessage}"
+                                   IsVisible="{Binding HasError}" />
                     </Grid>
                 </Border>
+
+                <!--
+                  窄屏时 320 的左列归零,隧道列表占满整行;右侧的控制 + 日志挪到第二行。
+                  这里不再设 MinHeight:整页已经在滚动了,给它下限只会反过来把上面的列表压扁。
+                -->
+                <Grid
+                    Grid.Column="{Binding IsCompact, Converter={StaticResource CompactValue}, ConverterParameter='1|0'}"
+                    Grid.ColumnSpan="{Binding IsCompact, Converter={StaticResource CompactValue}, ConverterParameter='1|2'}"
+                    Grid.Row="{Binding IsCompact, Converter={StaticResource CompactValue}, ConverterParameter='0|1'}"
+                    RowDefinitions="Auto,*"
+                    RowSpacing="16">
+
+                    <Border Grid.Row="0" Classes="card">
+                        <StackPanel Spacing="{DynamicResource SpaceMd}">
+                            <TextBlock Text="控制" Classes="sectionTitle" />
+                            <WrapPanel Orientation="Horizontal" ItemSpacing="8" LineSpacing="8">
+                                <Button Content="启动全部" Command="{Binding StartAllCommand}" />
+                                <Button Content="停止全部" Command="{Binding StopAllCommand}" />
+                                <Button Content="重启" Command="{Binding RestartAllCommand}" />
+                            </WrapPanel>
+                            <CheckBox Content="下载走镜像加速"
+                                      IsChecked="{Binding UseDownloadMirror}"
+                                      ToolTip.Tip="镜像不可用时会自动回退到 GitHub 源" />
+                            <TextBlock Classes="caption"
+                                       TextWrapping="Wrap"
+                                       Text="{Binding StatusMessage}"
+                                       IsVisible="{Binding HasStatus}" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Row="1" Classes="card" Padding="16,14,16,16">
+                        <Grid RowDefinitions="Auto,Auto,*" RowSpacing="{DynamicResource SpaceSm}">
+
+                            <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
+                                <TextBlock Grid.Column="0" Text="日志" Classes="sectionTitle" VerticalAlignment="Center" />
+                                <Button Grid.Column="1" Content="清空" Command="{Binding ClearLogCommand}" />
+                            </Grid>
+
+                            <!-- One tab per tunnel: frpc writes its own timestamp and level, so rows are
+                                 shown verbatim with no prefix of ours. -->
+                            <ListBox Grid.Row="1"
+                                     ItemsSource="{Binding LogTabs}"
+                                     SelectedItem="{Binding SelectedLogTab}"
+                                     Background="Transparent"
+                                     BorderThickness="0"
+                                     Padding="0">
+                                <ListBox.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel Orientation="Horizontal" />
+                                    </ItemsPanelTemplate>
+                                </ListBox.ItemsPanel>
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:FrpcLogTab">
+                                        <TextBlock Text="{Binding DisplayName}" TextTrimming="CharacterEllipsis" />
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+
+                            <!--
+                              窄屏要限高:整页在滚动,这一行的 * 会塌成内容高,
+                              日志攒够几千行就会把页面撑得没边。限高之后它自己在内部滚。
+                              横向滚动开着:frpc 的报错动辄一整行,裁掉就什么都看不出来。
+                            -->
+                            <ScrollViewer Grid.Row="2"
+                                          x:Name="LogScroll"
+                                          HorizontalScrollBarVisibility="Auto"
+                                          MaxHeight="{Binding IsCompact, Converter={StaticResource CompactValue}, ConverterParameter='Infinity|260'}">
+                                <ItemsControl ItemsSource="{Binding SelectedLogTab.Lines}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="x:String">
+                                            <!-- 宽屏保留不换行(时间戳对齐好扫),窄屏换行(手机没法横向拖)。 -->
+                                            <TextBlock Text="{Binding}"
+                                                       FontFamily="Cascadia Mono,Consolas,DejaVu Sans Mono,monospace"
+                                                       FontSize="12"
+                                                       TextWrapping="{Binding $parent[UserControl].((vm:FrpcManagerViewModel)DataContext).IsCompact, Converter={StaticResource CompactValue}, ConverterParameter='NoWrap|Wrap'}" />
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </ScrollViewer>
+
+                            <TextBlock Grid.Row="2"
+                                       Classes="caption"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"
+                                       Text="启动一条隧道后,这里会显示它的日志。"
+                                       IsVisible="{Binding !HasLogTabs}" />
+                        </Grid>
+                    </Border>
+                </Grid>
             </Grid>
-        </Grid>
+        </ScrollViewer>
     </Grid>
 </UserControl>

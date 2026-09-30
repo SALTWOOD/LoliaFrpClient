@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using LoliaFrpClient.Core;
+using LoliaFrpClient.Services;
 using LoliaFrpClient.ViewModels;
 using LoliaFrpClient.Views;
 
@@ -16,25 +17,38 @@ public partial class App : Application
 
     public override void OnFrameworkInitializationCompleted()
     {
-        // 会话在这里建好,而不是等第一次访问 ApiSession.Current 时懒加载:
-        // 令牌文件要在启动时读入,401 兜底也要在这里挂上。
         var session = new ApiSession();
 
-        // 刷新令牌也失效时(长期未开机、服务端吊销),清掉本地凭证回到未登录态。
-        // 不清的话界面会停在「已登录」但每个请求都 401。
         session.UnauthorizedDetected += session.SignOut;
         ApiSession.Initialize(session);
 
-        if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+        switch (ApplicationLifetime)
         {
-            desktop.MainWindow = new MainWindow
-            {
-                DataContext = new MainViewModel(),
-            };
+            case IClassicDesktopStyleApplicationLifetime desktop:
+                desktop.MainWindow = new MainWindow
+                {
+                    DataContext = new MainViewModel()
+                };
 
-            desktop.Exit += (_, _) => session.Dispose();
+                desktop.Exit += (_, _) => Shutdown(session);
+                break;
+
+            case ISingleViewApplicationLifetime singleView:
+                singleView.MainView = new MobileShellView
+                {
+                    DataContext = new MainViewModel()
+                };
+                break;
         }
 
         base.OnFrameworkInitializationCompleted();
+    }
+
+    private static void Shutdown(ApiSession session)
+    {
+        // frpc runs as a child process and does not exit with us. Leaving it behind keeps
+        // the tunnel occupied and makes the next start fight the orphan.
+        FrpcProcessManager.Current.Dispose();
+        session.Dispose();
     }
 }

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+      必须是 Theme.AppCompat 的后代:Avalonia 的 AvaloniaActivity 继承自 AppCompatActivity,
+      主题不带 AppCompat 会在启动时抛 IllegalStateException。
+      界面完全由 Avalonia 自己绘制,这里只需要一个没有 ActionBar 的主题。
+    -->
+    <style name="AppTheme" parent="Theme.AppCompat.DayNight.NoActionBar"/>
+</resources>

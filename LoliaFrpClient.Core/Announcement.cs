@@ -6,12 +6,10 @@ using AnnouncementTop = LoliaFrpClient.Api.User.Announcements.Top;
 namespace LoliaFrpClient.Core;
 
 /// <summary>
-///     公告。
-///     <para>没有独立身份,故只提供静态方法:四个端点分别是全部、顶部、公告板、弹窗四种展示位。</para>
+///     公告
 /// </summary>
 public static class Announcement
 {
-    /// <summary>取全部公告。</summary>
     public static Task<ApiResult<AnnouncementsGetResponse_data>> ListAsync(
         ApiSession? session = null,
         CancellationToken cancellationToken = default)
@@ -24,7 +22,6 @@ public static class Announcement
             cancellationToken);
     }
 
-    /// <summary>取顶部公告。</summary>
     public static Task<ApiResult<AnnouncementTop.TopGetResponse_data>> GetTopAsync(
         ApiSession? session = null,
         CancellationToken cancellationToken = default)
@@ -37,7 +34,6 @@ public static class Announcement
             cancellationToken);
     }
 
-    /// <summary>取公告板公告。</summary>
     public static Task<ApiResult<AnnouncementBoard.BoardGetResponse_data>> GetBoardAsync(
         ApiSession? session = null,
         CancellationToken cancellationToken = default)
@@ -50,7 +46,6 @@ public static class Announcement
             cancellationToken);
     }
 
-    /// <summary>取弹窗公告。</summary>
     public static Task<ApiResult<AnnouncementModal.ModalGetResponse_data>> GetModalAsync(
         ApiSession? session = null,
         CancellationToken cancellationToken = default)
