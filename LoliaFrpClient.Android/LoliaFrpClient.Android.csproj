@@ -5,7 +5,7 @@
         <Nullable>enable</Nullable>
         <SupportedOSPlatformVersion>24</SupportedOSPlatformVersion>
         <ApplicationId>com.loliafrp.client</ApplicationId>
-        <ApplicationVersion>1</ApplicationVersion>
+        <ApplicationVersion>2</ApplicationVersion>
         <!-- apk 而不是 aab:这是自己装到真机上测的,不走商店。 -->
         <AndroidPackageFormat>apk</AndroidPackageFormat>
         <!--
