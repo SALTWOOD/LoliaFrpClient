@@ -9,6 +9,7 @@ using LoliaFrpClient.Api.Node;
 using LoliaFrpClient.Api.Oauth2;
 using LoliaFrpClient.Api.Probe;
 using LoliaFrpClient.Api.Qqbot;
+using LoliaFrpClient.Api.Releases;
 using LoliaFrpClient.Api.Tunnel;
 using LoliaFrpClient.Api.User;
 using Microsoft.Kiota.Abstractions.Extensions;
@@ -73,6 +74,11 @@ namespace LoliaFrpClient.Api
         public global::LoliaFrpClient.Api.Qqbot.QqbotRequestBuilder Qqbot
         {
             get => new global::LoliaFrpClient.Api.Qqbot.QqbotRequestBuilder(PathParameters, RequestAdapter);
+        }
+        /// <summary>The releases property</summary>
+        public global::LoliaFrpClient.Api.Releases.ReleasesRequestBuilder Releases
+        {
+            get => new global::LoliaFrpClient.Api.Releases.ReleasesRequestBuilder(PathParameters, RequestAdapter);
         }
         /// <summary>The tunnel property</summary>
         public global::LoliaFrpClient.Api.Tunnel.TunnelRequestBuilder Tunnel

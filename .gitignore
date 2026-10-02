@@ -370,3 +370,6 @@ LoliaFrpClient.Android/lib/
 # Android signature
 signing.props
 *.keystore
+
+# 生成的 Kiota SDK 里的 Releases/ 被上面的 [Rr]eleases/ 规则误伤,加回来。
+!LoliaFrpClient.Api/Releases/
