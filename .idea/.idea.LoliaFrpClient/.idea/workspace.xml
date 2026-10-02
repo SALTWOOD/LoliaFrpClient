@@ -14,134 +14,15 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="570b8ac3-90b1-4df9-a550-4a98e08d00f1" name="更改" comment="feat: most shitty basic feature">
-      <change afterPath="$PROJECT_DIR$/.github/workflows/android.yml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.github/workflows/desktop-linux.yml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.github/workflows/desktop-windows.yml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LoliaFrpClient.Android/AndroidManifest.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LoliaFrpClient.Android/LoliaFrpClient.Android.csproj" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LoliaFrpClient.Android/MainActivity.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LoliaFrpClient.Android/MainApplication.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LoliaFrpClient.Android/Resources/mipmap-anydpi-v26/ic_launcher.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LoliaFrpClient.Android/Resources/mipmap-hdpi/ic_launcher.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LoliaFrpClient.Android/Resources/mipmap-hdpi/ic_launcher_foreground.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LoliaFrpClient.Android/Resources/mipmap-mdpi/ic_launcher.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LoliaFrpClient.Android/Resources/mipmap-mdpi/ic_launcher_foreground.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LoliaFrpClient.Android/Resources/mipmap-xhdpi/ic_launcher.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LoliaFrpClient.Android/Resources/mipmap-xhdpi/ic_launcher_foreground.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LoliaFrpClient.Android/Resources/mipmap-xxhdpi/ic_launcher.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LoliaFrpClient.Android/Resources/mipmap-xxhdpi/ic_launcher_foreground.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LoliaFrpClient.Android/Resources/mipmap-xxxhdpi/ic_launcher.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LoliaFrpClient.Android/Resources/mipmap-xxxhdpi/ic_launcher_foreground.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LoliaFrpClient.Android/Resources/values/ic_launcher_background.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LoliaFrpClient.Android/Resources/values/styles.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LoliaFrpClient.Android/Resources/xml/network_security_config.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LoliaFrpClient.Core/CreateTunnelSpec.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LoliaFrpClient.Core/Frpc/FrpcArchiveExtractor.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LoliaFrpClient.Core/Frpc/FrpcChecksumVerifier.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LoliaFrpClient.Core/Frpc/FrpcInstall.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LoliaFrpClient.Core/Frpc/FrpcInstaller.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LoliaFrpClient.Core/Frpc/FrpcLaunchCredential.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LoliaFrpClient.Core/Frpc/FrpcLocator.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LoliaFrpClient.Core/Frpc/FrpcRelease.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LoliaFrpClient.Core/Frpc/FrpcReleaseClient.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LoliaFrpClient.Core/Node.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LoliaFrpClient.Core/NodeInfo.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LoliaFrpClient.Core/TunnelDetail.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LoliaFrpClient.Desktop/Assets/app.ico" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LoliaFrpClient.Desktop/LoliaFrpClient.Desktop.csproj" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LoliaFrpClient.Desktop/Program.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LoliaFrpClient.Desktop/app.manifest" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LoliaFrpClient/Assets/icon.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LoliaFrpClient/Branding/BrandLogo.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LoliaFrpClient/Converters/CompactValueConverter.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LoliaFrpClient/Services/AppSettings.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LoliaFrpClient/Services/AvatarLoader.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LoliaFrpClient/Services/FrpcLogBuffer.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LoliaFrpClient/Services/FrpcPath.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LoliaFrpClient/Services/FrpcProcessManager.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LoliaFrpClient/Services/FrpcVersionProbe.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LoliaFrpClient/Services/ShellNavigation.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LoliaFrpClient/ViewModels/DownloadFrpcViewModel.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LoliaFrpClient/ViewModels/NavItem.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LoliaFrpClient/ViewModels/NodesPageViewModel.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LoliaFrpClient/ViewModels/TunnelDetailViewModel.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LoliaFrpClient/Views/DownloadFrpcWindow.axaml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LoliaFrpClient/Views/DownloadFrpcWindow.axaml.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LoliaFrpClient/Views/MobileShellView.axaml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LoliaFrpClient/Views/MobileShellView.axaml.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LoliaFrpClient/Views/NodesPage.axaml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LoliaFrpClient/Views/NodesPage.axaml.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LoliaFrpClient/Views/TunnelDetailWindow.axaml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LoliaFrpClient/Views/TunnelDetailWindow.axaml.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/assets/brand/AppIcon_Black.svg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/assets/brand/AppIcon_Full_Color.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/assets/brand/Brand_Logo_1.svg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/assets/brand/Brand_Logo_2.svg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/scripts/build-frpc.sh" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/scripts/build-icons.ps1" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.github/workflows/release.yml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+    <list default="true" id="570b8ac3-90b1-4df9-a550-4a98e08d00f1" name="更改" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.LoliaFrpClient/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.LoliaFrpClient/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LoliaFrpClient.Core/Announcement.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LoliaFrpClient.Core/Announcement.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LoliaFrpClient.Core/ApiCall.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LoliaFrpClient.Core/ApiCall.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LoliaFrpClient.Core/ApiFacade.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LoliaFrpClient.Core/ApiFacade.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LoliaFrpClient.Core/ApiFailureKind.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LoliaFrpClient.Core/ApiFailureKind.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LoliaFrpClient.Core/ApiOptions.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LoliaFrpClient.Core/ApiOptions.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LoliaFrpClient.Core/ApiResult.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LoliaFrpClient.Core/ApiResult.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LoliaFrpClient.Core/ApiSession.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LoliaFrpClient.Core/ApiSession.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LoliaFrpClient.Core/Auth/BearerTokenAuthenticationProvider.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LoliaFrpClient.Core/Auth/BearerTokenAuthenticationProvider.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LoliaFrpClient.Core/Auth/FileTokenStore.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LoliaFrpClient.Core/Auth/FileTokenStore.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LoliaFrpClient.Core/Auth/ITokenStore.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LoliaFrpClient.Core/Auth/ITokenStore.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LoliaFrpClient.Core/Auth/InMemoryTokenStore.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LoliaFrpClient.Core/Auth/InMemoryTokenStore.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LoliaFrpClient.Core/Auth/OAuthOptions.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LoliaFrpClient.Core/Auth/OAuthOptions.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LoliaFrpClient.Core/Auth/TokenOrigin.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LoliaFrpClient.Core/Auth/TokenOrigin.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LoliaFrpClient.Core/Auth/UnauthorizedHandler.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LoliaFrpClient.Core/Auth/UnauthorizedHandler.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LoliaFrpClient.Core/Bill.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LoliaFrpClient.Core/Bill.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LoliaFrpClient.Core/ClientVersion.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LoliaFrpClient.Core/ClientVersion.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LoliaFrpClient.Core/Domain.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LoliaFrpClient.Core/Domain.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LoliaFrpClient.Core/Home.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LoliaFrpClient.Core/Home.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LoliaFrpClient.Core/ILLink.Descriptors.xml" beforeDir="false" afterPath="$PROJECT_DIR$/LoliaFrpClient.Core/ILLink.Descriptors.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LoliaFrpClient.Core/Kyc.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LoliaFrpClient.Core/Kyc.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LoliaFrpClient.Core/OAuth/OAuthClient.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LoliaFrpClient.Core/OAuth/OAuthClient.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LoliaFrpClient.Core/OAuth/OAuthLogin.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LoliaFrpClient.Core/OAuth/OAuthLogin.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LoliaFrpClient.Core/OAuth/OAuthLoopbackListener.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LoliaFrpClient.Core/OAuth/OAuthLoopbackListener.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LoliaFrpClient.Core/OAuth/OAuthTokenResponse.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LoliaFrpClient.Core/OAuth/OAuthTokenResponse.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LoliaFrpClient.Core/OAuth2.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LoliaFrpClient.Core/OAuth2.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LoliaFrpClient.Core/OAuthApp.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LoliaFrpClient.Core/OAuthApp.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LoliaFrpClient.Core/Passkey.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LoliaFrpClient.Core/Passkey.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LoliaFrpClient.Core/QqBinding.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/LoliaFrpClient.Core/Qqbot.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/LoliaFrpClient.Core/README.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/LoliaFrpClient.Core/Traffic.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LoliaFrpClient.Core/Traffic.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LoliaFrpClient.Core/Tunnel.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LoliaFrpClient.Core/Tunnel.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LoliaFrpClient.Core/User.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LoliaFrpClient.Core/User.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LoliaFrpClient.slnx" beforeDir="false" afterPath="$PROJECT_DIR$/LoliaFrpClient.slnx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LoliaFrpClient/App.axaml" beforeDir="false" afterPath="$PROJECT_DIR$/LoliaFrpClient/App.axaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LoliaFrpClient/App.axaml.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LoliaFrpClient/App.axaml.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LoliaFrpClient/ByteSize.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LoliaFrpClient/ByteSize.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LoliaFrpClient/LoliaFrpClient.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/LoliaFrpClient/LoliaFrpClient.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LoliaFrpClient/Program.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/LoliaFrpClient/Services/BrowserLauncher.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LoliaFrpClient/Services/BrowserLauncher.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LoliaFrpClient/Styles/Tokens.axaml" beforeDir="false" afterPath="$PROJECT_DIR$/LoliaFrpClient/Styles/Tokens.axaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LoliaFrpClient/ViewLocator.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LoliaFrpClient/ViewLocator.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LoliaFrpClient/ViewModels/FrpcManagerViewModel.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LoliaFrpClient/ViewModels/FrpcManagerViewModel.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LoliaFrpClient/ViewModels/MainViewModel.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LoliaFrpClient/ViewModels/MainViewModel.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LoliaFrpClient.Android/AndroidManifest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/LoliaFrpClient.Android/AndroidManifest.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LoliaFrpClient.Android/LoliaFrpClient.Android.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/LoliaFrpClient.Android/LoliaFrpClient.Android.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LoliaFrpClient.Android/MainActivity.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LoliaFrpClient.Android/MainActivity.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LoliaFrpClient.Android/MainApplication.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LoliaFrpClient.Android/MainApplication.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LoliaFrpClient/Services/FrpcProcessManager.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LoliaFrpClient/Services/FrpcProcessManager.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/LoliaFrpClient/ViewModels/SettingsViewModel.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LoliaFrpClient/ViewModels/SettingsViewModel.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LoliaFrpClient/ViewModels/TunnelListViewModel.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LoliaFrpClient/ViewModels/TunnelListViewModel.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LoliaFrpClient/ViewModels/UserInfoViewModel.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LoliaFrpClient/ViewModels/UserInfoViewModel.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LoliaFrpClient/ViewModels/ViewModelBase.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LoliaFrpClient/ViewModels/ViewModelBase.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LoliaFrpClient/Views/FrpcManagerPage.axaml" beforeDir="false" afterPath="$PROJECT_DIR$/LoliaFrpClient/Views/FrpcManagerPage.axaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LoliaFrpClient/Views/FrpcManagerPage.axaml.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LoliaFrpClient/Views/FrpcManagerPage.axaml.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LoliaFrpClient/Views/MainWindow.axaml" beforeDir="false" afterPath="$PROJECT_DIR$/LoliaFrpClient/Views/MainWindow.axaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LoliaFrpClient/Views/MainWindow.axaml.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LoliaFrpClient/Views/MainWindow.axaml.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/LoliaFrpClient/Views/SettingsPage.axaml" beforeDir="false" afterPath="$PROJECT_DIR$/LoliaFrpClient/Views/SettingsPage.axaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LoliaFrpClient/Views/SettingsPage.axaml.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LoliaFrpClient/Views/SettingsPage.axaml.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LoliaFrpClient/Views/TunnelListPage.axaml" beforeDir="false" afterPath="$PROJECT_DIR$/LoliaFrpClient/Views/TunnelListPage.axaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LoliaFrpClient/Views/TunnelListPage.axaml.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LoliaFrpClient/Views/TunnelListPage.axaml.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LoliaFrpClient/Views/UserInfoPage.axaml" beforeDir="false" afterPath="$PROJECT_DIR$/LoliaFrpClient/Views/UserInfoPage.axaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LoliaFrpClient/Views/UserInfoPage.axaml.cs" beforeDir="false" afterPath="$PROJECT_DIR$/LoliaFrpClient/Views/UserInfoPage.axaml.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LoliaFrpClient/app.manifest" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -203,27 +84,27 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    ".NET 项目.LoliaFrpClient.Desktop.executor": "Debug",
-    ".NET 项目.LoliaFrpClient.executor": "Debug",
-    "Android.LoliaFrpClient.Android.executor": "Debug",
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.cidr.known.project.marker": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "RunOnceActivity.readMode.enableVisualFormatting": "true",
-    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
-    "cidr.known.project.marker": "true",
-    "copilot.chat.legacySessionMetadata.migrated": "true",
-    "git-widget-placeholder": "master",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "preferences.pluginManager",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;.NET 项目.LoliaFrpClient.Desktop.executor&quot;: &quot;Debug&quot;,
+    &quot;.NET 项目.LoliaFrpClient.executor&quot;: &quot;Debug&quot;,
+    &quot;Android.LoliaFrpClient.Android.executor&quot;: &quot;Debug&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
+    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;copilot.chat.legacySessionMetadata.migrated&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
-  <component name="RunManager" selected=".NET 项目.LoliaFrpClient.Desktop">
+}</component>
+  <component name="RunManager" selected="Android.LoliaFrpClient.Android">
     <configuration name="LoliaFrpClient" type="DotNetProject" factoryName=".NET Project">
       <option name="EXE_PATH" value="" />
       <option name="PROGRAM_PARAMETERS" value="" />
@@ -284,7 +165,9 @@
       <workItem from="1790596204354" duration="20243000" />
       <workItem from="1790720210027" duration="718000" />
       <workItem from="1790764659228" duration="57000" />
-      <workItem from="1790764759241" duration="4806000" />
+      <workItem from="1790764759241" duration="11494000" />
+      <workItem from="1790925560245" duration="3156000" />
+      <workItem from="1790928827614" duration="2170000" />
     </task>
     <task id="LOCAL-00001" summary="refactor: use avalonia">
       <option name="closed" value="true" />
@@ -310,7 +193,31 @@
       <option name="project" value="LOCAL" />
       <updated>1790685584847</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="feat: most shitty basic feature">
+      <option name="closed" value="true" />
+      <created>1790769592186</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1790769592186</updated>
+    </task>
+    <task id="LOCAL-00005" summary="chore(comment): update comment">
+      <option name="closed" value="true" />
+      <created>1790769879347</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1790769879347</updated>
+    </task>
+    <task id="LOCAL-00006" summary="fix(workflow): quote `3e00`">
+      <option name="closed" value="true" />
+      <created>1790769954071</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1790769954071</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -324,7 +231,9 @@
     <MESSAGE value="docs(api): update `openapi.json`" />
     <MESSAGE value="chore(code): init codegraph" />
     <MESSAGE value="feat: most shitty basic feature" />
-    <option name="LAST_COMMIT_MESSAGE" value="feat: most shitty basic feature" />
+    <MESSAGE value="chore(comment): update comment" />
+    <MESSAGE value="fix(workflow): quote `3e00`" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix(workflow): quote `3e00`" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

@@ -79,6 +79,16 @@
                 </StackPanel>
             </ui:FASettingsExpander>
 
+            <ui:FASettingsExpander Header="后台保活" IsVisible="{Binding SupportsKeepAlive}">
+                <StackPanel Spacing="{DynamicResource SpaceMd}">
+                    <ItemsControl ItemsSource="{Binding KeepAlive}" ItemTemplate="{StaticResource SettingsRow}" />
+
+                    <Button Content="申请加入电池白名单"
+                            HorizontalAlignment="Left"
+                            Command="{Binding RequestBatteryExemptionCommand}" />
+                </StackPanel>
+            </ui:FASettingsExpander>
+
             <!-- ── 关于 ── -->
             <ui:FASettingsExpander Header="关于">
                 <ItemsControl ItemsSource="{Binding About}" ItemTemplate="{StaticResource SettingsRow}" />

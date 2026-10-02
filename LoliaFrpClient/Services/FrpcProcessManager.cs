@@ -213,6 +213,7 @@ internal sealed class FrpcProcessManager : IDisposable
         // Only the id, never the token: the command line carries the credential.
         GetLog(tunnelName).Append($"已启动 (PID {process.Id}, 参数 -t {tunnelId}:***)");
         RaiseStateChanged(tunnelName);
+        SyncKeepAlive();
         return FrpcStartResult.Ok();
     }
 
@@ -230,6 +231,7 @@ internal sealed class FrpcProcessManager : IDisposable
 
         Terminate(session);
         GetLog(tunnelName).Append("已停止");
+        SyncKeepAlive();
         return true;
     }
 
@@ -271,6 +273,8 @@ internal sealed class FrpcProcessManager : IDisposable
         }
 
         session.Dispose();
+
+        SyncKeepAlive();
     }
 
     private void OnOutput(FrpcSession session, string? line, bool isError)
@@ -333,6 +337,18 @@ internal sealed class FrpcProcessManager : IDisposable
 
         session.Dispose();
         RaiseStateChanged(session.TunnelName);
+        SyncKeepAlive();
+    }
+
+    private void SyncKeepAlive()
+    {
+        int running;
+        lock (_gate)
+        {
+            running = _sessions.Count;
+        }
+
+        TunnelKeepAlive.SetActive(running > 0, running);
     }
 
     private void Terminate(FrpcSession session)

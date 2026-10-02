@@ -5,6 +5,7 @@ using Android.Runtime;
 using Avalonia;
 using Avalonia.Android;
 using LoliaFrpClient.Core.Frpc;
+using LoliaFrpClient.Services;
 
 namespace LoliaFrpClient.Android;
 
@@ -25,6 +26,8 @@ public class MainApplication : AvaloniaAndroidApplication<App>
 
         // read-only file system
         if (FilesDir?.AbsolutePath is { } filesDir) FrpcLocator.WorkingDirectory = filesDir;
+
+        TunnelKeepAlive.UseHost(new AndroidTunnelKeepAlive(this));
     }
 
     protected override AppBuilder CustomizeAppBuilder(AppBuilder builder)

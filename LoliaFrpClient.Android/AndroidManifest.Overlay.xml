@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          xmlns:tools="http://schemas.android.com/tools">
+
+    <application>
+        <service android:name="com.loliafrp.client.TunnelKeepAliveService"
+                 tools:node="merge">
+            <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                      android:value="network tunnel" />
+        </service>
+    </application>
+</manifest>

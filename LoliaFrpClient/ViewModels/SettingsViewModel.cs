@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Threading.Tasks;
+using Avalonia;
+using Avalonia.Controls.ApplicationLifetimes;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LoliaFrpClient.Core;
@@ -19,6 +21,11 @@ public sealed partial class SettingsViewModel : ViewModelBase
     public SettingsViewModel()
     {
         SetAccount(("登录状态", "未登录"));
+
+        if (Application.Current?.ApplicationLifetime is IActivatableLifetime activatable)
+            activatable.Activated += (_, _) => RefreshKeepAliveState();
+
+        RefreshKeepAliveState();
     }
 
     /// <summary>账户区块。登录态变化后整块重建。</summary>
@@ -55,9 +62,37 @@ public sealed partial class SettingsViewModel : ViewModelBase
     [ObservableProperty]
     public partial string? StatusMessage { get; set; }
 
+    public bool SupportsKeepAlive => TunnelKeepAlive.IsSupported;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(BatteryOptimizationText))]
+    public partial bool IsBatteryOptimizationIgnored { get; set; }
+
+    public ObservableCollection<SettingsEntry> KeepAlive { get; } = [];
+
+    public string BatteryOptimizationText =>
+        IsBatteryOptimizationIgnored ? "已忽略" : "未忽略";
+
+    private void RefreshKeepAliveState()
+    {
+        if (!TunnelKeepAlive.IsSupported) return;
+
+        IsBatteryOptimizationIgnored = TunnelKeepAlive.IsBatteryOptimizationIgnored();
+
+        KeepAlive.Clear();
+        KeepAlive.Add(new SettingsEntry("电池优化", BatteryOptimizationText));
+    }
+
+    [RelayCommand]
+    private void RequestBatteryExemption()
+    {
+        TunnelKeepAlive.RequestBatteryOptimizationExemption();
+    }
+
     public override Task ActivateAsync()
     {
         RefreshFrpcCore();
+        RefreshKeepAliveState();
         return RefreshAccountAsync();
     }
 
