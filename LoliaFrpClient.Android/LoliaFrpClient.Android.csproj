@@ -5,8 +5,7 @@
         <Nullable>enable</Nullable>
         <SupportedOSPlatformVersion>24</SupportedOSPlatformVersion>
         <ApplicationId>com.loliafrp.client</ApplicationId>
-        <ApplicationVersion>1</ApplicationVersion>
-        <ApplicationDisplayVersion>0.1.0</ApplicationDisplayVersion>
+        <ApplicationVersion>0</ApplicationVersion>
         <!-- apk 而不是 aab:这是自己装到真机上测的,不走商店。 -->
         <AndroidPackageFormat>apk</AndroidPackageFormat>
         <!--
@@ -37,4 +36,12 @@
 
       上游只发 android_arm 和 android_arm64,没有 x86 系列,所以模拟器上跑不了隧道。
     -->
+
+    <!--
+      本地签名。signing.props 与 keystore 都在仓库根目录、都不入库(.gitignore)。
+      没有它时签名属性为空,.NET Android 会退回自动生成的 debug keystore —— CI 上每次都是新生成的,
+      装出来的 APK 签名各不相同,覆盖安装必然报 signature mismatch。
+      所以 CI 不能依赖这个文件,必须在 workflow 里显式传 -p:AndroidSigningKeyStore 等参数。
+    -->
+    <Import Project="..\signing.props" Condition="Exists('..\signing.props')"/>
 </Project>

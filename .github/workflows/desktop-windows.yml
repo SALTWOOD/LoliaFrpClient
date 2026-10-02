@@ -1,8 +1,5 @@
 name: Desktop (Windows)
 
-# Independent of desktop-linux.yml and android.yml; all three run in parallel.
-# Release notes are generated in android.yml only, so the three cannot overwrite them.
-
 on:
   push:
     branches: [ "master" ]
@@ -12,7 +9,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   build:
@@ -34,7 +31,16 @@ jobs:
         id: v
         shell: pwsh
         run: |
+          # The version lives in Directory.Build.props and nowhere else. A tag that
+          # disagrees with it would ship binaries carrying the old number under a new
+          # tag name, so refuse to build. scripts/set-version.ps1 writes both.
+          $fileVer = [regex]::Match(
+            (Get-Content Directory.Build.props -Raw), '<Version>([^<]*)</Version>').Groups[1].Value
+
           if ("${{ github.ref_type }}" -eq "tag") {
+            if ("${{ github.ref_name }}" -ne "v$fileVer") {
+              throw "tag ${{ github.ref_name }} but Directory.Build.props says $fileVer"
+            }
             $display = "${{ github.ref_name }}"
           } else {
             $display = "dev-" + "${{ github.sha }}".Substring(0, 7)
@@ -69,10 +75,3 @@ jobs:
           name: LoliaFrpClient-${{ steps.v.outputs.display }}-windows
           path: ./*.zip
           retention-days: 7
-
-      - name: Attach to release
-        if: startsWith(github.ref, 'refs/tags/v')
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ github.ref_name }}
-          files: ./*.zip

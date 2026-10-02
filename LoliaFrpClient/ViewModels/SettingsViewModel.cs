@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Reflection;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -44,9 +45,14 @@ public sealed partial class SettingsViewModel : ViewModelBase
     /// <summary>占位:关于区块。</summary>
     public IReadOnlyList<SettingsEntry> About { get; } =
     [
-        new("客户端版本", "—"),
+        new("客户端版本", ClientVersionText),
         new("最后检查更新", "从未")
     ];
+
+    private static readonly string ClientVersionText =
+        (Assembly.GetEntryAssembly() ?? typeof(SettingsViewModel).Assembly).GetName().Version is { } v
+            ? $"v{v}"
+            : "未知";
 
     /// <summary>是否有请求在途。驱动按钮禁用与进度指示。</summary>
     [ObservableProperty]

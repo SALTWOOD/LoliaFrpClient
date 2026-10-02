@@ -1,11 +1,5 @@
 name: Android
 
-# Independent of desktop-windows.yml and desktop-linux.yml; all three run in parallel.
-# Release notes are generated here only, so the other two cannot overwrite them.
-#
-# frpc is built from source at FRPC_REF instead of downloaded prebuilt from upstream,
-# so the bundled version is chosen here and can follow any tag, branch or commit.
-
 on:
   push:
     branches: [ "master" ]
@@ -21,7 +15,7 @@ on:
         type: string
 
 permissions:
-  contents: write
+  contents: read
 
 env:
   # Override on manual runs, e.g. v0.70.0 or a commit.
@@ -136,6 +130,39 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # Signing. Without this the SDK falls back to a debug keystore it generates per
+      # runner, so every run produces a differently-signed APK and installing an update
+      # over an older one fails with "signature mismatch". The keystore has to be the
+      # same one on every machine, hence a secret.
+      #
+      # The two files written here mirror the local signing.props, which the csproj
+      # imports when it exists, so CI and a local Release build hit the same code path.
+      # Fork PRs get no secrets; they fall back to the debug keystore, as before.
+      - name: Write signing props
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          if [ -z "$KEYSTORE_BASE64" ]; then
+            echo "no keystore secret (fork PR) — the SDK will use its own debug keystore"
+            exit 0
+          fi
+          printf '%s' "$KEYSTORE_BASE64" | base64 -d > loliafrp-release.keystore
+          cat > signing.props <<EOF
+          <Project>
+            <PropertyGroup>
+              <AndroidKeyStore>true</AndroidKeyStore>
+              <AndroidSigningKeyStore>\$(MSBuildThisFileDirectory)loliafrp-release.keystore</AndroidSigningKeyStore>
+              <AndroidSigningStorePass>$KEYSTORE_PASSWORD</AndroidSigningStorePass>
+              <AndroidSigningKeyAlias>$KEY_ALIAS</AndroidSigningKeyAlias>
+              <AndroidSigningKeyPass>$KEY_PASSWORD</AndroidSigningKeyPass>
+            </PropertyGroup>
+          </Project>
+          EOF
+
       - name: Download frpc
         uses: actions/download-artifact@v4
         with:
@@ -182,7 +209,14 @@ jobs:
       - name: Resolve versions
         id: v
         run: |
+          set -euo pipefail
+          # The version lives in Directory.Build.props and nowhere else. A tag that
+          # disagrees with it would ship binaries carrying the old number under a new
+          # tag name, so refuse to build. scripts/set-version.ps1 writes both.
+          FILE_VER="$(sed -n 's:.*<Version>\([^<]*\)</Version>.*:\1:p' Directory.Build.props)"
           if [ "${{ github.ref_type }}" = "tag" ]; then
+            [ "${{ github.ref_name }}" = "v$FILE_VER" ] || {
+              echo "tag ${{ github.ref_name }} but Directory.Build.props says $FILE_VER"; exit 1; }
             echo "app=${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
           else
             echo "app=dev-$(echo "${{ github.sha }}" | cut -c1-7)" >> "$GITHUB_OUTPUT"
@@ -225,11 +259,3 @@ jobs:
           name: LoliaFrpClient-${{ steps.v.outputs.app }}-android-frpc${{ steps.v.outputs.frpc }}
           path: ./*.apk
           retention-days: 7
-
-      - name: Attach to release
-        if: startsWith(github.ref, 'refs/tags/v')
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ github.ref_name }}
-          files: ./*.apk
-          generate_release_notes: true

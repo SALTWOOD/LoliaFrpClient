@@ -1,0 +1,124 @@
+name: Release
+
+on:
+  workflow_run:
+    workflows: [ "Android", "Desktop (Windows)", "Desktop (Linux)" ]
+    types: [ completed ]
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    if: >
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.conclusion == 'success' &&
+      startsWith(github.event.workflow_run.head_branch, 'v')
+
+    env:
+      SHA: ${{ github.event.workflow_run.head_sha }}
+      TAG: ${{ github.event.workflow_run.head_branch }}
+
+    steps:
+      - name: Check all three builds finished
+        id: gate
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SELF_ID: ${{ github.event.workflow_run.id }}
+          SELF_NAME: ${{ github.event.workflow_run.name }}
+        run: |
+          set -euo pipefail
+
+          RUNS="$(gh api "repos/$GITHUB_REPOSITORY/actions/runs?head_sha=$SHA&per_page=100" \
+            | jq -r --arg b "$TAG" '
+                [ .workflow_runs[]
+                  | select(.head_branch == $b)
+                  | select(.name == "Android"
+                          or .name == "Desktop (Windows)"
+                          or .name == "Desktop (Linux)") ]
+                | group_by(.name) | map(max_by(.run_number)) | .[]
+                | "\(.name)\t\(.id)\t\(.status)\t\(.conclusion)"')"
+
+          FOUND=0
+          android=''; windows=''; linux=''
+
+          while IFS=$'\t' read -r name id status conclusion; do
+            [ -n "$name" ] || continue
+            FOUND=$((FOUND + 1))
+
+            if [ "$name" = "$SELF_NAME" ]; then
+              id="$SELF_ID"; status=completed; conclusion=success
+            fi
+
+            if [ "$status" != "completed" ]; then
+              echo "::notice::$name is still $status; whoever sees it finish will publish"
+              exit 0
+            fi
+            if [ "$conclusion" != "success" ]; then
+              echo "::error::$name concluded $conclusion — nothing is published for $TAG"
+              exit 1
+            fi
+
+            case "$name" in
+              "Android")           android="$id" ;;
+              "Desktop (Windows)") windows="$id" ;;
+              "Desktop (Linux)")   linux="$id"   ;;
+            esac
+          done <<< "$RUNS"
+
+          [ "$FOUND" -eq 3 ] \
+            || { echo "::error::only $FOUND of 3 build workflows ran for $TAG"; exit 1; }
+
+          # Only after every check has passed. Outputs set before a bow-out are kept by
+          # the runner all the same, and the steps below key off them — a half-filled
+          # gate would look ready to publish.
+          echo "ready=true"  >> "$GITHUB_OUTPUT"
+          echo "android=$android" >> "$GITHUB_OUTPUT"
+          echo "windows=$windows" >> "$GITHUB_OUTPUT"
+          echo "linux=$linux"     >> "$GITHUB_OUTPUT"
+          echo "all three green, publishing $TAG"
+
+      # pattern, not the whole run: the Android workflow also uploads frpc-*, which is a
+      # build input, not something to hand to users.
+      - name: Download Android artifacts
+        if: steps.gate.outputs.ready == 'true'
+        uses: actions/download-artifact@v4
+        with:
+          pattern: LoliaFrpClient-*
+          merge-multiple: true
+          path: dist
+          run-id: ${{ steps.gate.outputs.android }}
+          github-token: ${{ github.token }}
+
+      - name: Download Windows artifacts
+        if: steps.gate.outputs.ready == 'true'
+        uses: actions/download-artifact@v4
+        with:
+          pattern: LoliaFrpClient-*
+          merge-multiple: true
+          path: dist
+          run-id: ${{ steps.gate.outputs.windows }}
+          github-token: ${{ github.token }}
+
+      - name: Download Linux artifacts
+        if: steps.gate.outputs.ready == 'true'
+        uses: actions/download-artifact@v4
+        with:
+          pattern: LoliaFrpClient-*
+          merge-multiple: true
+          path: dist
+          run-id: ${{ steps.gate.outputs.linux }}
+          github-token: ${{ github.token }}
+
+      # Every build workflow already refused to run if the tag disagreed with
+      # Directory.Build.props, so a green gate means these files belong to TAG.
+      - name: Publish
+        if: steps.gate.outputs.ready == 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.TAG }}
+          name: Release ${{ env.TAG }}
+          files: dist/*
+          generate_release_notes: true
