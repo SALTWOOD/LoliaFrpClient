@@ -120,5 +120,8 @@ jobs:
         with:
           tag_name: ${{ env.TAG }}
           name: Release ${{ env.TAG }}
+          # 带连字符的 tag 是预发布。不显式传的话 GitHub 只当普通 release,后端那个
+          # include_prerelease 开关就永远筛不掉它,beta 会被当成最新正式版推给所有人。
+          prerelease: ${{ contains(env.TAG, '-') }}
           files: dist/*
           generate_release_notes: true

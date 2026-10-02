@@ -39,14 +39,20 @@ function Set-FileText {
     [System.IO.File]::WriteAllText($Path, $updated, [System.Text.UTF8Encoding]::new($bom))
 }
 
-if ($Version -notmatch '^v?\d+(\.\d+){0,3}$') {
+if ($Version -notmatch '^v?\d+(\.\d+){0,3}(-[0-9A-Za-z][0-9A-Za-z.-]*)?$') {
     throw "wrong version format: '$Version'"
 }
 
-$parts = @(($Version -replace '^v', '').Split('.') | ForEach-Object { [int]$_ })
+$raw = $Version -replace '^v', ''
+$numeric, $suffix = $raw -split '-', 2
+
+$parts = @($numeric.Split('.') | ForEach-Object { [int]$_ })
 while ($parts.Count -lt 4) { $parts += 0 }
 
-$display = $parts -join '.'
+# 程序集版本可以带 -beta,Win32 清单的 assemblyIdentity version 不行 —— 那个只收四段纯数字,
+# 写成 1.0.9.0-beta 的话 Windows 会拒绝启动 exe(并行配置不正确)。
+$numbers = $parts -join '.'
+$display = if ($suffix) { "$numbers-$suffix" } else { $numbers }
 $tag = "v$display"
 
 $current = [regex]::Match(
@@ -67,7 +73,7 @@ try {
     Write-Host "write ${tag}:"
     Set-FileText $props '<Version>[^<]*</Version>' "<Version>$display</Version>"
     Set-FileText $android '<ApplicationVersion>\d+</ApplicationVersion>' "<ApplicationVersion>$code</ApplicationVersion>"
-    Set-FileText $manifest '(?<=<assemblyIdentity version=")[^"]*' $display
+    Set-FileText $manifest '(?<=<assemblyIdentity version=")[^"]*' $numbers
 
     Invoke-Git @('add', '--', $props, $android, $manifest) | Out-Null
     Invoke-Git @('commit', '-q', '-m', "chore(release): $tag") | Out-Null
