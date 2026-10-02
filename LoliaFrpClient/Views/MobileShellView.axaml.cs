@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using LoliaFrpClient.Services;
 using LoliaFrpClient.ViewModels;
 
 namespace LoliaFrpClient.Views;
@@ -29,6 +30,9 @@ public partial class MobileShellView : UserControl
             // 首屏不经过导航事件,补一次取数。
             await viewModel.RefreshAsync();
         }
+
+        // 放在取数之后:更新是次要的,别拖慢首屏。
+        if (AppSettings.Current.AutoCheckUpdates) await UpdatePrompt.CheckAndShowAsync(this);
     }
 
     // Android 的手势条/导航栏会压在底栏上,平台给出的安全区要补到 padding 里。
