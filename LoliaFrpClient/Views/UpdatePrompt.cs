@@ -30,7 +30,21 @@ internal static class UpdatePrompt
             if (await dialog.ShowAsync() != FAContentDialogResult.Primary) return;
 
             var download = await ClientRelease.GetDownloadAsync().ConfigureAwait(true);
-            if (download.Data?.Url is not { Length: > 0 } url) return;
+            if (download.Data?.Url is not { Length: > 0 } url)
+            {
+                // 该版本还没带上当前平台的包时就是这个结果,静默什么都不做会像是按钮坏了。
+                await new FAContentDialog
+                {
+                    Title = "无法下载",
+                    Content = string.IsNullOrWhiteSpace(download.Msg)
+                        ? "没找到适用于当前平台的安装包。"
+                        : download.Msg,
+                    CloseButtonText = "关闭"
+                }.ShowAsync().ConfigureAwait(true);
+
+                return;
+            }
+
             if (!Uri.TryCreate(url, UriKind.Absolute, out var uri)) return;
 
             if (TopLevel.GetTopLevel(owner) is not { } topLevel) return;
