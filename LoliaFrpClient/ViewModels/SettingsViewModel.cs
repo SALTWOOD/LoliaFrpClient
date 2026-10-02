@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
-using System.Reflection;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -45,14 +44,15 @@ public sealed partial class SettingsViewModel : ViewModelBase
     /// <summary>占位:关于区块。</summary>
     public IReadOnlyList<SettingsEntry> About { get; } =
     [
-        new("客户端版本", ClientVersionText),
-        new("最后检查更新", "从未")
+        new("客户端版本", UpdateChecker.CurrentVersionText)
     ];
 
-    private static readonly string ClientVersionText =
-        (Assembly.GetEntryAssembly() ?? typeof(SettingsViewModel).Assembly).GetName().Version is { } v
-            ? $"v{v}"
-            : "未知";
+    /// <summary>启动时自动检查更新。</summary>
+    [ObservableProperty]
+    public partial bool AutoCheckUpdates { get; set; }
+
+    // 回读设置和用户改动都会走 OnAutoCheckUpdatesChanged,构造期那次不该写盘。
+    private bool _settingsReady;
 
     /// <summary>是否有请求在途。驱动按钮禁用与进度指示。</summary>
     [ObservableProperty]
@@ -116,9 +116,21 @@ public sealed partial class SettingsViewModel : ViewModelBase
 
     public override Task ActivateAsync()
     {
+        AutoCheckUpdates = AppSettings.Current.AutoCheckUpdates;
+        _settingsReady = true;
+
         RefreshFrpcCore();
         RefreshKeepAliveState();
         return RefreshAccountAsync();
+    }
+
+    partial void OnAutoCheckUpdatesChanged(bool value)
+    {
+        if (!_settingsReady) return;
+
+        AppSettings.Current.AutoCheckUpdates = value;
+        AppSettings.Current.Save();
+        StatusMessage = value ? "启动时将自动检查更新。" : "已关闭自动检查更新。";
     }
 
     public event Action? InstallFrpcRequested;

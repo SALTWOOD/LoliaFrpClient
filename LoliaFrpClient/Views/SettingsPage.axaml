@@ -109,7 +109,13 @@
 
             <!-- ── 关于 ── -->
             <ui:FASettingsExpander Header="关于">
-                <ItemsControl ItemsSource="{Binding About}" ItemTemplate="{StaticResource SettingsRow}" />
+                <StackPanel Spacing="{DynamicResource SpaceMd}">
+                    <ItemsControl ItemsSource="{Binding About}" ItemTemplate="{StaticResource SettingsRow}" />
+                    <ToggleSwitch IsChecked="{Binding AutoCheckUpdates}"
+                                  OnContent="启动时自动检查更新"
+                                  OffContent="启动时自动检查更新"
+                                  HorizontalAlignment="Left" />
+                </StackPanel>
             </ui:FASettingsExpander>
 
         </StackPanel>
