@@ -1,20 +1,18 @@
-using System;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Input.Platform;
 
 namespace LoliaFrpClient.Services;
 
-internal static class BrowserLauncher
+internal static class ClipboardWriter
 {
-    public static async Task OpenAsync(string url)
+    public static async Task WriteAsync(string text)
     {
-        if (!Uri.TryCreate(url, UriKind.Absolute, out var uri)) return;
+        if (TopLevel.GetTopLevel(Root())?.Clipboard is not { } clipboard) return;
 
-        if (TopLevel.GetTopLevel(Root())?.Launcher is not { } launcher) return;
-
-        await launcher.LaunchUriAsync(uri);
+        await clipboard.SetTextAsync(text);
     }
 
     private static Control? Root()

@@ -32,7 +32,25 @@
             <ui:FASettingsExpander Header="账户" IsExpanded="True">
                 <StackPanel Spacing="{DynamicResource SpaceMd}">
                     <ItemsControl ItemsSource="{Binding Account}" ItemTemplate="{StaticResource SettingsRow}" />
-                    <!-- 登录走 OAuth 授权码 + PKCE:会打开系统浏览器,期间本窗口只等待回调。 -->
+
+                    <Border Classes="card" IsVisible="{Binding HasDeviceCode}">
+                        <StackPanel Spacing="{DynamicResource SpaceSm}">
+                            <TextBlock Text="请打开授权页，输入授权码（点击复制）" Classes="caption" />
+                            <HyperlinkButton Content="{Binding VerificationUriText}"
+                                             NavigateUri="{Binding VerificationUri}"
+                                             Padding="0" />
+                            <Button Content="{Binding DeviceUserCode}"
+                                    Command="{Binding CopyUserCodeCommand}"
+                                    HorizontalAlignment="Stretch"
+                                    HorizontalContentAlignment="Center"
+                                    FontFamily="Cascadia Mono,Consolas,DejaVu Sans Mono,monospace"
+                                    FontSize="30"
+                                    FontWeight="SemiBold"
+                                    MinHeight="56"
+                                    ToolTip.Tip="点击复制" />
+                        </StackPanel>
+                    </Border>
+
                     <TextBlock Text="{Binding StatusMessage}"
                                Classes="caption"
                                IsVisible="{Binding StatusMessage, Converter={x:Static ObjectConverters.IsNotNull}}" />

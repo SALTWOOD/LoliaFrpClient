@@ -15,7 +15,17 @@ public sealed class OAuthTokenResponse
     [JsonPropertyName("scope")] public string Scope { get; set; } = string.Empty;
 }
 
+/// RFC 6749 §5.2
+internal sealed class OAuthErrorResponse
+{
+    [JsonPropertyName("error")] public string? Error { get; set; }
+
+    [JsonPropertyName("error_description")] public string? ErrorDescription { get; set; }
+}
+
 [JsonSerializable(typeof(OAuthTokenResponse))]
+[JsonSerializable(typeof(OAuthDeviceCode))]
+[JsonSerializable(typeof(OAuthErrorResponse))]
 internal sealed partial class OAuthJsonContext : JsonSerializerContext
 {
 }

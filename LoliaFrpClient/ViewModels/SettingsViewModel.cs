@@ -62,6 +62,25 @@ public sealed partial class SettingsViewModel : ViewModelBase
     [ObservableProperty]
     public partial string? StatusMessage { get; set; }
 
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasDeviceCode))]
+    [NotifyPropertyChangedFor(nameof(DeviceUserCode))]
+    [NotifyPropertyChangedFor(nameof(VerificationUri))]
+    [NotifyPropertyChangedFor(nameof(VerificationUriText))]
+    public partial OAuthDeviceCode? PendingDevice { get; set; }
+
+    public bool HasDeviceCode => PendingDevice is not null;
+
+    public string? DeviceUserCode => PendingDevice?.UserCode;
+
+    public Uri? VerificationUri =>
+        Uri.TryCreate(PendingDevice?.VerificationUriComplete ?? PendingDevice?.VerificationUri,
+            UriKind.Absolute, out var uri)
+            ? uri
+            : null;
+
+    public string? VerificationUriText => PendingDevice?.VerificationUri;
+
     public bool SupportsKeepAlive => TunnelKeepAlive.IsSupported;
 
     [ObservableProperty]
@@ -215,10 +234,16 @@ public sealed partial class SettingsViewModel : ViewModelBase
     private async Task SignInAsync()
     {
         IsBusy = true;
-        StatusMessage = "已打开浏览器,请在其中完成授权。";
         try
         {
-            var result = await OAuthLogin.SignInAsync(BrowserLauncher.OpenAsync);
+            // 设备码不求自动打开浏览器:用户很可能是在另一台设备上完成授权,本机跳不跳都无所谓。
+            PendingDevice = null;
+            StatusMessage = null;
+
+            // Progress 在 UI 线程上构造,回调会自动回到 UI 线程,不用自己调度。
+            var prompt = new Progress<OAuthDeviceCode>(code => PendingDevice = code);
+
+            var result = await OAuthLogin.SignInAsync(prompt);
             StatusMessage = result.IsSuccess ? "登录成功。" : $"登录失败:{result.Msg}";
         }
         catch (Exception ex)
@@ -227,10 +252,21 @@ public sealed partial class SettingsViewModel : ViewModelBase
         }
         finally
         {
+            // 设备码是一次性的,流程结束就撤掉,免得留在界面上被人当成还有效。
+            PendingDevice = null;
             IsBusy = false;
         }
 
         await RefreshAccountAsync();
+    }
+
+    [RelayCommand]
+    private async Task CopyUserCodeAsync()
+    {
+        if (DeviceUserCode is not { Length: > 0 } code) return;
+
+        await ClipboardWriter.WriteAsync(code);
+        StatusMessage = "用户码已复制。";
     }
 
     [RelayCommand(CanExecute = nameof(CanRun))]

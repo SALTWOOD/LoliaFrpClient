@@ -1,16 +1,13 @@
-using System.Buffers.Text;
-using System.Security.Cryptography;
-using System.Text;
 using System.Text.Json;
 
 namespace LoliaFrpClient.Core;
 
 public sealed class OAuthClient
 {
+    private const string DeviceCodeGrantType = "urn:ietf:params:oauth:grant-type:device_code";
+
     private readonly HttpClient _http;
     private readonly OAuthOptions _options;
-    private readonly object _gate = new();
-    private PendingAuthorization? _pending;
 
     public OAuthClient(OAuthOptions options, HttpClient? httpClient = null)
     {
@@ -18,72 +15,96 @@ public sealed class OAuthClient
         _http = httpClient ?? new HttpClient { Timeout = TimeSpan.FromSeconds(30) };
     }
 
-    public string BeginAuthorization()
+    public async Task<OAuthDeviceCode> RequestDeviceCodeAsync(CancellationToken cancellationToken = default)
     {
-        var codeVerifier = Base64Url.EncodeToString(RandomNumberGenerator.GetBytes(32));
-        var state = Base64Url.EncodeToString(RandomNumberGenerator.GetBytes(32));
-
-        var challenge = Base64Url.EncodeToString(SHA256.HashData(Encoding.UTF8.GetBytes(codeVerifier)));
-
-        lock (_gate)
+        using var content = new FormUrlEncodedContent(new Dictionary<string, string>
         {
-            _pending = new PendingAuthorization(codeVerifier, state);
-        }
+            ["client_id"] = _options.ClientId,
+            ["scope"] = _options.Scope
+        });
 
-        return $"{_options.AuthorizeEndpoint}" +
-               $"?client_id={Uri.EscapeDataString(_options.ClientId)}" +
-               "&response_type=code" +
-               $"&scope={Uri.EscapeDataString(_options.Scope)}" +
-               $"&redirect_uri={Uri.EscapeDataString(_options.CallbackUri)}" +
-               $"&state={Uri.EscapeDataString(state)}" +
-               $"&code_challenge={challenge}" +
-               "&code_challenge_method=S256";
+        using var response = await _http
+            .PostAsync(_options.DeviceAuthorizationEndpoint, content, cancellationToken).ConfigureAwait(false);
+
+        var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+
+        if (!response.IsSuccessStatusCode)
+            throw new HttpRequestException($"设备授权请求失败:{(int)response.StatusCode} - {body}");
+
+        return JsonSerializer.Deserialize(body, OAuthJsonContext.Default.OAuthDeviceCode)
+               ?? throw new JsonException("设备授权响应无法解析。");
     }
 
-    public async Task<OAuthTokenResponse> ExchangeCodeAsync(string code, string? state,
+    public async Task<OAuthTokenResponse> PollForTokenAsync(OAuthDeviceCode device,
         CancellationToken cancellationToken = default)
     {
-        PendingAuthorization pending;
-        lock (_gate)
+        var interval = TimeSpan.FromSeconds(device.Interval > 0 ? device.Interval : 5);
+
+        using var expiry = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        expiry.CancelAfter(TimeSpan.FromSeconds(device.ExpiresIn > 0 ? device.ExpiresIn : 900));
+
+        while (true)
         {
-            pending = _pending ?? throw new InvalidOperationException("尚未发起授权,请先调用 BeginAuthorization。");
-        }
-
-        if (string.IsNullOrEmpty(state) || !string.Equals(state, pending.State, StringComparison.Ordinal))
-            throw new InvalidOperationException("state 校验失败,请重新发起授权。");
-
-        var response = await SendTokenRequestAsync(
-            new Dictionary<string, string>
+            OAuthTokenResult result;
+            try
             {
-                ["grant_type"] = "authorization_code",
-                ["client_id"] = _options.ClientId,
-                ["code"] = code,
-                ["code_verifier"] = pending.CodeVerifier,
-                ["redirect_uri"] = _options.CallbackUri
-            },
-            cancellationToken).ConfigureAwait(false);
+                await Task.Delay(interval, expiry.Token).ConfigureAwait(false);
 
-        lock (_gate)
-        {
-            _pending = null;
+                result = await SendTokenRequestAsync(
+                    new Dictionary<string, string>
+                    {
+                        ["grant_type"] = DeviceCodeGrantType,
+                        ["device_code"] = device.DeviceCode,
+                        ["client_id"] = _options.ClientId
+                    },
+                    expiry.Token).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException) when (expiry.IsCancellationRequested &&
+                                                     !cancellationToken.IsCancellationRequested)
+            {
+                throw new TimeoutException("设备码已过期,请重新登录。");
+            }
+
+            if (result.Token is not null) return result.Token;
+
+            switch (result.Error)
+            {
+                case "authorization_pending":
+                    break;
+
+                case "slow_down":
+                    interval += TimeSpan.FromSeconds(5);
+                    break;
+
+                case "access_denied":
+                    throw new InvalidOperationException("用户拒绝了授权。");
+
+                case "expired_token":
+                    throw new TimeoutException("设备码已过期,请重新登录。");
+
+                default:
+                    throw new HttpRequestException($"令牌请求失败:{result.Error} - {result.ErrorDescription}");
+            }
         }
-
-        return response;
     }
 
-    public Task<OAuthTokenResponse> RefreshAsync(string refreshToken, CancellationToken cancellationToken = default)
+    public async Task<OAuthTokenResponse> RefreshAsync(string refreshToken,
+        CancellationToken cancellationToken = default)
     {
-        return SendTokenRequestAsync(
+        var result = await SendTokenRequestAsync(
             new Dictionary<string, string>
             {
                 ["grant_type"] = "refresh_token",
                 ["refresh_token"] = refreshToken,
                 ["client_id"] = _options.ClientId
             },
-            cancellationToken);
+            cancellationToken).ConfigureAwait(false);
+
+        return result.Token ??
+               throw new HttpRequestException($"刷新令牌失败:{result.Error} - {result.ErrorDescription}");
     }
 
-    private async Task<OAuthTokenResponse> SendTokenRequestAsync(
+    private async Task<OAuthTokenResult> SendTokenRequestAsync(
         Dictionary<string, string> parameters,
         CancellationToken cancellationToken)
     {
@@ -94,11 +115,20 @@ public sealed class OAuthClient
         var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 
         if (!response.IsSuccessStatusCode)
-            throw new HttpRequestException($"令牌请求失败:{(int)response.StatusCode} - {body}");
+        {
+            var error = JsonSerializer.Deserialize(body, OAuthJsonContext.Default.OAuthErrorResponse);
+            if (error?.Error is { Length: > 0 } code)
+                return new OAuthTokenResult(null, code, error.ErrorDescription);
 
-        return JsonSerializer.Deserialize(body, OAuthJsonContext.Default.OAuthTokenResponse)
-               ?? throw new JsonException("令牌响应无法解析。");
+            throw new HttpRequestException($"令牌请求失败:{(int)response.StatusCode} - {body}");
+        }
+
+        return new OAuthTokenResult(
+            JsonSerializer.Deserialize(body, OAuthJsonContext.Default.OAuthTokenResponse)
+            ?? throw new JsonException("令牌响应无法解析。"),
+            null,
+            null);
     }
 
-    private sealed record PendingAuthorization(string CodeVerifier, string State);
+    private sealed record OAuthTokenResult(OAuthTokenResponse? Token, string? Error, string? ErrorDescription);
 }
