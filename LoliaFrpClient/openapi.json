@@ -5,7 +5,11 @@
     "description": "",
     "version": "1.0.0"
   },
-  "tags": [],
+  "tags": [
+    {
+      "name": "软件下载"
+    }
+  ],
   "paths": {
     "/user/login": {
       "post": {
@@ -2078,6 +2082,7 @@
             "in": "path",
             "description": "用户ID（正整数）",
             "required": true,
+            "example": "",
             "schema": {
               "type": "integer"
             }
@@ -2426,6 +2431,7 @@
             "in": "path",
             "description": "用户ID（正整数）",
             "required": true,
+            "example": "",
             "schema": {
               "type": "integer"
             }
@@ -3759,6 +3765,7 @@
             "in": "path",
             "description": "隧道名称",
             "required": true,
+            "example": "",
             "schema": {
               "type": "string"
             }
@@ -3986,6 +3993,7 @@
             "in": "path",
             "description": "隧道名称",
             "required": true,
+            "example": "",
             "schema": {
               "type": "string"
             }
@@ -4317,6 +4325,7 @@
             "in": "path",
             "description": "隧道名称",
             "required": true,
+            "example": "",
             "schema": {
               "type": "string"
             }
@@ -4579,6 +4588,7 @@
             "in": "path",
             "description": "隧道名称",
             "required": true,
+            "example": "",
             "schema": {
               "type": "string"
             }
@@ -4806,7 +4816,7 @@
           "required": true
         },
         "responses": {
-          "200": {
+          "201": {
             "description": "",
             "content": {
               "application/json": {
@@ -5580,6 +5590,7 @@
             "in": "header",
             "description": "客户端标识，格式 \"LoliaFRP-CLI <版本号>\"，用于决定是否下发 dnsServer（>0.67.4）与 httpRedirect（>=0.69.2）",
             "required": false,
+            "example": "",
             "schema": {
               "type": "string"
             }
@@ -6365,6 +6376,7 @@
             "in": "path",
             "description": "域名记录 ID",
             "required": true,
+            "example": "",
             "schema": {
               "type": "integer"
             }
@@ -7586,6 +7598,7 @@
             "in": "path",
             "description": "OAuth 应用 ID（数字）",
             "required": true,
+            "example": "",
             "schema": {
               "type": "integer"
             }
@@ -7857,6 +7870,7 @@
             "in": "path",
             "description": "OAuth 应用 ID（数字）",
             "required": true,
+            "example": "",
             "schema": {
               "type": "integer"
             }
@@ -8031,6 +8045,7 @@
             "in": "path",
             "description": "OAuth 应用 ID（数字）",
             "required": true,
+            "example": "",
             "schema": {
               "type": "integer"
             }
@@ -8322,6 +8337,7 @@
             "in": "path",
             "description": "OAuth 应用 ID（数字）",
             "required": true,
+            "example": "",
             "schema": {
               "type": "integer"
             }
@@ -8750,6 +8766,7 @@
             "in": "path",
             "description": "应用的 client_id",
             "required": true,
+            "example": "",
             "schema": {
               "type": "string"
             }
@@ -9504,31 +9521,38 @@
                 "properties": {
                   "grant_type": {
                     "type": "string",
-                    "description": "授权类型"
+                    "description": "授权类型",
+                    "example": ""
                   },
                   "client_id": {
                     "type": "string",
-                    "description": "应用 client_id"
+                    "description": "应用 client_id",
+                    "example": ""
                   },
                   "client_secret": {
                     "type": "string",
-                    "description": "应用 client_secret；confidential 客户端必填，public 客户端不需要"
+                    "description": "应用 client_secret；confidential 客户端必填，public 客户端不需要",
+                    "example": ""
                   },
                   "code": {
                     "type": "string",
-                    "description": "授权码；grant_type=authorization_code 时必填"
+                    "description": "授权码；grant_type=authorization_code 时必填",
+                    "example": ""
                   },
                   "redirect_uri": {
                     "type": "string",
-                    "description": "回调地址，须与授权时一致；grant_type=authorization_code 时必填"
+                    "description": "回调地址，须与授权时一致；grant_type=authorization_code 时必填",
+                    "example": ""
                   },
                   "code_verifier": {
                     "type": "string",
-                    "description": "PKCE 校验串；授权时使用了 code_challenge 则必填"
+                    "description": "PKCE 校验串；授权时使用了 code_challenge 则必填",
+                    "example": ""
                   },
                   "refresh_token": {
                     "type": "string",
-                    "description": "刷新令牌；grant_type=refresh_token 时必填"
+                    "description": "刷新令牌；grant_type=refresh_token 时必填",
+                    "example": ""
                   }
                 },
                 "required": [
@@ -9536,7 +9560,15 @@
                   "client_id"
                 ]
               },
-              "examples": {}
+              "example": {
+                "grant_type": "",
+                "client_id": "",
+                "client_secret": "",
+                "code": "",
+                "redirect_uri": "",
+                "code_verifier": "",
+                "refresh_token": ""
+              }
             }
           },
           "required": true
@@ -9638,19 +9670,23 @@
                 "properties": {
                   "token": {
                     "type": "string",
-                    "description": "要撤销的令牌"
+                    "description": "要撤销的令牌",
+                    "example": ""
                   },
                   "token_type_hint": {
                     "type": "string",
-                    "description": "令牌类型提示，缺省按 access_token 处理"
+                    "description": "令牌类型提示，缺省按 access_token 处理",
+                    "example": ""
                   },
                   "client_id": {
                     "type": "string",
-                    "description": "应用 client_id"
+                    "description": "应用 client_id",
+                    "example": ""
                   },
                   "client_secret": {
                     "type": "string",
-                    "description": "应用 client_secret；confidential 客户端必填"
+                    "description": "应用 client_secret；confidential 客户端必填",
+                    "example": ""
                   }
                 },
                 "required": [
@@ -9658,7 +9694,12 @@
                   "client_id"
                 ]
               },
-              "examples": {}
+              "example": {
+                "token": "",
+                "token_type_hint": "",
+                "client_id": "",
+                "client_secret": ""
+              }
             }
           },
           "required": true
@@ -10550,6 +10591,7 @@
             "in": "path",
             "description": "节点ID",
             "required": true,
+            "example": "",
             "schema": {
               "type": "integer"
             }
@@ -10774,6 +10816,7 @@
             "in": "path",
             "description": "节点ID",
             "required": true,
+            "example": "",
             "schema": {
               "type": "integer"
             }
@@ -11156,6 +11199,7 @@
             "in": "path",
             "description": "隧道ID（正整数）",
             "required": true,
+            "example": "",
             "schema": {
               "type": "integer"
             }
@@ -11466,6 +11510,7 @@
             "in": "path",
             "description": "隧道ID（正整数）",
             "required": true,
+            "example": "",
             "schema": {
               "type": "integer"
             }
@@ -11811,6 +11856,7 @@
             "in": "path",
             "description": "隧道ID（正整数）",
             "required": true,
+            "example": "",
             "schema": {
               "type": "integer"
             }
@@ -12862,6 +12908,7 @@
             "in": "path",
             "description": "隧道ID（正整数）",
             "required": true,
+            "example": "",
             "schema": {
               "type": "integer"
             }
@@ -13096,6 +13143,7 @@
             "in": "path",
             "description": "用户ID（正整数）",
             "required": true,
+            "example": "",
             "schema": {
               "type": "integer"
             }
@@ -13401,6 +13449,7 @@
             "in": "path",
             "description": "用户ID（正整数）",
             "required": true,
+            "example": "",
             "schema": {
               "type": "integer"
             }
@@ -13600,6 +13649,7 @@
             "in": "path",
             "description": "隧道ID（正整数）",
             "required": true,
+            "example": "",
             "schema": {
               "type": "integer"
             }
@@ -13852,6 +13902,7 @@
             "in": "path",
             "description": "隧道ID（正整数）",
             "required": true,
+            "example": "",
             "schema": {
               "type": "integer"
             }
@@ -14113,6 +14164,7 @@
             "in": "path",
             "description": "用户ID（正整数）",
             "required": true,
+            "example": "",
             "schema": {
               "type": "integer"
             }
@@ -15999,6 +16051,7 @@
             "in": "path",
             "description": "账单号",
             "required": true,
+            "example": "",
             "schema": {
               "type": "string"
             }
@@ -16347,31 +16400,38 @@
                 "properties": {
                   "out_trade_no": {
                     "type": "string",
-                    "description": "商户订单号（账单号）"
+                    "description": "商户订单号（账单号）",
+                    "example": ""
                   },
                   "trade_no": {
                     "type": "string",
-                    "description": "支付宝交易号"
+                    "description": "支付宝交易号",
+                    "example": ""
                   },
                   "trade_status": {
                     "type": "string",
-                    "description": "交易状态：WAIT_BUYER_PAY/TRADE_SUCCESS/TRADE_FINISHED/TRADE_CLOSED"
+                    "description": "交易状态：WAIT_BUYER_PAY/TRADE_SUCCESS/TRADE_FINISHED/TRADE_CLOSED",
+                    "example": ""
                   },
                   "total_amount": {
                     "type": "string",
-                    "description": "订单金额（元）"
+                    "description": "订单金额（元）",
+                    "example": ""
                   },
                   "gmt_payment": {
                     "type": "string",
-                    "description": "支付时间，格式 yyyy-MM-dd HH:mm:ss"
+                    "description": "支付时间，格式 yyyy-MM-dd HH:mm:ss",
+                    "example": ""
                   },
                   "sign": {
                     "type": "string",
-                    "description": "支付宝签名"
+                    "description": "支付宝签名",
+                    "example": ""
                   },
                   "sign_type": {
                     "type": "string",
-                    "description": "签名类型，如 RSA2"
+                    "description": "签名类型，如 RSA2",
+                    "example": ""
                   }
                 },
                 "required": [
@@ -16380,7 +16440,15 @@
                   "sign"
                 ]
               },
-              "examples": {}
+              "example": {
+                "out_trade_no": "",
+                "trade_no": "",
+                "trade_status": "",
+                "total_amount": "",
+                "gmt_payment": "",
+                "sign": "",
+                "sign_type": ""
+              }
             }
           },
           "required": true
@@ -16834,6 +16902,7 @@
             "in": "path",
             "description": "会话公开 ID（来自获取活跃会话列表的 session_id）",
             "required": true,
+            "example": "",
             "schema": {
               "type": "string"
             }
@@ -17576,6 +17645,7 @@
             "in": "header",
             "description": "QQ 机器人专用令牌，格式 `Bearer {token}`，token 为服务端配置 qqbot.token（与用户 JWT 无关）",
             "required": true,
+            "example": "",
             "schema": {
               "type": "string"
             }
@@ -17804,6 +17874,7 @@
             "in": "header",
             "description": "QQ 机器人专用令牌，格式 `Bearer {token}`，token 为服务端配置 qqbot.token（与用户 JWT 无关）",
             "required": true,
+            "example": "",
             "schema": {
               "type": "string"
             }
@@ -19293,6 +19364,7 @@
             "in": "path",
             "description": "Passkey ID（正整数）",
             "required": true,
+            "example": "",
             "schema": {
               "type": "integer"
             }
@@ -20105,6 +20177,7 @@
             "in": "path",
             "description": "节点 ID",
             "required": true,
+            "example": "",
             "schema": {
               "type": "integer"
             }
@@ -20370,6 +20443,7 @@
             "in": "path",
             "description": "节点 ID",
             "required": true,
+            "example": "",
             "schema": {
               "type": "integer"
             }
@@ -20574,6 +20648,7 @@
             "in": "header",
             "description": "QQ 机器人专用令牌，格式 `Bearer {token}`，token 为服务端配置 qqbot.token（与用户 JWT 无关）",
             "required": true,
+            "example": "",
             "schema": {
               "type": "string"
             }
@@ -20805,6 +20880,7 @@
             "in": "header",
             "description": "探针 Agent 专用令牌，格式 `Bearer {token}`，token 为服务端配置 probe.agent_token",
             "required": true,
+            "example": "",
             "schema": {
               "type": "string"
             }
@@ -20983,6 +21059,7 @@
             "in": "header",
             "description": "探针 Agent 专用令牌，格式 `Bearer {token}`，token 为服务端配置 probe.agent_token",
             "required": true,
+            "example": "",
             "schema": {
               "type": "string"
             }
@@ -21240,6 +21317,7 @@
             "in": "path",
             "description": "任务 ID（正整数）",
             "required": true,
+            "example": "",
             "schema": {
               "type": "integer"
             }
@@ -21249,6 +21327,7 @@
             "in": "header",
             "description": "探针 Agent 专用令牌，格式 `Bearer {token}`，token 为服务端配置 probe.agent_token",
             "required": true,
+            "example": "",
             "schema": {
               "type": "string"
             }
@@ -21258,6 +21337,7 @@
             "in": "header",
             "description": "探针标识，请求体未传 agent_id 时作为回退",
             "required": false,
+            "example": "",
             "schema": {
               "type": "string"
             }
@@ -21538,6 +21618,7 @@
             "in": "header",
             "description": "websocket（标准 WebSocket 握手头）",
             "required": true,
+            "example": "",
             "schema": {
               "type": "string"
             }
@@ -21547,6 +21628,7 @@
             "in": "header",
             "description": "Upgrade",
             "required": true,
+            "example": "",
             "schema": {
               "type": "string"
             }
@@ -22494,6 +22576,737 @@
         "security": []
       }
     },
+    "/releases": {
+      "get": {
+        "summary": "获取软件列表",
+        "deprecated": false,
+        "description": "分页查询已启用的软件，按 sort_order、id 升序排列；软件可以尚无可见版本。\n\n鉴权：Authorization: Bearer <token>，支持用户 JWT 和 OAuth2 Access Token。OAuth2 需要 release:read，release:* 或 all 也可授权。",
+        "operationId": "listReleases",
+        "tags": [
+          "软件下载"
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "页码；无效值或小于 1 时使用 1。",
+            "required": false,
+            "example": "",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "每页条数；无效值或小于 1 时使用 20，大于 200 时使用 200。",
+            "required": false,
+            "example": "",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "获取成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReleaseListResponse"
+                }
+              }
+            },
+            "headers": {}
+          },
+          "401": {
+            "$ref": "#/components/responses/ReleaseError401",
+            "description": "缺少 Bearer Token、Token 无效、已过期或已撤销。"
+          },
+          "403": {
+            "$ref": "#/components/responses/ReleaseError403",
+            "description": "用户权限不足，或 OAuth2 Token 缺少 release:read（也可由 release:* 或 all 授权）。"
+          },
+          "500": {
+            "$ref": "#/components/responses/ReleaseError500",
+            "description": "服务器内部错误（internal_error）。"
+          },
+          "503": {
+            "$ref": "#/components/responses/ReleaseError503",
+            "description": "Token 验证服务暂时不可用。"
+          }
+        },
+        "security": []
+      }
+    },
+    "/releases/detail": {
+      "get": {
+        "summary": "获取软件详情",
+        "deprecated": false,
+        "description": "返回软件信息、配置的最新可见版本和已启用的下载源。未设置最新版本或该版本不可见时 latest_version 为 null。仅提供已启用且上游可用的版本；GitHub 模式未开启 include_prerelease 时隐藏预发布版本。\n\n鉴权：Authorization: Bearer <token>，支持用户 JWT 和 OAuth2 Access Token。OAuth2 需要 release:read，release:* 或 all 也可授权。",
+        "operationId": "getReleaseDetail",
+        "tags": [
+          "软件下载"
+        ],
+        "parameters": [
+          {
+            "name": "release_id",
+            "in": "query",
+            "description": "软件 ID，必须且只能在 query 中传入一次。",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 4294967295
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "获取成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReleaseDetailResponse"
+                }
+              }
+            },
+            "headers": {}
+          },
+          "400": {
+            "$ref": "#/components/responses/ReleaseError400",
+            "description": "请求参数无效（invalid_parameter）；下载接口缺少、为空或重复的 source 返回 source_required。"
+          },
+          "401": {
+            "$ref": "#/components/responses/ReleaseError401",
+            "description": "缺少 Bearer Token、Token 无效、已过期或已撤销。"
+          },
+          "403": {
+            "$ref": "#/components/responses/ReleaseError403",
+            "description": "用户权限不足，或 OAuth2 Token 缺少 release:read（也可由 release:* 或 all 授权）。"
+          },
+          "404": {
+            "$ref": "#/components/responses/ReleaseError404",
+            "description": "软件、版本或文件不存在、不属于指定软件，或当前不可见/不可用。reason 为 release_not_found、version_not_found、asset_not_found 或 resource_not_found。"
+          },
+          "500": {
+            "$ref": "#/components/responses/ReleaseError500",
+            "description": "服务器内部错误（internal_error）。"
+          },
+          "503": {
+            "$ref": "#/components/responses/ReleaseError503",
+            "description": "Token 验证服务暂时不可用。"
+          }
+        },
+        "security": []
+      }
+    },
+    "/releases/sources": {
+      "get": {
+        "summary": "获取软件下载源",
+        "deprecated": false,
+        "description": "返回软件绑定已启用且全局已启用的适用下载源。允许原始下载的 GitHub 软件还包含 direct 源。该列表不保证每个文件都有副本；文件级可用性见 assets 的 available_sources。手动软件新启用 S3 下载源后会异步补传，完成后才可下载对应文件。\n\n鉴权：Authorization: Bearer <token>，支持用户 JWT 和 OAuth2 Access Token。OAuth2 需要 release:read，release:* 或 all 也可授权。",
+        "operationId": "listReleaseSources",
+        "tags": [
+          "软件下载"
+        ],
+        "parameters": [
+          {
+            "name": "release_id",
+            "in": "query",
+            "description": "软件 ID，必须且只能在 query 中传入一次。",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 4294967295
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "获取成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReleaseSourcesResponse"
+                }
+              }
+            },
+            "headers": {}
+          },
+          "400": {
+            "$ref": "#/components/responses/ReleaseError400",
+            "description": "请求参数无效（invalid_parameter）；下载接口缺少、为空或重复的 source 返回 source_required。"
+          },
+          "401": {
+            "$ref": "#/components/responses/ReleaseError401",
+            "description": "缺少 Bearer Token、Token 无效、已过期或已撤销。"
+          },
+          "403": {
+            "$ref": "#/components/responses/ReleaseError403",
+            "description": "用户权限不足，或 OAuth2 Token 缺少 release:read（也可由 release:* 或 all 授权）。"
+          },
+          "404": {
+            "$ref": "#/components/responses/ReleaseError404",
+            "description": "软件、版本或文件不存在、不属于指定软件，或当前不可见/不可用。reason 为 release_not_found、version_not_found、asset_not_found 或 resource_not_found。"
+          },
+          "500": {
+            "$ref": "#/components/responses/ReleaseError500",
+            "description": "服务器内部错误（internal_error）。"
+          },
+          "503": {
+            "$ref": "#/components/responses/ReleaseError503",
+            "description": "Token 验证服务暂时不可用。"
+          }
+        },
+        "security": []
+      }
+    },
+    "/releases/versions": {
+      "get": {
+        "summary": "获取软件版本列表",
+        "deprecated": false,
+        "description": "分页查询版本，按 published_at、id 降序排列。仅提供已启用且上游可用的版本；GitHub 模式未开启 include_prerelease 时隐藏预发布版本。\n\n鉴权：Authorization: Bearer <token>，支持用户 JWT 和 OAuth2 Access Token。OAuth2 需要 release:read，release:* 或 all 也可授权。",
+        "operationId": "listReleaseVersions",
+        "tags": [
+          "软件下载"
+        ],
+        "parameters": [
+          {
+            "name": "release_id",
+            "in": "query",
+            "description": "软件 ID，必须且只能在 query 中传入一次。",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 4294967295
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "页码；无效值或小于 1 时使用 1。",
+            "required": false,
+            "example": "",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "每页条数；无效值或小于 1 时使用 20，大于 200 时使用 200。",
+            "required": false,
+            "example": "",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "获取成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReleaseVersionsResponse"
+                }
+              }
+            },
+            "headers": {}
+          },
+          "400": {
+            "$ref": "#/components/responses/ReleaseError400",
+            "description": "请求参数无效（invalid_parameter）；下载接口缺少、为空或重复的 source 返回 source_required。"
+          },
+          "401": {
+            "$ref": "#/components/responses/ReleaseError401",
+            "description": "缺少 Bearer Token、Token 无效、已过期或已撤销。"
+          },
+          "403": {
+            "$ref": "#/components/responses/ReleaseError403",
+            "description": "用户权限不足，或 OAuth2 Token 缺少 release:read（也可由 release:* 或 all 授权）。"
+          },
+          "404": {
+            "$ref": "#/components/responses/ReleaseError404",
+            "description": "软件、版本或文件不存在、不属于指定软件，或当前不可见/不可用。reason 为 release_not_found、version_not_found、asset_not_found 或 resource_not_found。"
+          },
+          "500": {
+            "$ref": "#/components/responses/ReleaseError500",
+            "description": "服务器内部错误（internal_error）。"
+          },
+          "503": {
+            "$ref": "#/components/responses/ReleaseError503",
+            "description": "Token 验证服务暂时不可用。"
+          }
+        },
+        "security": []
+      }
+    },
+    "/releases/versions/latest": {
+      "get": {
+        "summary": "获取最新软件版本",
+        "deprecated": false,
+        "description": "返回软件 latest_version_id 指向的版本；未设置或不可见时返回 404。仅提供已启用且上游可用的版本；GitHub 模式未开启 include_prerelease 时隐藏预发布版本。\n\n鉴权：Authorization: Bearer <token>，支持用户 JWT 和 OAuth2 Access Token。OAuth2 需要 release:read，release:* 或 all 也可授权。",
+        "operationId": "getLatestReleaseVersion",
+        "tags": [
+          "软件下载"
+        ],
+        "parameters": [
+          {
+            "name": "release_id",
+            "in": "query",
+            "description": "软件 ID，必须且只能在 query 中传入一次。",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 4294967295
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "获取成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReleaseVersionResponse"
+                }
+              }
+            },
+            "headers": {}
+          },
+          "400": {
+            "$ref": "#/components/responses/ReleaseError400",
+            "description": "请求参数无效（invalid_parameter）；下载接口缺少、为空或重复的 source 返回 source_required。"
+          },
+          "401": {
+            "$ref": "#/components/responses/ReleaseError401",
+            "description": "缺少 Bearer Token、Token 无效、已过期或已撤销。"
+          },
+          "403": {
+            "$ref": "#/components/responses/ReleaseError403",
+            "description": "用户权限不足，或 OAuth2 Token 缺少 release:read（也可由 release:* 或 all 授权）。"
+          },
+          "404": {
+            "$ref": "#/components/responses/ReleaseError404",
+            "description": "软件、版本或文件不存在、不属于指定软件，或当前不可见/不可用。reason 为 release_not_found、version_not_found、asset_not_found 或 resource_not_found。"
+          },
+          "500": {
+            "$ref": "#/components/responses/ReleaseError500",
+            "description": "服务器内部错误（internal_error）。"
+          },
+          "503": {
+            "$ref": "#/components/responses/ReleaseError503",
+            "description": "Token 验证服务暂时不可用。"
+          }
+        },
+        "security": []
+      }
+    },
+    "/releases/versions/{version_id}": {
+      "get": {
+        "summary": "获取指定软件版本",
+        "deprecated": false,
+        "description": "按版本 ID 查询，版本必须属于指定软件。仅提供已启用且上游可用的版本；GitHub 模式未开启 include_prerelease 时隐藏预发布版本。\n\n鉴权：Authorization: Bearer <token>，支持用户 JWT 和 OAuth2 Access Token。OAuth2 需要 release:read，release:* 或 all 也可授权。",
+        "operationId": "getReleaseVersion",
+        "tags": [
+          "软件下载"
+        ],
+        "parameters": [
+          {
+            "name": "version_id",
+            "in": "path",
+            "description": "版本 ID，必须属于 release_id 指定的软件。",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 4294967295
+            }
+          },
+          {
+            "name": "release_id",
+            "in": "query",
+            "description": "软件 ID，必须且只能在 query 中传入一次。",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 4294967295
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "获取成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReleaseVersionResponse"
+                }
+              }
+            },
+            "headers": {}
+          },
+          "400": {
+            "$ref": "#/components/responses/ReleaseError400",
+            "description": "请求参数无效（invalid_parameter）；下载接口缺少、为空或重复的 source 返回 source_required。"
+          },
+          "401": {
+            "$ref": "#/components/responses/ReleaseError401",
+            "description": "缺少 Bearer Token、Token 无效、已过期或已撤销。"
+          },
+          "403": {
+            "$ref": "#/components/responses/ReleaseError403",
+            "description": "用户权限不足，或 OAuth2 Token 缺少 release:read（也可由 release:* 或 all 授权）。"
+          },
+          "404": {
+            "$ref": "#/components/responses/ReleaseError404",
+            "description": "软件、版本或文件不存在、不属于指定软件，或当前不可见/不可用。reason 为 release_not_found、version_not_found、asset_not_found 或 resource_not_found。"
+          },
+          "500": {
+            "$ref": "#/components/responses/ReleaseError500",
+            "description": "服务器内部错误（internal_error）。"
+          },
+          "503": {
+            "$ref": "#/components/responses/ReleaseError503",
+            "description": "Token 验证服务暂时不可用。"
+          }
+        },
+        "security": []
+      }
+    },
+    "/releases/versions/{version_id}/assets": {
+      "get": {
+        "summary": "获取版本文件列表",
+        "deprecated": false,
+        "description": "返回版本内已启用且上游可用的文件，按 id 升序排列，不分页。可选 os、arch 筛选会包含 any 通用文件；不传时不按客户端平台自动筛选。没有可用下载源的文件仍会返回，其 available_sources 为空数组。仅提供已启用且上游可用的版本；GitHub 模式未开启 include_prerelease 时隐藏预发布版本。\n\n鉴权：Authorization: Bearer <token>，支持用户 JWT 和 OAuth2 Access Token。OAuth2 需要 release:read，release:* 或 all 也可授权。",
+        "operationId": "listReleaseAssets",
+        "tags": [
+          "软件下载"
+        ],
+        "parameters": [
+          {
+            "name": "version_id",
+            "in": "path",
+            "description": "版本 ID，必须属于 release_id 指定的软件。",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 4294967295
+            }
+          },
+          {
+            "name": "release_id",
+            "in": "query",
+            "description": "软件 ID，必须且只能在 query 中传入一次。",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 4294967295
+            }
+          },
+          {
+            "name": "os",
+            "in": "query",
+            "description": "系统名，不区分大小写并去除首尾空白。支持 windows（win/win32/win64）、darwin（mac/macos/osx）、linux、freebsd、openbsd、android、ios、any（all）。非空无效值返回 400；匹配时包含 any 通用文件。",
+            "required": false,
+            "example": "",
+            "schema": {
+              "type": "string",
+              "examples": [
+                "linux"
+              ]
+            }
+          },
+          {
+            "name": "arch",
+            "in": "query",
+            "description": "架构名，不区分大小写并去除首尾空白。支持 amd64（x86_64/x64）、arm64（aarch64）、386（i386/i686/x86）、arm（armv7/armv6/armhf）、riscv64、mips、mipsle、mips64、mips64le、ppc64、ppc64le、s390x、any（all/universal）。非空无效值返回 400；匹配时包含 any 通用文件。",
+            "required": false,
+            "example": "",
+            "schema": {
+              "type": "string",
+              "examples": [
+                "amd64"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "获取成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReleaseAssetsResponse"
+                }
+              }
+            },
+            "headers": {}
+          },
+          "400": {
+            "$ref": "#/components/responses/ReleaseError400",
+            "description": "请求参数无效（invalid_parameter）；下载接口缺少、为空或重复的 source 返回 source_required。"
+          },
+          "401": {
+            "$ref": "#/components/responses/ReleaseError401",
+            "description": "缺少 Bearer Token、Token 无效、已过期或已撤销。"
+          },
+          "403": {
+            "$ref": "#/components/responses/ReleaseError403",
+            "description": "用户权限不足，或 OAuth2 Token 缺少 release:read（也可由 release:* 或 all 授权）。"
+          },
+          "404": {
+            "$ref": "#/components/responses/ReleaseError404",
+            "description": "软件、版本或文件不存在、不属于指定软件，或当前不可见/不可用。reason 为 release_not_found、version_not_found、asset_not_found 或 resource_not_found。"
+          },
+          "500": {
+            "$ref": "#/components/responses/ReleaseError500",
+            "description": "服务器内部错误（internal_error）。"
+          },
+          "503": {
+            "$ref": "#/components/responses/ReleaseError503",
+            "description": "Token 验证服务暂时不可用。"
+          }
+        },
+        "security": []
+      }
+    },
+    "/releases/download": {
+      "get": {
+        "summary": "获取文件下载地址",
+        "deprecated": false,
+        "description": "返回包含下载 URL 的 JSON，客户端再请求 data.url 下载文件。成功响应带 Cache-Control: no-store。\n\n必须明确指定 source（direct 或下载源 ID 字符串），且该源必须对软件启用并具有当前文件的可用副本；不可用时返回 409，不自动回退。\n\n指定 asset_id 时直接选择文件，可省略平台和 version；若同时传入 version/os/arch，必须与文件匹配。\n\n未指定 asset_id 时，version 为空或 latest 表示配置的最新版本，其他值按版本 tag 精确匹配。优先使用显式 os/arch，缺失部分从 Client Hints 和 User-Agent 推断；仍缺失则返回 422 platform_required。平台匹配包含 any 通用文件；无匹配返回 404，多文件匹配返回 422 asset_ambiguous。\n\nS3 返回临时签名 URL 及 expires_at；direct 和 GitHub 镜像返回地址且 expires_at 为 null。仅提供已启用且上游可用的版本；GitHub 模式未开启 include_prerelease 时隐藏预发布版本。\n\n鉴权：Authorization: Bearer <token>，支持用户 JWT 和 OAuth2 Access Token。OAuth2 需要 release:read，release:* 或 all 也可授权。",
+        "operationId": "getReleaseDownload",
+        "tags": [
+          "软件下载"
+        ],
+        "parameters": [
+          {
+            "name": "release_id",
+            "in": "query",
+            "description": "软件 ID，必须且只能在 query 中传入一次。",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 4294967295
+            }
+          },
+          {
+            "name": "source",
+            "in": "query",
+            "description": "必须且只能出现一次。direct 表示 GitHub 原始下载；其他值为 1–4294967295 的十进制下载源 ID 字符串。建议直接使用 available_sources 中的 source。",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "examples": [
+                "1"
+              ]
+            }
+          },
+          {
+            "name": "version",
+            "in": "query",
+            "description": "版本 tag 或 latest；不传 asset_id 时，省略/空字符串等同 latest。指定 asset_id 时省略此参数表示使用文件所属版本。",
+            "required": false,
+            "example": "",
+            "schema": {
+              "type": "string",
+              "examples": [
+                "latest"
+              ]
+            }
+          },
+          {
+            "name": "asset_id",
+            "in": "query",
+            "description": "明确指定目标文件 ID；文件必须属于当前软件的可见版本。",
+            "required": false,
+            "example": "",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 4294967295
+            }
+          },
+          {
+            "name": "os",
+            "in": "query",
+            "description": "系统名，不区分大小写并去除首尾空白。支持 windows（win/win32/win64）、darwin（mac/macos/osx）、linux、freebsd、openbsd、android、ios、any（all）。非空无效值返回 400；匹配时包含 any 通用文件。",
+            "required": false,
+            "example": "",
+            "schema": {
+              "type": "string",
+              "examples": [
+                "linux"
+              ]
+            }
+          },
+          {
+            "name": "arch",
+            "in": "query",
+            "description": "架构名，不区分大小写并去除首尾空白。支持 amd64（x86_64/x64）、arm64（aarch64）、386（i386/i686/x86）、arm（armv7/armv6/armhf）、riscv64、mips、mipsle、mips64、mips64le、ppc64、ppc64le、s390x、any（all/universal）。非空无效值返回 400；匹配时包含 any 通用文件。",
+            "required": false,
+            "example": "",
+            "schema": {
+              "type": "string",
+              "examples": [
+                "amd64"
+              ]
+            }
+          },
+          {
+            "name": "Sec-CH-UA-Platform",
+            "in": "header",
+            "description": "可选客户端系统提示，用于补全未显式指定的 os。",
+            "required": false,
+            "example": "",
+            "schema": {
+              "type": "string",
+              "examples": [
+                "\"Windows\""
+              ]
+            }
+          },
+          {
+            "name": "Sec-CH-UA-Arch",
+            "in": "header",
+            "description": "可选客户端架构提示。",
+            "required": false,
+            "example": "",
+            "schema": {
+              "type": "string",
+              "examples": [
+                "\"x86\""
+              ]
+            }
+          },
+          {
+            "name": "Sec-CH-UA-Bitness",
+            "in": "header",
+            "description": "可选客户端位数提示，与架构提示共同判定。",
+            "required": false,
+            "example": "",
+            "schema": {
+              "type": "string",
+              "examples": [
+                "\"64\""
+              ]
+            }
+          },
+          {
+            "name": "User-Agent",
+            "in": "header",
+            "description": "缺少显式平台参数时用于辅助推断系统和架构；无法识别时需补充参数或使用 asset_id。",
+            "required": false,
+            "example": "",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "获取成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReleaseDownloadResponse"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "required": false,
+                "description": "下载地址不应被缓存",
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ReleaseError400",
+            "description": "请求参数无效（invalid_parameter）；下载接口缺少、为空或重复的 source 返回 source_required。"
+          },
+          "401": {
+            "$ref": "#/components/responses/ReleaseError401",
+            "description": "缺少 Bearer Token、Token 无效、已过期或已撤销。"
+          },
+          "403": {
+            "$ref": "#/components/responses/ReleaseError403",
+            "description": "用户权限不足，或 OAuth2 Token 缺少 release:read（也可由 release:* 或 all 授权）。"
+          },
+          "404": {
+            "$ref": "#/components/responses/ReleaseError404",
+            "description": "软件、版本或文件不存在、不属于指定软件，或当前不可见/不可用。reason 为 release_not_found、version_not_found、asset_not_found 或 resource_not_found。"
+          },
+          "409": {
+            "$ref": "#/components/responses/ReleaseError409",
+            "description": "选定下载源未启用、未绑定或尚无可用文件（source_unavailable），或资源状态冲突（state_conflict）。不会自动切换到其他下载源。"
+          },
+          "422": {
+            "$ref": "#/components/responses/ReleaseSelectionError",
+            "description": "无法确定目标文件：platform_required 需补充缺失的 os/arch 或指定 asset_id；asset_ambiguous 需指定 asset_id。候选项为原始文件记录，不包含 available_sources/platform_complete。"
+          },
+          "500": {
+            "$ref": "#/components/responses/ReleaseError500",
+            "description": "服务器内部错误（internal_error）。"
+          },
+          "502": {
+            "$ref": "#/components/responses/ReleaseError502",
+            "description": "生成 S3 下载地址失败（upstream_error）。"
+          },
+          "503": {
+            "$ref": "#/components/responses/ReleaseError503",
+            "description": "Token 验证服务暂时不可用。"
+          }
+        },
+        "security": []
+      }
+    },
     "/client/version": {
       "get": {
         "summary": "获取客户端最新版本",
@@ -22771,10 +23584,1098 @@
       "long": {
         "type": "integer",
         "format": "int64"
+      },
+      "Release": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "slug": {
+            "type": "string",
+            "description": "软件标识",
+            "maxLength": 100
+          },
+          "name": {
+            "type": "string",
+            "description": "软件名称",
+            "maxLength": 120
+          },
+          "description": {
+            "type": "string",
+            "description": "软件说明"
+          },
+          "mode": {
+            "type": "string",
+            "description": "管理模式",
+            "enum": [
+              "manual",
+              "github"
+            ]
+          },
+          "enabled": {
+            "type": "boolean",
+            "description": "软件是否启用"
+          },
+          "sort_order": {
+            "type": "integer",
+            "description": "升序排列"
+          },
+          "latest_version_id": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64",
+            "minimum": 1,
+            "description": "配置的最新版本 ID；未设置时为 null"
+          },
+          "allow_direct_download": {
+            "type": "boolean",
+            "description": "GitHub 模式是否允许原始下载源 direct"
+          },
+          "github_owner": {
+            "type": "string",
+            "description": "GitHub 仓库所有者；手动模式可为空"
+          },
+          "github_repo": {
+            "type": "string",
+            "description": "GitHub 仓库名；手动模式可为空"
+          },
+          "latest_policy": {
+            "type": "string",
+            "description": "最新版本选择策略",
+            "enum": [
+              "manual",
+              "github"
+            ]
+          },
+          "auto_enable_new_versions": {
+            "type": "boolean",
+            "description": "是否自动启用同步的新版本"
+          },
+          "include_prerelease": {
+            "type": "boolean",
+            "description": "GitHub 模式是否向用户提供预发布版本"
+          },
+          "sync_interval_minutes": {
+            "type": "integer",
+            "description": "自动同步间隔（分钟）；0 表示关闭"
+          },
+          "last_sync_attempt_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "last_synced_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "s3_sync_requested": {
+            "type": "boolean",
+            "description": "是否有待处理的手动 Release S3 文件补传请求；不代表文件已经可下载"
+          }
+        },
+        "required": [
+          "id",
+          "created_at",
+          "updated_at",
+          "slug",
+          "name",
+          "description",
+          "mode",
+          "enabled",
+          "sort_order",
+          "latest_version_id",
+          "allow_direct_download",
+          "github_owner",
+          "github_repo",
+          "latest_policy",
+          "auto_enable_new_versions",
+          "include_prerelease",
+          "sync_interval_minutes",
+          "last_sync_attempt_at",
+          "last_synced_at",
+          "s3_sync_requested"
+        ]
+      },
+      "ReleaseVersion": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "release_id": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "tag": {
+            "type": "string",
+            "description": "版本标签",
+            "maxLength": 200
+          },
+          "name": {
+            "type": "string",
+            "description": "版本名称",
+            "maxLength": 200
+          },
+          "changelog": {
+            "type": "string",
+            "description": "版本更新说明（Markdown）"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "prerelease": {
+            "type": "boolean"
+          },
+          "published_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "github_release_id": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "description": "GitHub Release ID；手动版本省略此字段"
+          },
+          "upstream_available": {
+            "type": "boolean",
+            "description": "上游版本是否仍可用"
+          }
+        },
+        "required": [
+          "id",
+          "created_at",
+          "updated_at",
+          "release_id",
+          "tag",
+          "name",
+          "changelog",
+          "enabled",
+          "prerelease",
+          "published_at",
+          "upstream_available"
+        ]
+      },
+      "NullableReleaseVersion": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "release_id": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "tag": {
+            "type": "string",
+            "description": "版本标签",
+            "maxLength": 200
+          },
+          "name": {
+            "type": "string",
+            "description": "版本名称",
+            "maxLength": 200
+          },
+          "changelog": {
+            "type": "string",
+            "description": "版本更新说明（Markdown）"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "prerelease": {
+            "type": "boolean"
+          },
+          "published_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "github_release_id": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "description": "GitHub Release ID；手动版本省略此字段"
+          },
+          "upstream_available": {
+            "type": "boolean",
+            "description": "上游版本是否仍可用"
+          }
+        },
+        "required": [
+          "id",
+          "created_at",
+          "updated_at",
+          "release_id",
+          "tag",
+          "name",
+          "changelog",
+          "enabled",
+          "prerelease",
+          "published_at",
+          "upstream_available"
+        ]
+      },
+      "ReleaseSourceChoice": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": "string",
+            "description": "用于下载接口 source 参数：direct 或下载源 ID 的十进制字符串",
+            "examples": [
+              "1"
+            ]
+          },
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "description": "下载源 ID；direct 源省略此字段"
+          },
+          "name": {
+            "type": "string",
+            "description": "下载源名称"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "s3",
+              "github_mirror",
+              "direct"
+            ]
+          },
+          "enabled": {
+            "type": "boolean",
+            "description": "软件与下载源的绑定是否启用"
+          },
+          "global_enabled": {
+            "type": "boolean",
+            "description": "下载源是否全局启用"
+          },
+          "sort_order": {
+            "type": "integer",
+            "description": "软件绑定的排序值"
+          }
+        },
+        "required": [
+          "source",
+          "name",
+          "type",
+          "enabled",
+          "global_enabled",
+          "sort_order"
+        ]
+      },
+      "ReleaseAsset": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "version_id": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "filename": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "os": {
+            "type": "string",
+            "description": "标准化系统名；any 表示通用，空字符串表示未识别"
+          },
+          "arch": {
+            "type": "string",
+            "description": "标准化架构名；any 表示通用，空字符串表示未识别"
+          },
+          "platform_overridden": {
+            "type": "boolean",
+            "description": "是否手动指定平台"
+          },
+          "size": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "description": "文件大小（字节）"
+          },
+          "content_type": {
+            "type": "string",
+            "description": "文件 MIME 类型"
+          },
+          "checksum": {
+            "type": "string",
+            "description": "文件校验和；未提供时为空字符串"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "github_asset_id": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "description": "GitHub 资源 ID；手动文件省略此字段"
+          },
+          "upstream_available": {
+            "type": "boolean",
+            "description": "上游文件是否仍可用"
+          }
+        },
+        "required": [
+          "id",
+          "created_at",
+          "updated_at",
+          "version_id",
+          "filename",
+          "os",
+          "arch",
+          "platform_overridden",
+          "size",
+          "content_type",
+          "checksum",
+          "enabled",
+          "upstream_available"
+        ]
+      },
+      "ReleaseAssetView": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ReleaseAsset"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "available_sources": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/ReleaseSourceChoice"
+                },
+                "description": "此文件当前可用的下载源；S3 必须已有 ready 文件，GitHub 同步副本还须匹配当前上游指纹。可为空数组。"
+              },
+              "platform_complete": {
+                "type": "boolean",
+                "description": "os 和 arch 是否都已识别或填写"
+              }
+            },
+            "required": [
+              "available_sources",
+              "platform_complete"
+            ]
+          }
+        ]
+      },
+      "ReleaseDownload": {
+        "type": "object",
+        "properties": {
+          "release_id": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "version_id": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "tag": {
+            "type": "string"
+          },
+          "asset_id": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "filename": {
+            "type": "string"
+          },
+          "os": {
+            "type": "string"
+          },
+          "arch": {
+            "type": "string"
+          },
+          "size": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "checksum": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string",
+            "description": "实际选定的下载源；数值 ID 规范化为十进制字符串"
+          },
+          "url": {
+            "type": "string",
+            "description": "客户端应使用此地址下载文件；S3 为临时签名 URL",
+            "format": "uri"
+          },
+          "expires_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "S3 签名 URL 到期时间；direct 和 GitHub 镜像为 null",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "release_id",
+          "version_id",
+          "tag",
+          "asset_id",
+          "filename",
+          "os",
+          "arch",
+          "size",
+          "checksum",
+          "source",
+          "url",
+          "expires_at"
+        ]
+      },
+      "ReleaseError": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "与 HTTP 状态码一致"
+          },
+          "msg": {
+            "type": "string",
+            "description": "错误说明"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "reason": {
+                "type": "string",
+                "description": "业务错误原因，例如 invalid_parameter、release_not_found、version_not_found、asset_not_found、source_unavailable、internal_error"
+              },
+              "required_scopes": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "OAuth2 所需权限"
+              },
+              "granted_scopes": {
+                "type": "string",
+                "description": "OAuth2 已授予的权限"
+              }
+            }
+          }
+        },
+        "required": [
+          "code",
+          "msg"
+        ]
+      },
+      "ReleaseDownloadSelectionError": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "enum": [
+              422
+            ],
+            "description": "与 HTTP 状态码一致"
+          },
+          "msg": {
+            "type": "string",
+            "description": "提示信息",
+            "examples": [
+              "请求失败"
+            ]
+          },
+          "data": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "enum": [
+                      "platform_required"
+                    ]
+                  },
+                  "missing_fields": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "os",
+                        "arch"
+                      ]
+                    }
+                  },
+                  "candidates": {
+                    "type": [
+                      "array",
+                      "null"
+                    ],
+                    "items": {
+                      "$ref": "#/components/schemas/ReleaseAsset"
+                    },
+                    "description": "版本内可见的原始文件记录；没有记录时可能为 null"
+                  }
+                },
+                "required": [
+                  "reason",
+                  "missing_fields",
+                  "candidates"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "enum": [
+                      "asset_ambiguous"
+                    ]
+                  },
+                  "candidates": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/ReleaseAsset"
+                    },
+                    "minItems": 2,
+                    "description": "匹配到的原始文件记录；请用 asset_id 明确选择"
+                  }
+                },
+                "required": [
+                  "reason",
+                  "candidates"
+                ]
+              }
+            ]
+          }
+        },
+        "required": [
+          "code",
+          "msg",
+          "data"
+        ]
+      },
+      "ReleaseListResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "enum": [
+              200
+            ],
+            "description": "与 HTTP 状态码一致"
+          },
+          "msg": {
+            "type": "string",
+            "description": "提示信息",
+            "examples": [
+              "获取成功"
+            ]
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "items": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Release"
+                }
+              },
+              "total": {
+                "type": "integer",
+                "format": "int64",
+                "minimum": 0
+              },
+              "page": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 200
+              }
+            },
+            "required": [
+              "items",
+              "total",
+              "page",
+              "limit"
+            ]
+          }
+        },
+        "required": [
+          "code",
+          "msg",
+          "data"
+        ]
+      },
+      "ReleaseDetailResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "enum": [
+              200
+            ],
+            "description": "与 HTTP 状态码一致"
+          },
+          "msg": {
+            "type": "string",
+            "description": "提示信息",
+            "examples": [
+              "获取成功"
+            ]
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "release": {
+                "$ref": "#/components/schemas/Release"
+              },
+              "latest_version": {
+                "$ref": "#/components/schemas/NullableReleaseVersion"
+              },
+              "sources": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/ReleaseSourceChoice"
+                }
+              }
+            },
+            "required": [
+              "release",
+              "latest_version",
+              "sources"
+            ]
+          }
+        },
+        "required": [
+          "code",
+          "msg",
+          "data"
+        ]
+      },
+      "ReleaseSourcesResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "enum": [
+              200
+            ],
+            "description": "与 HTTP 状态码一致"
+          },
+          "msg": {
+            "type": "string",
+            "description": "提示信息",
+            "examples": [
+              "获取成功"
+            ]
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "items": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/ReleaseSourceChoice"
+                }
+              }
+            },
+            "required": [
+              "items"
+            ]
+          }
+        },
+        "required": [
+          "code",
+          "msg",
+          "data"
+        ]
+      },
+      "ReleaseVersionsResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "enum": [
+              200
+            ],
+            "description": "与 HTTP 状态码一致"
+          },
+          "msg": {
+            "type": "string",
+            "description": "提示信息",
+            "examples": [
+              "获取成功"
+            ]
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "items": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/ReleaseVersion"
+                }
+              },
+              "total": {
+                "type": "integer",
+                "format": "int64",
+                "minimum": 0
+              },
+              "page": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 200
+              }
+            },
+            "required": [
+              "items",
+              "total",
+              "page",
+              "limit"
+            ]
+          }
+        },
+        "required": [
+          "code",
+          "msg",
+          "data"
+        ]
+      },
+      "ReleaseVersionResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "enum": [
+              200
+            ],
+            "description": "与 HTTP 状态码一致"
+          },
+          "msg": {
+            "type": "string",
+            "description": "提示信息",
+            "examples": [
+              "获取成功"
+            ]
+          },
+          "data": {
+            "$ref": "#/components/schemas/ReleaseVersion"
+          }
+        },
+        "required": [
+          "code",
+          "msg",
+          "data"
+        ]
+      },
+      "ReleaseAssetsResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "enum": [
+              200
+            ],
+            "description": "与 HTTP 状态码一致"
+          },
+          "msg": {
+            "type": "string",
+            "description": "提示信息",
+            "examples": [
+              "获取成功"
+            ]
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "items": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/ReleaseAssetView"
+                }
+              }
+            },
+            "required": [
+              "items"
+            ]
+          }
+        },
+        "required": [
+          "code",
+          "msg",
+          "data"
+        ]
+      },
+      "ReleaseDownloadResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "enum": [
+              200
+            ],
+            "description": "与 HTTP 状态码一致"
+          },
+          "msg": {
+            "type": "string",
+            "description": "提示信息",
+            "examples": [
+              "获取成功"
+            ]
+          },
+          "data": {
+            "$ref": "#/components/schemas/ReleaseDownload"
+          }
+        },
+        "required": [
+          "code",
+          "msg",
+          "data"
+        ]
       }
     },
-    "responses": {},
-    "securitySchemes": {}
+    "responses": {
+      "ReleaseError400": {
+        "description": "请求参数无效（invalid_parameter）；下载接口缺少、为空或重复的 source 返回 source_required。",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ReleaseError"
+            }
+          }
+        }
+      },
+      "ReleaseError401": {
+        "description": "缺少 Bearer Token、Token 无效、已过期或已撤销。",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ReleaseError"
+            }
+          }
+        }
+      },
+      "ReleaseError403": {
+        "description": "用户权限不足，或 OAuth2 Token 缺少 release:read（也可由 release:* 或 all 授权）。",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ReleaseError"
+            }
+          }
+        }
+      },
+      "ReleaseError404": {
+        "description": "软件、版本或文件不存在、不属于指定软件，或当前不可见/不可用。reason 为 release_not_found、version_not_found、asset_not_found 或 resource_not_found。",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ReleaseError"
+            }
+          }
+        }
+      },
+      "ReleaseError409": {
+        "description": "选定下载源未启用、未绑定或尚无可用文件（source_unavailable），或资源状态冲突（state_conflict）。不会自动切换到其他下载源。",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ReleaseError"
+            }
+          }
+        }
+      },
+      "ReleaseError500": {
+        "description": "服务器内部错误（internal_error）。",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ReleaseError"
+            }
+          }
+        }
+      },
+      "ReleaseError502": {
+        "description": "生成 S3 下载地址失败（upstream_error）。",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ReleaseError"
+            }
+          }
+        }
+      },
+      "ReleaseError503": {
+        "description": "Token 验证服务暂时不可用。",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ReleaseError"
+            }
+          }
+        }
+      },
+      "ReleaseSelectionError": {
+        "description": "无法确定目标文件：platform_required 需补充缺失的 os/arch 或指定 asset_id；asset_ambiguous 需指定 asset_id。候选项为原始文件记录，不包含 available_sources/platform_complete。",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ReleaseDownloadSelectionError"
+            },
+            "examples": {
+              "platformRequired": {
+                "summary": "platformRequired",
+                "value": {
+                  "code": 422,
+                  "msg": "无法识别系统或架构，请指定参数或 asset_id",
+                  "data": {
+                    "reason": "platform_required",
+                    "missing_fields": [
+                      "os",
+                      "arch"
+                    ],
+                    "candidates": null
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "securitySchemes": {},
+    "parameters": {
+      "ReleaseID": {
+        "name": "release_id",
+        "in": "query",
+        "description": "软件 ID，必须且只能在 query 中传入一次。",
+        "required": true,
+        "schema": {
+          "type": "integer",
+          "format": "int64",
+          "minimum": 1,
+          "maximum": 4294967295
+        }
+      },
+      "ReleaseVersionID": {
+        "name": "version_id",
+        "in": "path",
+        "description": "版本 ID，必须属于 release_id 指定的软件。",
+        "required": true,
+        "schema": {
+          "type": "integer",
+          "format": "int64",
+          "minimum": 1,
+          "maximum": 4294967295
+        }
+      },
+      "ReleasePage": {
+        "name": "page",
+        "in": "query",
+        "description": "页码；无效值或小于 1 时使用 1。",
+        "required": false,
+        "schema": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 1
+        }
+      },
+      "ReleaseLimit": {
+        "name": "limit",
+        "in": "query",
+        "description": "每页条数；无效值或小于 1 时使用 20，大于 200 时使用 200。",
+        "required": false,
+        "schema": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 200,
+          "default": 20
+        }
+      },
+      "ReleaseOS": {
+        "name": "os",
+        "in": "query",
+        "description": "系统名，不区分大小写并去除首尾空白。支持 windows（win/win32/win64）、darwin（mac/macos/osx）、linux、freebsd、openbsd、android、ios、any（all）。非空无效值返回 400；匹配时包含 any 通用文件。",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "example": "linux"
+        }
+      },
+      "ReleaseArch": {
+        "name": "arch",
+        "in": "query",
+        "description": "架构名，不区分大小写并去除首尾空白。支持 amd64（x86_64/x64）、arm64（aarch64）、386（i386/i686/x86）、arm（armv7/armv6/armhf）、riscv64、mips、mipsle、mips64、mips64le、ppc64、ppc64le、s390x、any（all/universal）。非空无效值返回 400；匹配时包含 any 通用文件。",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "example": "amd64"
+        }
+      }
+    }
   },
   "servers": [],
   "security": []
