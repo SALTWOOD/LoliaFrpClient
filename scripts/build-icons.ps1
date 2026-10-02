@@ -1,4 +1,4 @@
-# 从 assets/brand 下的品牌源文件生成各平台的应用图标。
+﻿# 从 assets/brand 下的品牌源文件生成各平台的应用图标。
 #
 #   pwsh scripts/build-icons.ps1
 #
