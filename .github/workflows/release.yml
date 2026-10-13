@@ -2,7 +2,7 @@ name: Release
 
 on:
   workflow_run:
-    workflows: [ "Android", "Desktop (Windows)", "Desktop (Linux)" ]
+    workflows: [ "Android", "Desktop (Windows)", "Desktop (Linux)", "Desktop (macOS)" ]
     types: [ completed ]
 
 permissions:
@@ -22,7 +22,7 @@ jobs:
       TAG: ${{ github.event.workflow_run.head_branch }}
 
     steps:
-      - name: Check all three builds finished
+      - name: Check all four builds finished
         id: gate
         env:
           GH_TOKEN: ${{ github.token }}
@@ -37,12 +37,13 @@ jobs:
                   | select(.head_branch == $b)
                   | select(.name == "Android"
                           or .name == "Desktop (Windows)"
-                          or .name == "Desktop (Linux)") ]
+                          or .name == "Desktop (Linux)"
+                          or .name == "Desktop (macOS)") ]
                 | group_by(.name) | map(max_by(.run_number)) | .[]
                 | "\(.name)\t\(.id)\t\(.status)\t\(.conclusion)"')"
 
           FOUND=0
-          android=''; windows=''; linux=''
+          android=''; windows=''; linux=''; macos=''
 
           while IFS=$'\t' read -r name id status conclusion; do
             [ -n "$name" ] || continue
@@ -65,11 +66,12 @@ jobs:
               "Android")           android="$id" ;;
               "Desktop (Windows)") windows="$id" ;;
               "Desktop (Linux)")   linux="$id"   ;;
+              "Desktop (macOS)")   macos="$id"   ;;
             esac
           done <<< "$RUNS"
 
-          [ "$FOUND" -eq 3 ] \
-            || { echo "::error::only $FOUND of 3 build workflows ran for $TAG"; exit 1; }
+          [ "$FOUND" -eq 4 ] \
+            || { echo "::error::only $FOUND of 4 build workflows ran for $TAG"; exit 1; }
 
           # Only after every check has passed. Outputs set before a bow-out are kept by
           # the runner all the same, and the steps below key off them — a half-filled
@@ -78,7 +80,8 @@ jobs:
           echo "android=$android" >> "$GITHUB_OUTPUT"
           echo "windows=$windows" >> "$GITHUB_OUTPUT"
           echo "linux=$linux"     >> "$GITHUB_OUTPUT"
-          echo "all three green, publishing $TAG"
+          echo "macos=$macos"     >> "$GITHUB_OUTPUT"
+          echo "all four green, publishing $TAG"
 
       # pattern, not the whole run: the Android workflow also uploads frpc-*, which is a
       # build input, not something to hand to users.
@@ -110,6 +113,16 @@ jobs:
           merge-multiple: true
           path: dist
           run-id: ${{ steps.gate.outputs.linux }}
+          github-token: ${{ github.token }}
+
+      - name: Download macOS artifacts
+        if: steps.gate.outputs.ready == 'true'
+        uses: actions/download-artifact@v4
+        with:
+          pattern: LoliaFrpClient-*
+          merge-multiple: true
+          path: dist
+          run-id: ${{ steps.gate.outputs.macos }}
           github-token: ${{ github.token }}
 
       # Every build workflow already refused to run if the tag disagreed with
