@@ -1,4 +1,6 @@
+using System;
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using LoliaFrpClient.Core;
@@ -25,12 +27,15 @@ public partial class App : Application
         switch (ApplicationLifetime)
         {
             case IClassicDesktopStyleApplicationLifetime desktop:
-                desktop.MainWindow = new MainWindow
+                var mainWindow = new MainWindow
                 {
                     DataContext = new MainViewModel()
                 };
 
+                desktop.MainWindow = mainWindow;
                 desktop.Exit += (_, _) => Shutdown(session);
+
+                if (OperatingSystem.IsMacOS()) KeepRunningInDock(desktop, mainWindow);
                 break;
 
             case ISingleViewApplicationLifetime singleView:
@@ -42,6 +47,29 @@ public partial class App : Application
         }
 
         base.OnFrameworkInitializationCompleted();
+    }
+
+    private void KeepRunningInDock(IClassicDesktopStyleApplicationLifetime desktop, Window window)
+    {
+        desktop.ShutdownMode = ShutdownMode.OnExplicitShutdown;
+
+        window.Closing += (_, e) =>
+        {
+            if (e.CloseReason != WindowCloseReason.WindowClosing || e.IsProgrammatic) return;
+
+            e.Cancel = true;
+            window.Hide();
+        };
+
+        if (this.TryGetFeature<IActivatableLifetime>() is not { } activatable) return;
+
+        activatable.Activated += (_, e) =>
+        {
+            if (e.Kind != ActivationKind.Reopen) return;
+
+            window.Show();
+            window.Activate();
+        };
     }
 
     private static void Shutdown(ApiSession session)
