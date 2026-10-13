@@ -1,0 +1,251 @@
+name: Desktop (macOS)
+
+on:
+  push:
+    branches: [ "master" ]
+    tags: [ "v*" ]
+  pull_request:
+    branches: [ "master" ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: macos-15
+
+    env:
+      HAS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE_P12 != '' }}
+      HAS_NOTARY_KEY: ${{ secrets.MACOS_NOTARY_KEY != '' }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - rid: osx-arm64
+            arch: arm64
+          - rid: osx-x64
+            arch: x64
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Resolve version
+        id: v
+        run: |
+          set -euo pipefail
+          FILE_VER="$(sed -n 's:.*<Version>\([^<]*\)</Version>.*:\1:p' Directory.Build.props)"
+          if [ "${{ github.ref_type }}" = "tag" ]; then
+            [ "${{ github.ref_name }}" = "v$FILE_VER" ] || {
+              echo "tag ${{ github.ref_name }} but Directory.Build.props says $FILE_VER"; exit 1; }
+            echo "display=${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "display=dev-$(echo "${{ github.sha }}" | cut -c1-7)" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Generate app icon
+        run: ./scripts/build-icons.sh
+
+      - name: Publish ${{ matrix.rid }}
+        run: >
+          dotnet publish LoliaFrpClient.Desktop/LoliaFrpClient.Desktop.csproj
+          -c Release -r ${{ matrix.rid }} --self-contained true
+          -p:PublishSingleFile=true -p:DebugType=none
+          -o publish/${{ matrix.rid }}
+
+      - name: Import signing certificate
+        id: cert
+        if: env.HAS_CERTIFICATE == 'true'
+        env:
+          MACOS_CERTIFICATE_P12: ${{ secrets.MACOS_CERTIFICATE_P12 }}
+        run: |
+          set -euo pipefail
+
+          KEYCHAIN="$RUNNER_TEMP/loliafrp-signing.keychain-db"
+          KEYCHAIN_PASSWORD="${{ secrets.MACOS_KEYCHAIN_PASSWORD }}"
+
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security set-keychain-settings -lut 900 "$KEYCHAIN"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+
+          CERT_PATH="$RUNNER_TEMP/certificate.p12"
+          printf '%s' "$MACOS_CERTIFICATE_P12" | base64 -d > "$CERT_PATH"
+
+          security import "$CERT_PATH" \
+            -k "$KEYCHAIN" \
+            -P "${{ secrets.MACOS_CERTIFICATE_PASSWORD }}" \
+            -T /usr/bin/codesign \
+            -T /usr/bin/security
+
+          security set-key-partition-list \
+            -S apple-tool:,apple:,codesign: \
+            -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN" > /dev/null
+
+          rm -f "$CERT_PATH"
+
+          security list-keychains -d user -s "$KEYCHAIN"
+          security default-keychain -d user -s "$KEYCHAIN"
+
+          if ! security find-identity -v -p codesigning "$KEYCHAIN" | grep -q "Developer ID Application"; then
+            echo "::error::no Developer ID Application identity in the temporary keychain"
+            security find-identity -v -p codesigning "$KEYCHAIN"
+            exit 1
+          fi
+
+          IDENTITY="$(security find-identity -v -p codesigning "$KEYCHAIN" \
+            | sed -n 's/.*"\(Developer ID Application: [^"]*\)".*/\1/p' | head -1)"
+
+          echo "identity=$IDENTITY" >> "$GITHUB_OUTPUT"
+          echo "keychain=$KEYCHAIN" >> "$GITHUB_OUTPUT"
+
+      - name: Prepare notarization API key
+        id: notary
+        if: ${{ steps.cert.outputs.identity != '' && env.HAS_NOTARY_KEY == 'true' }}
+        env:
+          NOTARY_KEY: ${{ secrets.MACOS_NOTARY_KEY }}
+        run: |
+          set -euo pipefail
+
+          KEY_PATH="$RUNNER_TEMP/AuthKey.p8"
+          printf '%s' "$NOTARY_KEY" | base64 -d > "$KEY_PATH"
+          chmod 600 "$KEY_PATH"
+
+          if ! grep -q "BEGIN PRIVATE KEY" "$KEY_PATH"; then
+            echo "::error::MACOS_NOTARY_KEY did not decode to a PEM private key"
+            exit 1
+          fi
+
+          echo "key-path=$KEY_PATH" >> "$GITHUB_OUTPUT"
+
+      - name: Warn when notarization is skipped
+        if: ${{ steps.cert.outputs.identity != '' && env.HAS_NOTARY_KEY != 'true' }}
+        run: echo "::warning::MACOS_NOTARY_KEY is not configured; notarization is being skipped"
+
+      - name: Build, sign and notarize .app
+        env:
+          NOTARY_KEY_ID: ${{ secrets.MACOS_NOTARY_KEY_ID }}
+          NOTARY_ISSUER_ID: ${{ secrets.MACOS_NOTARY_ISSUER_ID }}
+          SIGNING_IDENTITY: ${{ steps.cert.outputs.identity }}
+          NOTARY_KEY_PATH: ${{ steps.notary.outputs.key-path }}
+          FILE_VERSION: ${{ steps.v.outputs.display }}
+        run: |
+          set -euo pipefail
+
+          APP_NAME="LoliaFrp.app"
+          APP_DIR="$PWD/$APP_NAME"
+          CONTENTS="$APP_DIR/Contents"
+          PUBLISH_DIR="publish/${{ matrix.rid }}"
+          OUTPUT="LoliaFrpClient_${FILE_VERSION}_macos-${{ matrix.arch }}.zip"
+          MINIMUM_SYSTEM_VERSION="15.0"
+
+          rm -rf "$APP_DIR"
+          mkdir -p "$CONTENTS/MacOS" "$CONTENTS/Frameworks" "$CONTENTS/Resources"
+
+          MAIN_BINARY="$CONTENTS/MacOS/LoliaFrpClient.Desktop"
+          for FILE in "$PUBLISH_DIR"/*; do
+            NAME="$(basename "$FILE")"
+            case "$NAME" in
+              LoliaFrpClient.Desktop) cp "$FILE" "$MAIN_BINARY" ;;
+              *.dylib) cp "$FILE" "$CONTENTS/Frameworks/" ;;
+              *)
+                echo "::error::unexpected file in single-file publish output: $NAME"
+                exit 1
+                ;;
+            esac
+          done
+
+          if [ ! -f "$MAIN_BINARY" ]; then
+            echo "::error::publish output has no LoliaFrpClient.Desktop"
+            exit 1
+          fi
+          chmod +x "$MAIN_BINARY"
+
+          if [ ! -f LoliaFrpClient.Desktop/Assets/app.icns ]; then
+            echo "::error::app.icns is missing"
+            exit 1
+          fi
+          cp LoliaFrpClient.Desktop/Assets/app.icns "$CONTENTS/Resources/app.icns"
+
+          sed -e "s/@VERSION@/${FILE_VERSION}/g" \
+              -e "s/@MINIMUM_SYSTEM_VERSION@/${MINIMUM_SYSTEM_VERSION}/g" \
+              LoliaFrpClient.Desktop/Bundle/Info.plist > "$CONTENTS/Info.plist"
+
+          printf 'APPL????' > "$CONTENTS/PkgInfo"
+          plutil -lint "$CONTENTS/Info.plist" > /dev/null
+
+          CODESIGN_ARGS=(--force --options runtime)
+          if [ -n "$SIGNING_IDENTITY" ]; then
+            CODESIGN_ARGS+=(--timestamp --sign "$SIGNING_IDENTITY")
+          else
+            CODESIGN_ARGS+=(--sign -)
+          fi
+
+          for FILE in "$CONTENTS/Frameworks"/*.dylib; do
+            codesign "${CODESIGN_ARGS[@]}" "$FILE"
+          done
+
+          codesign "${CODESIGN_ARGS[@]}" \
+            --entitlements LoliaFrpClient.Desktop/Bundle/Entitlements.plist \
+            "$APP_DIR"
+
+          codesign --verify --deep --strict "$APP_DIR"
+
+          if [ -n "$SIGNING_IDENTITY" ]; then
+            spctl --assess --type execute --verbose=2 "$APP_DIR" || true
+          fi
+
+          if [ -n "$NOTARY_KEY_PATH" ]; then
+            NOTARY_ARGS=(--key "$NOTARY_KEY_PATH" --key-id "$NOTARY_KEY_ID")
+            if [ -n "$NOTARY_ISSUER_ID" ]; then
+              NOTARY_ARGS+=(--issuer "$NOTARY_ISSUER_ID")
+            fi
+
+            NOTARIZE_ZIP="$(mktemp -d)/notarize.zip"
+            ditto -c -k --keepParent "$APP_DIR" "$NOTARIZE_ZIP"
+
+            xcrun notarytool submit "$NOTARIZE_ZIP" \
+              "${NOTARY_ARGS[@]}" \
+              --wait \
+              --output-format normal
+
+            xcrun stapler staple "$APP_DIR"
+            xcrun stapler validate "$APP_DIR"
+
+            rm -f "$NOTARIZE_ZIP"
+          fi
+
+          ditto -c -k --sequesterRsrc --keepParent "$APP_DIR" "$OUTPUT"
+
+      - name: Show notarization history on failure
+        if: failure() && steps.notary.outputs.key-path != ''
+        env:
+          NOTARY_KEY_ID: ${{ secrets.MACOS_NOTARY_KEY_ID }}
+          NOTARY_ISSUER_ID: ${{ secrets.MACOS_NOTARY_ISSUER_ID }}
+        run: |
+          set -euo pipefail
+
+          ARGS=(--key "${{ steps.notary.outputs.key-path }}" --key-id "$NOTARY_KEY_ID")
+          if [ -n "$NOTARY_ISSUER_ID" ]; then
+            ARGS+=(--issuer "$NOTARY_ISSUER_ID")
+          fi
+
+          xcrun notarytool history "${ARGS[@]}" --output-format json 2>&1 | head -40 || true
+
+      - name: Clean up keychain
+        if: always() && steps.cert.outputs.keychain != ''
+        run: |
+          security delete-keychain "${{ steps.cert.outputs.keychain }}" || true
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: LoliaFrpClient-${{ steps.v.outputs.display }}-macos-${{ matrix.arch }}
+          path: ./*.zip
+          retention-days: 7
