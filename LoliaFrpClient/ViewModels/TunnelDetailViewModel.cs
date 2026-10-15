@@ -185,7 +185,7 @@ public sealed partial class TunnelDetailViewModel : ObservableObject
         Add("远端入口", detail.RemoteEndpoint);
         Add("状态", detail.IsActive ? "在线" : "已下线");
         Add("隧道 ID", detail.Id > 0 ? detail.Id.ToString() : null);
-        Add("带宽限制", detail.BandwidthLimit is { } bandwidth ? $"{bandwidth} Mbps" : null);
+        Add("带宽限制", detail.BandwidthLimit is { } bandwidth ? $"{bandwidth * 8} Mbps" : null);
         Add("客户端版本", detail.ClientVersion);
         Add("创建时间", detail.CreatedAt);
         Add("隧道 Token", detail.MaskedToken);
