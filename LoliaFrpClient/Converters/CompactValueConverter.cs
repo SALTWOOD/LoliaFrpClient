@@ -13,11 +13,12 @@ public sealed class CompactValueConverter : IValueConverter
         if (parts.Length != 2) return null;
 
         var text = value is true ? parts[1] : parts[0];
+        var type = Nullable.GetUnderlyingType(targetType) ?? targetType;
 
-        if (targetType == typeof(GridLength)) return GridLength.Parse(text);
+        if (type == typeof(GridLength)) return GridLength.Parse(text);
+        if (type.IsEnum) return Enum.Parse(type, text);
 
-        return System.Convert.ChangeType(
-            text, Nullable.GetUnderlyingType(targetType) ?? targetType, CultureInfo.InvariantCulture);
+        return System.Convert.ChangeType(text, type, CultureInfo.InvariantCulture);
     }
 
     public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
