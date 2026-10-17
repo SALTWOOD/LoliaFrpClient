@@ -3,6 +3,7 @@ using Android.App;
 using Android.Content.PM;
 using Android.OS;
 using Avalonia.Android;
+using LoliaFrpClient.Services;
 
 namespace LoliaFrpClient.Android;
 
@@ -22,6 +23,8 @@ public class MainActivity : AvaloniaMainActivity
 
     protected override void OnCreate(Bundle? savedInstanceState)
     {
+        CrashReporting.Start();
+
         base.OnCreate(savedInstanceState);
 
         RequestNotificationPermission();

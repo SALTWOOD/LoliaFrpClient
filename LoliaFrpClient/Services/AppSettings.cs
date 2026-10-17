@@ -41,6 +41,8 @@ internal sealed class AppSettings
 
     public bool AutoCheckUpdates { get; set; } = true;
 
+    public bool CrashReporting { get; set; } = true;
+
     public static string DefaultPath()
     {
         return Path.Combine(
@@ -62,7 +64,8 @@ internal sealed class AppSettings
                 FrpcVersion = FrpcVersion,
                 UseDownloadMirror = UseDownloadMirror,
                 FrpcLastUpdateCheckUtc = FrpcLastUpdateCheckUtc,
-                AutoCheckUpdates = AutoCheckUpdates
+                AutoCheckUpdates = AutoCheckUpdates,
+                CrashReporting = CrashReporting
             };
 
             File.WriteAllText(_path, JsonSerializer.Serialize(snapshot, SettingsJsonContext.Default.SettingsSnapshot));
@@ -91,6 +94,7 @@ internal sealed class AppSettings
             // ?? true:老配置文件里没有这个键,缺省是开。若快照字段用不可空的 bool,
             // 反序列化会给 false,把「没配过」误当成「用户关掉了」。
             AutoCheckUpdates = snapshot.AutoCheckUpdates ?? true;
+            CrashReporting = snapshot.CrashReporting ?? true;
         }
         catch (Exception ex) when (ex is IOException or JsonException or UnauthorizedAccessException)
         {
@@ -113,6 +117,9 @@ internal sealed class AppSettings
         // 可空:要区分「没有这个键」和「明确存了 false」。
         [JsonPropertyName("auto_check_updates")]
         public bool? AutoCheckUpdates { get; set; }
+
+        [JsonPropertyName("crash_reporting")]
+        public bool? CrashReporting { get; set; }
     }
 }
 

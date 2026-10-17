@@ -120,6 +120,10 @@
                                   OnContent="启动时自动检查更新"
                                   OffContent="启动时自动检查更新"
                                   HorizontalAlignment="Left" />
+                    <ToggleSwitch IsChecked="{Binding CrashReportingEnabled}"
+                                  OnContent="自动发送崩溃报告"
+                                  OffContent="自动发送崩溃报告"
+                                  HorizontalAlignment="Left" />
                 </StackPanel>
             </ui:FASettingsExpander>
 

@@ -54,6 +54,9 @@ public sealed partial class SettingsViewModel : ViewModelBase
     [ObservableProperty]
     public partial bool UseDownloadMirror { get; set; }
 
+    [ObservableProperty]
+    public partial bool CrashReportingEnabled { get; set; }
+
     // 回读设置和用户改动都会走 OnAutoCheckUpdatesChanged,构造期那次不该写盘。
     private bool _settingsReady;
 
@@ -121,6 +124,7 @@ public sealed partial class SettingsViewModel : ViewModelBase
     {
         AutoCheckUpdates = AppSettings.Current.AutoCheckUpdates;
         UseDownloadMirror = AppSettings.Current.UseDownloadMirror;
+        CrashReportingEnabled = AppSettings.Current.CrashReporting;
         _settingsReady = true;
 
         RefreshFrpcCore();
@@ -144,6 +148,15 @@ public sealed partial class SettingsViewModel : ViewModelBase
         AppSettings.Current.UseDownloadMirror = value;
         AppSettings.Current.Save();
         RefreshFrpcCore();
+    }
+
+    partial void OnCrashReportingEnabledChanged(bool value)
+    {
+        if (!_settingsReady) return;
+
+        AppSettings.Current.CrashReporting = value;
+        AppSettings.Current.Save();
+        CrashReporting.SetEnabled(value);
     }
 
     public event Action? InstallFrpcRequested;

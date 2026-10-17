@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Runtime.Loader;
 using Avalonia;
+using LoliaFrpClient.Services;
 
 namespace LoliaFrpClient.Desktop;
 
@@ -12,6 +13,8 @@ internal sealed class Program
     [STAThread]
     public static void Main(string[] args)
     {
+        CrashReporting.Start();
+
         if (OperatingSystem.IsMacOS())
             AssemblyLoadContext.Default.ResolvingUnmanagedDll += ResolveFromFrameworks;
 

@@ -78,5 +78,6 @@ public partial class App : Application
         // the tunnel occupied and makes the next start fight the orphan.
         FrpcProcessManager.Current.Dispose();
         session.Dispose();
+        CrashReporting.Shutdown();
     }
 }

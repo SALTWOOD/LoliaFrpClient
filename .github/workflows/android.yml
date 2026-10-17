@@ -126,6 +126,9 @@ jobs:
     needs: frpc
     runs-on: ubuntu-latest
 
+    env:
+      SentryDsn: ${{ github.ref_type == 'tag' && secrets.SENTRY_DSN || '' }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
