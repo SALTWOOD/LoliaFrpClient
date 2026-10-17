@@ -307,6 +307,16 @@ public sealed partial class FrpcManagerViewModel : ViewModelBase, IDisposable
 
         _manager.GetLog(tab.TunnelName).Clear();
         tab.Lines.Clear();
+        tab.NotifyTextChanged();
+    }
+
+    [RelayCommand]
+    private async Task CopyLogAsync()
+    {
+        if (SelectedLogTab is not { } tab || tab.Text.Length == 0) return;
+
+        await ClipboardWriter.WriteAsync(tab.Text);
+        StatusMessage = "日志已复制。";
     }
 
     [RelayCommand]
@@ -475,10 +485,13 @@ public sealed partial class FrpcManagerViewModel : ViewModelBase, IDisposable
 
         foreach (var line in batch) tab.Lines.Add(line);
 
-        if (tab.Lines.Count <= MaxDisplayLines) return;
+        if (tab.Lines.Count > MaxDisplayLines)
+        {
+            var excess = tab.Lines.Count - TrimToLines;
+            for (var i = 0; i < excess; i++) tab.Lines.RemoveAt(0);
+        }
 
-        var excess = tab.Lines.Count - TrimToLines;
-        for (var i = 0; i < excess; i++) tab.Lines.RemoveAt(0);
+        tab.NotifyTextChanged();
     }
 }
 
@@ -496,6 +509,13 @@ public sealed partial class FrpcLogTab : ObservableObject
     [ObservableProperty] public partial string DisplayName { get; set; }
 
     public ObservableCollection<string> Lines { get; } = [];
+
+    public string Text => string.Join(Environment.NewLine, Lines);
+
+    public void NotifyTextChanged()
+    {
+        OnPropertyChanged(nameof(Text));
+    }
 }
 
 public sealed partial class FrpcTunnelRow : ObservableObject

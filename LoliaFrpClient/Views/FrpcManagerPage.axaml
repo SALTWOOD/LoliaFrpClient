@@ -173,7 +173,10 @@
 
                             <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
                                 <TextBlock Grid.Column="0" Text="日志" Classes="sectionTitle" VerticalAlignment="Center" />
-                                <Button Grid.Column="1" Content="清空" Command="{Binding ClearLogCommand}" />
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                                    <Button Content="复制" Command="{Binding CopyLogCommand}" />
+                                    <Button Content="清空" Command="{Binding ClearLogCommand}" />
+                                </StackPanel>
                             </Grid>
 
                             <!-- One tab per tunnel: frpc writes its own timestamp and level, so rows are
@@ -205,17 +208,10 @@
                                           x:Name="LogScroll"
                                           HorizontalScrollBarVisibility="Auto"
                                           MaxHeight="{Binding IsCompact, Converter={StaticResource CompactValue}, ConverterParameter='Infinity|260'}">
-                                <ItemsControl ItemsSource="{Binding SelectedLogTab.Lines}">
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate x:DataType="x:String">
-                                            <!-- 宽屏保留不换行(时间戳对齐好扫),窄屏换行(手机没法横向拖)。 -->
-                                            <TextBlock Text="{Binding}"
-                                                       FontFamily="Cascadia Mono,Consolas,DejaVu Sans Mono,monospace"
-                                                       FontSize="12"
-                                                       TextWrapping="{Binding $parent[UserControl].((vm:FrpcManagerViewModel)DataContext).IsCompact, Converter={StaticResource CompactValue}, ConverterParameter='NoWrap|Wrap'}" />
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
+                                <SelectableTextBlock Text="{Binding SelectedLogTab.Text}"
+                                                     FontFamily="Cascadia Mono,Consolas,DejaVu Sans Mono,monospace"
+                                                     FontSize="12"
+                                                     TextWrapping="{Binding $parent[UserControl].((vm:FrpcManagerViewModel)DataContext).IsCompact, Converter={StaticResource CompactValue}, ConverterParameter='NoWrap|Wrap'}" />
                             </ScrollViewer>
 
                             <TextBlock Grid.Row="2"
