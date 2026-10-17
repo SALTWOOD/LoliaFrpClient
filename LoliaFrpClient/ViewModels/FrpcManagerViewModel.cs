@@ -27,9 +27,6 @@ public sealed partial class FrpcManagerViewModel : ViewModelBase, IDisposable
     private readonly FrpcProcessManager _manager = FrpcProcessManager.Current;
     private bool _disposed;
 
-    // Gates OnUseDownloadMirrorChanged so construction does not emit a status message.
-    private bool _ready;
-
     private FrpcTunnelRow? _pendingStart;
 
     public FrpcManagerViewModel()
@@ -41,8 +38,6 @@ public sealed partial class FrpcManagerViewModel : ViewModelBase, IDisposable
         _manager.StateChanged += OnProcessStateChanged;
 
         RefreshFrpcInfo();
-        UseDownloadMirror = AppSettings.Current.UseDownloadMirror;
-        _ready = true;
     }
 
     public ObservableCollection<FrpcTunnelRow> Tunnels { get; } = [];
@@ -77,8 +72,6 @@ public sealed partial class FrpcManagerViewModel : ViewModelBase, IDisposable
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(FrpcVersionText))]
     public partial bool IsFrpcReady { get; set; }
-
-    [ObservableProperty] public partial bool UseDownloadMirror { get; set; }
 
     public string FrpcVersionText => IsFrpcReady ? FrpcVersion ?? "未知" : "未安装";
 
@@ -329,15 +322,6 @@ public sealed partial class FrpcManagerViewModel : ViewModelBase, IDisposable
         _disposed = true;
         _manager.StateChanged -= OnProcessStateChanged;
         _logTimer.Stop();
-    }
-
-    partial void OnUseDownloadMirrorChanged(bool value)
-    {
-        if (!_ready) return;
-
-        AppSettings.Current.UseDownloadMirror = value;
-        AppSettings.Current.Save();
-        StatusMessage = value ? "下载源:镜像加速" : "下载源:GitHub 直连";
     }
 
     private bool CanStartAny()

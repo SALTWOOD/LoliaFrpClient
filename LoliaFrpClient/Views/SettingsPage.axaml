@@ -86,6 +86,10 @@
             <ui:FASettingsExpander Header="Frpc 核心">
                 <StackPanel Spacing="{DynamicResource SpaceMd}">
                     <ItemsControl ItemsSource="{Binding FrpcCore}" ItemTemplate="{StaticResource SettingsRow}" />
+                    <CheckBox Content="下载走镜像加速"
+                              IsChecked="{Binding UseDownloadMirror}"
+                              IsVisible="{Binding CanManageFrpc}"
+                              ToolTip.Tip="镜像不可用时会自动回退到 GitHub 源" />
                     <!-- 内置 frpc 时这三个都无意义:换不了,也用不着装。 -->
                     <WrapPanel Orientation="Horizontal" ItemSpacing="8" LineSpacing="8"
                                IsVisible="{Binding CanManageFrpc}">

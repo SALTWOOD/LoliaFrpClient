@@ -161,9 +161,6 @@
                                 <Button Content="停止全部" Command="{Binding StopAllCommand}" />
                                 <Button Content="重启" Command="{Binding RestartAllCommand}" />
                             </WrapPanel>
-                            <CheckBox Content="下载走镜像加速"
-                                      IsChecked="{Binding UseDownloadMirror}"
-                                      ToolTip.Tip="镜像不可用时会自动回退到 GitHub 源" />
                             <TextBlock Classes="caption"
                                        TextWrapping="Wrap"
                                        Text="{Binding StatusMessage}"

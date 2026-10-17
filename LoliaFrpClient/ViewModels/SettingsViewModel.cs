@@ -51,6 +51,9 @@ public sealed partial class SettingsViewModel : ViewModelBase
     [ObservableProperty]
     public partial bool AutoCheckUpdates { get; set; }
 
+    [ObservableProperty]
+    public partial bool UseDownloadMirror { get; set; }
+
     // 回读设置和用户改动都会走 OnAutoCheckUpdatesChanged,构造期那次不该写盘。
     private bool _settingsReady;
 
@@ -117,6 +120,7 @@ public sealed partial class SettingsViewModel : ViewModelBase
     public override Task ActivateAsync()
     {
         AutoCheckUpdates = AppSettings.Current.AutoCheckUpdates;
+        UseDownloadMirror = AppSettings.Current.UseDownloadMirror;
         _settingsReady = true;
 
         RefreshFrpcCore();
@@ -131,6 +135,15 @@ public sealed partial class SettingsViewModel : ViewModelBase
         AppSettings.Current.AutoCheckUpdates = value;
         AppSettings.Current.Save();
         StatusMessage = value ? "启动时将自动检查更新。" : "已关闭自动检查更新。";
+    }
+
+    partial void OnUseDownloadMirrorChanged(bool value)
+    {
+        if (!_settingsReady) return;
+
+        AppSettings.Current.UseDownloadMirror = value;
+        AppSettings.Current.Save();
+        RefreshFrpcCore();
     }
 
     public event Action? InstallFrpcRequested;
