@@ -24,7 +24,8 @@
     </UserControl.Resources>
 
     <ScrollViewer Padding="{DynamicResource PagePadding}">
-        <StackPanel Spacing="{DynamicResource SpaceXl}" MaxWidth="760" HorizontalAlignment="Left">
+        <StackPanel Spacing="{DynamicResource SpaceXl}" MaxWidth="760"
+                    HorizontalAlignment="{Binding IsCompact, Converter={StaticResource CompactValue}, ConverterParameter='Left|Stretch'}">
 
             <TextBlock Text="设置" Classes="pageTitle" />
 
